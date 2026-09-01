@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>维护框架：Notion 协作工作流</title>
+  <style>
+    :root { font-family: "Segoe UI", "PingFang SC", sans-serif; color: #172033; background: #f5f7fb; line-height: 1.65; }
+    body { margin: 0; } main { max-width: 980px; margin: auto; padding: 44px 24px 72px; }
+    h1, h2, h3 { color: #101828; line-height: 1.25; } h2 { margin-top: 42px; padding-top: 24px; border-top: 1px solid #d8deea; }
+    a { color: #175cd3; } code { background: #e9eef8; border-radius: 4px; padding: .1em .35em; overflow-wrap: anywhere; }
+    .lede { color: #475467; font-size: 1.08rem; } .notice { padding: 15px 18px; border: 1px solid #f4c56a; background: #fff7e8; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; } th, td { padding: 10px 12px; border: 1px solid #d8deea; text-align: left; vertical-align: top; }
+    th { background: #eef2f8; } .flow { padding: 16px; background: #101828; color: #f8fafc; border-radius: 10px; overflow-wrap: anywhere; }
+    footer { margin-top: 48px; color: #667085; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <p><a href="index.html">返回框架首页 index.html</a></p>
+    <h1>Notion 协作工作流</h1>
+    <p class="lede">Notion 是私有维护控制台，不是教程的第二个权威源。它帮助收集素材、反馈和复验任务；真正可发布的内容只能从 Git 中生成。</p>
+  </header>
+
+  <aside class="notice"><strong>边界：</strong>本框架不要求读者拥有 Notion，也不把私有反馈、原始截图、环境日志或未清权素材同步到公开页面。公开 Notion 仅在用户验收后，作为 Git 已发布版本的单向可读投影。</aside>
+
+  <section>
+    <h2>一条事实如何流动</h2>
+    <p class="flow">素材或反馈 → 私有 Notion 登记 → 核实来源与风险 → 在 Git 编辑课程模块 → 本地构建与验证 → 用户验收 → 公开白名单投影（可选）</p>
+    <p>任何一个环节发现事实尚未核实、来源不清、含个人信息或不适合公开，都停在私有层处理；不能通过 Notion 页面“先发布再补证据”。</p>
+  </section>
+
+  <section>
+    <h2>建议的私有数据库</h2>
+    <table>
+      <thead><tr><th>数据库</th><th>用途</th><th>最小字段</th></tr></thead>
+      <tbody>
+        <tr><td>课程模块</td><td>记录每一条以后要补的课程内容。</td><td>永久模块 ID、标题、所属章节、内容状态、Git 路径、平台、风险、复验日期、负责人</td></tr>
+        <tr><td>素材与来源</td><td>登记官方文档、GitHub 项目、图片、提示词方法和授权条件。</td><td>来源名称、URL、固定版本或 commit、许可证、使用方式、审查结论、权利状态、登记日期</td></tr>
+        <tr><td>反馈</td><td>收集读者问题，避免把原始隐私信息写入课程。</td><td>教程版本、模块 ID、问题描述、平台、产品版本、脱敏附件、处理状态、关联任务</td></tr>
+        <tr><td>复验与发布任务</td><td>管理“谁在什么环境复验了什么”。</td><td>任务 ID、模块 ID、环境、步骤、预期、实际、证据位置、验证状态、到期日、阻断级别</td></tr>
+        <tr><td>变更与撤回</td><td>保留发行决策、风险和墓碑记录。</td><td>版本、影响模块、变更类型、风险级别、决定、发布日期、撤回原因、替代版本</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>内容状态与 Git 的关系</h2>
+    <p>Notion 的看板只显示工作状态；Git 中的 HTML、元数据、测试和发行清单才是可复现的事实。建议状态使用：<code>想法</code>、<code>待研究</code>、<code>可写作</code>、<code>已写入 Git</code>、<code>待复验</code>、<code>待发布</code>、<code>已撤回</code>。</p>
+    <p>进入“已写入 Git”前，Notion 中的草稿不能视为课程；进入“待发布”前，Git 中的页面也不能视为已对外承诺。每条卡片都链接其永久模块 ID 和 Git 路径，而不是复制一份正文。</p>
+  </section>
+
+  <section>
+    <h2>公开投影的单向门禁</h2>
+    <ol>
+      <li>在 Git 中完成课程条目、来源/许可登记和所需验证。</li>
+      <li>构建本地 Notion 投影预览，检查标题、正文、链接、模块 ID 和版本是否一致。</li>
+      <li>用户验收该候选版本；验收前不建立公开 Notion 页面。</li>
+      <li>仅从公开白名单生成隐藏的新版本页面树；不手工复制私有库内容。</li>
+      <li>完整检查后原子切换“当前推荐版本”；旧公开版保留其版本标识或按撤回规则处理。</li>
+    </ol>
+    <p>公开投影不回写 Git，不接受在公开 Notion 直接改正文。发现差异时，以 Git 修正并重新生成投影。</p>
+  </section>
+
+  <section>
+    <h2>反馈处理的最小闭环</h2>
+    <p>读者反馈只需提供教程版本、模块 ID 和问题描述。处理人先脱敏，再判断它是内容错误、平台差异、失效来源、可访问性问题还是新需求；随后创建关联维护任务。可复现的问题要写入 Git 修复和验证记录，不能只在 Notion 卡片里标“已解决”。</p>
+  </section>
+
+  <footer><p>维护框架，不是课程正文。最后更新：2026-09-01。</p></footer>
+</main>
+</body>
+</html>

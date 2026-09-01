@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifact": "codex-tutorial-framework-v1",
+  "status": "framework-review",
+  "sourceCommit": "55eb4888a1bed16731ab700fb450849b25bc147c",
+  "generatedDate": "2026-09-01",
+  "entry": "index.html",
+  "files": [
+    {
+      "path": "index.html",
+      "size": 7884,
+      "sha256": "a1fe4448aa534b5cb4359802de0f578e55e8ff83ffd171a78d501d1322260193"
+    },
+    {
+      "path": "maintenance-release.html",
+      "size": 6009,
+      "sha256": "132c67819a3ad52400691eb2b912001f6a15515ccd1cf09e28467eafabef7fc1"
+    },
+    {
+      "path": "notion-workflow.html",
+      "size": 5509,
+      "sha256": "ea69ae927f6c5fb6398256ea5e8565267a703f72c8e8132e2fdb10b4823697b3"
+    },
+    {
+      "path": "registry/framework-v1.json",
+      "size": 7456,
+      "sha256": "3204931750b03601f4d2f06d36368868a9dc928d7e4e6a9d277175bd377e903b"
+    },
+    {
+      "path": "schemas/framework-v1.schema.json",
+      "size": 21342,
+      "sha256": "dc26e0e8f0ed8787e850ff6a3ea1c4e996bde9829046719e10f2477e0aec5ca6"
+    },
+    {
+      "path": "source-research.html",
+      "size": 6544,
+      "sha256": "fd5280470642a9b7bde2b1689f55366cbf506af1b8090ddc7de741935787ee25"
+    },
+    {
+      "path": "specs/2026-09-01-framework-first-addendum.html",
+      "size": 6785,
+      "sha256": "ceabd86354ebcc46d37d409782c61258d73ac3ae8262fc98e1b30f0beb97b25e"
+    },
+    {
+      "path": "templates/module-template.html",
+      "size": 2673,
+      "sha256": "a7dee0826a706ce6f717691812c7d55a271fdbd7da8120f3d44744c5982ae998"
+    },
+    {
+      "path": "templates/plugin-template.html",
+      "size": 2484,
+      "sha256": "a1189c152b0022470bb7f38e10f1261e98cdcf3474b4d8d0fad2d4a7b4ab6f90"
+    },
+    {
+      "path": "templates/prompt-card-template.html",
+      "size": 2375,
+      "sha256": "ff999abc9bc65d3cb7c2d4d320677f57341eb4041ccc77dc72f17e5f0054e17d"
+    },
+    {
+      "path": "templates/skill-template.html",
+      "size": 2432,
+      "sha256": "f3bf890eaa61f915b1a850404fff8520826b8cb73c56dfdf1625d460b6bddae6"
+    },
+    {
+      "path": "templates/source-review-template.html",
+      "size": 1882,
+      "sha256": "7837796587a96be8baf0a14d3fe5b7c8941be9e4038e2a36d79a86aceb7cb7a9"
+    },
+    {
+      "path": "templates/verification-template.html",
+      "size": 2857,
+      "sha256": "794d78fcd94803bcb8ed0ff8a83708defabc416e6e74247280e4e0249dbbad18"
+    }
+  ]
+}
