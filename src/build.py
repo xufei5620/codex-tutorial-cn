@@ -267,13 +267,22 @@ def build_site():
     import zipfile
     dl = os.path.join(SITE, 'downloads'); os.makedirs(dl)
     zpath = os.path.join(dl, ZIP_NAME)
+    # 可重现打包：时间戳固定为站点日期、条目按名称排序、权限固定，同样的源文件必然得到逐字节相同的 ZIP
+    y, m, d = (int(x) for x in cfg['site']['date'].split('-'))
+    zip_time = (y, m, d, 0, 0, 0)
     with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
         for dp, dns, fns in os.walk(SITE):
-            dns[:] = [d for d in dns if d not in ('.git', 'src', 'downloads', 'deploy')]
-            for fn in fns:
+            dns[:] = sorted(d for d in dns if d not in ('.git', 'src', 'downloads', 'deploy'))
+            for fn in sorted(fns):
                 if fn.startswith('.'): continue
                 p = os.path.join(dp, fn)
-                z.write(p, os.path.join('codex-tutorial-cn', os.path.relpath(p, SITE)))
+                arcname = os.path.join('codex-tutorial-cn', os.path.relpath(p, SITE)).replace(os.sep, '/')
+                zi = zipfile.ZipInfo(arcname, date_time=zip_time)
+                zi.compress_type = zipfile.ZIP_DEFLATED
+                zi.create_system = 3
+                zi.external_attr = 0o644 << 16
+                with open(p, 'rb') as f:
+                    z.writestr(zi, f.read())
 
 def readme():
     rows = '\n'.join(f"| {CH[c]['num']:02d} | [{CH[c]['title']}]({c}.html) | {STATUS_LABEL[CH[c]['status']]} |" for c in ORDER)
