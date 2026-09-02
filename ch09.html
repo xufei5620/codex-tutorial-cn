@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第 9 章 完整虚构案例｜Codex 中文入门教程</title>
+  <meta name="description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:title" content="第 9 章 完整虚构案例｜Codex 中文入门教程">
+  <meta property="og:description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#084a51">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#content">跳到正文</a>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="index.html">Codex 中文入门教程<small>零基础・离线阅读</small></a>
+    <a class="side-toc-link" href="index.html">← 全部章节</a>
+    <nav aria-label="全部章节">
+      <p class="part-label">第一部分 · 基础</p>
+      <ol class="chapters">
+        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch02.html"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch05.html"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第二部分 · 扩展</p>
+      <ol class="chapters">
+        <li><a href="ch06.html"><span class="n">06</span><span class="t">插件</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch07.html"><span class="n">07</span><span class="t">Skill</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch08.html"><span class="n">08</span><span class="t">常见任务场景</span><span class="dot draft" title="草稿"></span></a></li>
+        <li class="is-current"><a href="ch09.html" aria-current="page"><span class="n">09</span><span class="t">完整虚构案例</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第三部分 · 参考</p>
+      <ol class="chapters">
+        <li><a href="ch10.html"><span class="n">10</span><span class="t">排错、安全与求助</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch11.html"><span class="n">11</span><span class="t">参考与维护</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <a class="side-entry" href="prompts.html">行业提示词库</a>
+    </nav>
+    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li><li><span class="dot outline"></span>大纲</li></ul></div>
+  </aside>
+  <main class="doc-main" id="content">
+    <article class="chapter">
+      <header class="chapter-head">
+        <p class="kicker">第 9 章 <span class="badge draft">草稿</span></p>
+        <h1>完整虚构案例</h1>
+        <ul class="meta"><li>预计阅读 7 分钟</li><li>适用平台：Windows / macOS（本章不涉及平台差异操作）</li><li>前提：已读完第 4 章「第一次对话：把需求说清楚」与第 5 章「日常协作：检查、修改与回退」</li></ul>
+      </header>
+
+      <aside class="goal"><strong>本章目标</strong><p>跟着一个完全虚构的项目——蓝溪文具准备「开学季促销」——从整理资料、起草文案到列执行清单，走一遍完整流程。你会看到四要素、三步检查、编造识别和备份习惯是怎么串在一起用的。</p></aside>
+
+      <nav class="section-nav" aria-label="本章内容"><p class="label">本章内容</p><ol>
+        <li><a href="#s1">9.1 项目背景与目标</a></li>
+        <li><a href="#s2">9.2 第一步：整理现有产品资料</a></li>
+        <li><a href="#s3">9.3 第二步：起草促销文案并逐轮修改</a></li>
+        <li><a href="#s4">9.4 第三步：做一份可检查的执行清单</a></li>
+        <li><a href="#s5">9.5 复盘：哪些环节靠 Codex、哪些必须自己判断</a></li>
+      </ol></nav>
+
+      <section id="s1">
+      <h2><span class="sn">9.1</span>项目背景与目标</h2>
+      <p>本章的项目从头到尾都是虚构的：店铺叫「蓝溪文具」，店主是老周，店员是小梅，活动叫「开学季促销」。人名、店名、产品、数字全部编出来，只用来演示一次完整协作，不对应任何真实商家或个人。</p>
+      <p>老周要做三件事：先把手头零散的产品记录整理清楚；再据此写一段促销文案，改到能用为止；最后把要做的事整理成一份小梅照着就能执行的清单。每一步都会用到前面章节学过的方法——把需求说清楚（第 4 章）、检查与修改（第 5 章）。</p>
+      <p>跟着走一遍，你会看到这些方法在一件具体事情里是怎么连起来的，而不是几条孤立的道理。</p>
+      </section>
+
+      <section id="s2">
+      <h2><span class="sn">9.2</span>第一步：整理现有产品资料</h2>
+      <p>老周平时随手记产品信息，格式很乱，价格、库存、卖点混在一起，自己看着都费劲。他按第 8 章 8.6 的做法先做了准备：在桌面新建一个「练习-开学季」文件夹，把那份随手记<em>复制</em>一份进去；然后在 Codex 里新建对话，选 Local，挑这个文件夹，确认权限模式是 Ask for approval。这样后面几步产生的文件都会落在这个文件夹里，原件不受影响。</p>
+      <p>第一步，他让 Codex 把随手记整理成表格。材料可以直接粘贴，也可以说「读文件夹里的『随手记.txt』」——这里为了让你看清楚材料长什么样，用粘贴的方式。</p>
+      <div class="callout example" data-label="原始资料（虚构，摘自老周的随手记）">
+        <p class="q">樱花笔记本 a5 18元 三种封面颜色 卖得最好 纸不洇
+星空文件夹 12元一个 库存有点多得多推
+钢笔套装 一支钢笔加5支墨囊 39元 学生党喜欢 库存只剩20套
+荧光笔6支装 15元 黄粉绿橙都有 开学季常用</p>
+      </div>
+      <div class="callout example" data-label="请求：整理产品资料（四要素齐全）">
+        <p class="q">任务：把下面这段乱七八糟的产品记录整理成一份清单。
+范围：只整理格式，不要改价格和库存数字，也不要新增我没写的信息。
+材料：（粘贴上面那段原始记录）
+期望：整理成表格，列是名称、规格、单价、库存、卖点，一行一个产品。</p>
+      </div>
+      <div class="callout output" data-label="输出示例（整理后）">
+        <div class="table-wrap"><table>
+          <thead><tr><th>名称</th><th>规格</th><th>单价</th><th>库存</th><th>卖点</th></tr></thead>
+          <tbody>
+            <tr><td>樱花笔记本</td><td>A5</td><td>18元</td><td>未提供</td><td>三种封面颜色，纸质不洇墨</td></tr>
+            <tr><td>星空文件夹</td><td>单个装</td><td>12元</td><td>较多，需多推</td><td>未提供</td></tr>
+            <tr><td>钢笔套装</td><td>钢笔1支+墨囊5支</td><td>39元</td><td>20套</td><td>学生党喜欢</td></tr>
+            <tr><td>荧光笔套装</td><td>6支装</td><td>15元</td><td>未提供</td><td>黄粉绿橙四色，开学季常用</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p>拿到表格别急着用，按三步检查过一遍：</p>
+      <ul>
+        <li><strong>它做了什么？</strong>把四条乱记录整理成了一张表，一行一个产品，格式统一了。</li>
+        <li><strong>是不是你要的？</strong>核对四个价格——18元、12元、39元、15元，还有「20套」这个库存数字，逐一对照原始记录，一个都不能抄错。</li>
+        <li><strong>有没有多做？</strong>看卖点和库存两栏有没有编出原始记录里没提到的话，比如凭空加一句「送礼盒」，或者给没写库存的产品填上「充足」——如果有，删掉或改成「未提供」。</li>
+      </ul>
+      <p>核对无误后，老周说：「把这张表存成文件夹里的新文件『产品清单-0901』，不要改动其他文件。」Codex 新建文件属于沙盒内的操作，一般不会弹审批；做完后审阅面板里能看到新建的这个文件。后面几步都基于这份表格来改，不再回头动老周最初的随手记。</p>
+      </section>
+
+      <section id="s3">
+      <h2><span class="sn">9.3</span>第二步：起草促销文案并逐轮修改</h2>
+      <p>有了整理好的产品清单，老周让 Codex 据此写一段促销文案，准备打印出来贴在店门口。</p>
+      <div class="callout example" data-label="请求：起草促销文案（第 1 轮）">
+        <p class="q">任务：根据这份产品清单，写一段开学季促销文案。
+范围：只能用清单里已有的产品、价格信息，不要发明我没提过的优惠规则或活动。
+材料：（附 9.2 整理好的产品清单）
+期望：200字以内，语气亲切有活力，适合打印出来贴在店门口，末尾加一句欢迎选购的话。</p>
+      </div>
+      <div class="callout output" data-label="第一版输出">
+        <p>开学季来啦！蓝溪文具为你备好开学装备：樱花笔记本一本18元，三种封面颜色可选，纸质顺滑不洇墨；星空文件夹12元一个，收纳作业刚刚好；钢笔套装39元一套，配5支墨囊，写字更顺手；荧光笔6支装15元，划重点一划一个准。即日起到店满50元立减8元，还有惊喜盲盒随机赠送！数量有限，欢迎选购。</p>
+      </div>
+      <p>小梅读完先按三步检查，前两步都没问题，卡在第三步「有没有多做」上——产品清单里从没提过「满50元立减8元」，也没有「盲盒」这回事。按第 5 章的三分法，这两句都是<em>凭空出现的</em>，必须当编造处理，不能就这么印出去贴在店门口。</p>
+      <div class="callout example" data-label="修改请求（具体、少量、可核对）">
+        <p class="q">文案里「即日起到店满50元立减8元」和「还有惊喜盲盒随机赠送」这两句删掉，我们没有这个活动，清单里也没提到。其余内容不变，末尾换成一句欢迎选购的话。</p>
+      </div>
+      <div class="callout output" data-label="第二版输出">
+        <p>开学季来啦！蓝溪文具为你备好开学装备：樱花笔记本一本18元，三种封面颜色可选，纸质顺滑不洇墨；星空文件夹12元一个，收纳作业刚刚好；钢笔套装39元一套，配5支墨囊，写字更顺手；荧光笔6支装15元，划重点一划一个准。数量有限，欢迎到店挑选。</p>
+      </div>
+      <p>老周把这一版存成「促销文案-0901-第2版」，第一版没有删，留着对比——万一后面又要改回某个说法，不用凭记忆重写。</p>
+      </section>
+
+      <section id="s4">
+      <h2><span class="sn">9.4</span>第三步：做一份可检查的执行清单</h2>
+      <p>文案定了，老周想再列一份清单，把要做的事、谁负责、什么时候完成都写清楚，方便小梅照着执行。他打算把要做的三件事讲给 Codex 听：贴海报、核对库存、联系供应商确认到货。</p>
+      <aside class="callout stop" data-label="停一停"><strong>老周正准备把供应商的真实手机号粘贴进对话，想让 Codex 顺手写进清单——这时应该停下，不要发。</strong>
+        <ul>
+          <li>供应商的联系方式是第三方的真实信息，不是「蓝溪文具」这类可以随便编的虚构材料；</li>
+          <li>清单里只需要写「联系供应商确认到货」这个动作，真正的号码留在老周自己的通讯录里，不进入对话；</li>
+          <li>这就是第 4 章说过的底线：隐私与他人的联系方式，永远不直接粘贴进对话。</li>
+        </ul>
+      </aside>
+      <div class="callout example" data-label="请求：整理执行清单（四要素齐全）">
+        <p class="q">任务：把这版促销文案和要做的事整理成一份执行清单。
+范围：只列店里能落实的事项，不要写供应商的电话、地址这类联系方式，用「联系供应商」这样的说法代替。
+材料：（附第二版促销文案，以及三件事：贴海报、核对库存、联系供应商确认到货）
+期望：做成表格，列是事项、负责人、截止时间、完成标准，一行一件事。</p>
+      </div>
+      <div class="callout output" data-label="输出示例（执行清单）">
+        <div class="table-wrap"><table>
+          <thead><tr><th>事项</th><th>负责人</th><th>截止时间</th><th>完成标准</th></tr></thead>
+          <tbody>
+            <tr><td>打印文案海报并张贴</td><td>小梅</td><td>促销开始前一天</td><td>海报贴在店门口，文字与第二版文案完全一致</td></tr>
+            <tr><td>核对四款产品库存</td><td>老周</td><td>促销开始前两天</td><td>四款产品库存数字达到产品清单里的水平</td></tr>
+            <tr><td>联系供应商确认到货</td><td>老周</td><td>促销开始前三天</td><td>拿到明确到货日期（联系方式老周自己保存，不写入本清单）</td></tr>
+            <tr><td>收银台放一份文案参考</td><td>小梅</td><td>促销开始当天</td><td>收银台能看到文案，顾客问价能对照回答</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p>清单拿到手也要检查：每一行的负责人和时间是不是店里真实能安排的，「完成标准」是不是一眼能判断对错——这些都只有老周自己清楚，Codex 猜不到。确认后同样让它存成文件夹里的新文件「执行清单-0901」。到这里，「练习-开学季」文件夹里应该有四个文件：随手记（副本）、产品清单-0901、促销文案-0901-第2版、执行清单-0901——老周在文件夹里数了一遍，一个不多、一个不少。</p>
+      <p>顺带一提：如果老周装了日历插件，下一步就可以让 Codex 把这三条截止时间写进日历——第 6 章 6.5 演示的正是这一步。</p>
+      </section>
+
+      <section id="s5">
+      <h2><span class="sn">9.5</span>复盘：哪些环节靠 Codex、哪些必须自己判断</h2>
+      <p>整个案例走完一遍，可以把每个环节拆开看：哪些交给 Codex 起草更省事，哪些必须老周自己拍板。</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>环节</th><th>主要靠谁</th><th>为什么这样分工</th></tr></thead>
+        <tbody>
+          <tr><td>整理杂乱产品记录成表格</td><td>Codex 起草，老周核对数字</td><td>格式化这类机械劳动它做得又快又好，但价格、库存这些数字必须人核对，抄错一个代价不小。</td></tr>
+          <tr><td>起草促销文案</td><td>Codex 起草，老周和小梅核对是否编造</td><td>组织语言它很擅长，但容易顺手编出没有的优惠活动，必须用三分法把凭空出现的内容挑出来。</td></tr>
+          <tr><td>要不要做优惠、优惠力度多少</td><td>老周本人决定</td><td>这涉及进货成本和利润，Codex 不知道这些信息，也不该替老周做经营决定。</td></tr>
+          <tr><td>供应商联系方式等隐私信息</td><td>老周本人处理，不进入对话</td><td>属于第三方的真实信息，不能当作练习材料使用，任何时候都不粘贴进对话。</td></tr>
+          <tr><td>执行清单的格式与条目</td><td>Codex 起草，老周和小梅确认负责人、时间</td><td>表格生成得快，但谁负责、什么时候能完成，只有店里的人清楚。</td></tr>
+        </tbody>
+      </table></div>
+      <p>分工的原则很简单：涉及格式、组织语言这类「怎么表达」的事，可以交给 Codex 起草，人来核对；涉及钱、隐私、以及只有你自己知道的现实情况，必须自己判断，不能指望它替你拿主意。</p>
+      </section>
+
+      <section class="summary"><h2>本章小结</h2><ul>
+        <li>一次完整协作 = 整理资料 → 起草文案 → 做执行清单，每一步都是「你交代 → 它产出 → 你检查 → 你决定」的循环。</li>
+        <li>四要素（任务、范围、材料、期望）让每次请求都不用靠猜；三步检查和三分法帮你把编造的内容挑出来。</li>
+        <li>修改请求要具体、少量、可核对；每一版都留底、带版本号，不覆盖上一版。</li>
+        <li>供应商联系方式这类真实隐私信息，永远不进入对话——遇到这种材料先停下来。</li>
+        <li>该不该做优惠、花多少钱这类经营决定，只能自己拍板，Codex 不掌握你的成本和预算。</li>
+      </ul></section>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>模块 ID / 状态</dt><dd>CDX-M-0901｜draft（草稿，未进入复核）</dd>
+          <dt>风险级别</dt><dd>低：全案例均为虚构演练，不涉及真实产品、供应商或支付，属于方法演示类内容。</dd>
+          <dt>来源与权利</dt><dd>自有原创；「蓝溪文具」及全部人物、数据、对话内容均为虚构示例。无第三方引用。</dd>
+          <dt>验证状态</dt><dd>unverified。计划：进入 reviewed 后核对本章引用的四要素、三步检查、三分法表述与第 4、5 章一致，且案例逻辑自洽；用虚构文件夹实测「存成新文件」是否弹审批。</dd>
+          <dt>复核日期</dt><dd>撰写：2026-09-01，修订 0.2.0；低风险，最晚复验 2027-02-28。</dd>
+        </dl>
+      </details>
+
+
+    </article>
+    <nav class="pager">
+      <a class="prev" href="ch08.html"><span class="k">上一章</span><span class="t">第 8 章　常见任务场景</span></a>
+      <a class="next" href="ch10.html"><span class="k">下一章</span><span class="t">第 10 章　排错、安全与求助</span></a>
+    </nav>
+    <footer class="page"><p>本页为离线教程的一部分，无需联网阅读。<a href="index.html">返回目录</a></p></footer>
+  </main>
+</div>
+</body>
+</html>

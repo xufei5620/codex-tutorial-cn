@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第 2 章 认识 AI 与 Codex｜Codex 中文入门教程</title>
+  <meta name="description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:title" content="第 2 章 认识 AI 与 Codex｜Codex 中文入门教程">
+  <meta property="og:description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#084a51">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#content">跳到正文</a>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="index.html">Codex 中文入门教程<small>零基础・离线阅读</small></a>
+    <a class="side-toc-link" href="index.html">← 全部章节</a>
+    <nav aria-label="全部章节">
+      <p class="part-label">第一部分 · 基础</p>
+      <ol class="chapters">
+        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot draft" title="草稿"></span></a></li>
+        <li class="is-current"><a href="ch02.html" aria-current="page"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch05.html"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第二部分 · 扩展</p>
+      <ol class="chapters">
+        <li><a href="ch06.html"><span class="n">06</span><span class="t">插件</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch07.html"><span class="n">07</span><span class="t">Skill</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch08.html"><span class="n">08</span><span class="t">常见任务场景</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch09.html"><span class="n">09</span><span class="t">完整虚构案例</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第三部分 · 参考</p>
+      <ol class="chapters">
+        <li><a href="ch10.html"><span class="n">10</span><span class="t">排错、安全与求助</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch11.html"><span class="n">11</span><span class="t">参考与维护</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <a class="side-entry" href="prompts.html">行业提示词库</a>
+    </nav>
+    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li><li><span class="dot outline"></span>大纲</li></ul></div>
+  </aside>
+  <main class="doc-main" id="content">
+    <article class="chapter">
+      <header class="chapter-head">
+        <p class="kicker">第 2 章 <span class="badge draft">草稿</span></p>
+        <h1>认识 AI 与 Codex</h1>
+        <ul class="meta"><li>预计阅读 5 分钟</li><li>适用平台：Windows / macOS</li><li>前提：读过第 1 章</li></ul>
+      </header>
+
+      <aside class="goal"><strong>本章目标</strong><p>读完这一章，你能对 Codex 建立正确的预期：知道它擅长什么、在哪些地方不可靠、哪些任务适合放心交给它。预期对了，后面每一章都会顺利很多。</p></aside>
+
+      <nav class="section-nav" aria-label="本章内容"><p class="label">本章内容</p><ol>
+        <li><a href="#s1">2.1 Codex 是什么</a></li>
+        <li><a href="#s2">2.2 它擅长什么</a></li>
+        <li><a href="#s3">2.3 它在哪里不可靠</a></li>
+        <li><a href="#s4">2.4 哪些任务适合交给它</a></li>
+        <li><a href="#s5">2.5 正确的心态</a></li>
+      </ol></nav>
+
+      <section id="s1">
+        <h2><span class="sn">2.1</span>Codex 是什么</h2>
+        <p>先说清楚两个词。<strong>AI</strong>，全称「人工智能」，是一类能读懂文字、也能写出文字的软件技术。<strong>Codex</strong> 是 OpenAI 用这项技术做的一款工具。它原本是一个独立的桌面应用，2026 年 7 月起并入了「ChatGPT 桌面应用」——现在你装好 ChatGPT，在左上角菜单里选 <strong>Codex</strong>，就是它（第 3 章会一步步带你装）。</p>
+        <p>用起来很简单：你用平常说话的方式交代一件事，Codex 读你提供的文字和文件，按要求产出结果。结果可能是一段文字、一份表格、一份整理好的文档。到这里为止，它和你可能用过的聊天机器人差不多。</p>
+        <p>它多出来的那一块是：<strong>在你允许的范围内，它能替你动手。</strong>比如直接整理你电脑上某个文件夹里的几十个文件、上网查一件事、用你授权的日历或邮箱做点事、按时间表每周自动干一件活。「聊天」只是它的输入方式，「干活」才是它的目的。这也意味着它需要一套边界——第 3 章的「权限模式」就是给它划边界用的。</p>
+        <p>你可以把它想象成一位<strong>读写能力很强、手脚也麻利、但刚来第一天的新同事</strong>：你交代清楚，它就干得又快又好；你说得含糊，它就只能靠猜；它完全不了解你没有告诉它的事；而且——因为它会动手——你得先告诉它哪些东西能碰、哪些不能碰。这个比喻会贯穿整套教程。</p>
+      </section>
+
+      <section id="s2">
+        <h2><span class="sn">2.2</span>它擅长什么</h2>
+        <p>下面这六类任务，是 Codex 最拿手的地方（例子均为虚构的蓝溪文具场景，蓝溪文具是本书用来练习的一家虚构文具店）。</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>能力</th><th>例子（均为虚构场景）</th></tr></thead>
+          <tbody>
+            <tr><td><strong>整理</strong></td><td>把蓝溪文具三个月的杂乱进货记录，归类成一份清晰的清单。</td></tr>
+            <tr><td><strong>改写</strong></td><td>把一段生硬的退货说明改得客气易懂，或者压缩到 50 字以内。</td></tr>
+            <tr><td><strong>总结</strong></td><td>把一份很长的会议记录，浓缩成三条结论和一张待办表。</td></tr>
+            <tr><td><strong>起草</strong></td><td>按你给的要点，写出通知、文案、邮件的第一版。</td></tr>
+            <tr><td><strong>解释</strong></td><td>用大白话解释一份合同条款或一个陌生概念，还能「再讲得更简单一点」。</td></tr>
+            <tr><td><strong>按格式输出</strong></td><td>同样的内容，你要列表就给列表，要表格就给表格；也能直接生成文档、表格、演示文稿文件，在对话旁边预览。</td></tr>
+          </tbody>
+        </table></div>
+        <p>看一下这六个例子的共同点：都有<strong>你提供的材料</strong>作依据，产出的都是<strong>文字类结果</strong>，而且做完之后<strong>你自己有能力检查对不对</strong>。这三个条件凑齐，就是 Codex 的主场。</p>
+        <h3>它还能「动手」做的事</h3>
+        <p>下面这些是 Codex 比普通聊天工具多出来的能力。本教程会在后面章节逐个教，现在只需要知道它们存在，并且<strong>每一项都要先经过你的允许</strong>：</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>能力</th><th>例子（虚构）</th><th>在哪一章</th></tr></thead>
+          <tbody>
+            <tr><td><strong>处理文件夹里的文件</strong></td><td>把「蓝溪文具-2026 报价」文件夹里三十份乱命名的文件按月份归类改名，改完给你一张改动清单。</td><td>第 5、8 章</td></tr>
+            <tr><td><strong>上网查资料</strong></td><td>用它内置的浏览器打开某个网页，把页面上的营业时间抄下来。</td><td>第 8 章</td></tr>
+            <tr><td><strong>用你授权的其他软件</strong></td><td>装了日历插件后，把三条待办写进店用日历。</td><td>第 6 章</td></tr>
+            <tr><td><strong>按固定流程做事</strong></td><td>每周用同一套「周报」规则整理流水。</td><td>第 7 章</td></tr>
+            <tr><td><strong>按时间表自动干活</strong></td><td>每周一早上 8 点自动汇总上周流水。</td><td>第 8 章</td></tr>
+            <tr><td><strong>生成图片</strong></td><td>按你的描述画一张海报草图（消耗额度比文字多得多）。</td><td>提示词库</td></tr>
+            <tr><td><strong>操作你的电脑</strong></td><td>像人一样点鼠标、打字去操作别的软件。<em>本教程不教这项</em>：它需要屏幕录制和辅助功能权限，风险最高，等你把前面的都用熟再考虑。</td><td>—</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="s3">
+        <h2><span class="sn">2.3</span>它在哪里不可靠</h2>
+        <p>这一节很重要，请慢一点读。Codex 很好用，但它有几个固定的弱点。这不是哪天会修好的小故障，而是这一类 AI 技术与生俱来的特点。先记住这些弱点，你才能用得放心。</p>
+
+        <h3>弱点一：它可能一本正经地编造</h3>
+        <p>当它缺少信息时，往往不会老实说「我不知道」，而是生成一段看起来很可信、其实是编出来的内容。数字、日期、人名、出处，都可能是假的，但语气和真的一模一样。</p>
+        <aside class="callout note" data-label="对策"><p>凡是你提供的材料里没有的信息，一律当作它的猜测，用之前必须自己核实一遍。这句话会在本书里反复出现，因为它是最重要的一条。</p></aside>
+
+        <h3>弱点二：它不知道你没说的事</h3>
+        <p>它不了解你的公司、你的习惯、你上周做过什么——除非你在这次对话里亲口说过。它给出的建议，只是「一般情况下比较合理的做法」，不一定符合你的具体情况。</p>
+        <aside class="callout note" data-label="对策"><p>把它当成刚入职的新同事：背景信息你不说，它就不知道。凡是需要了解你的具体情况才能做好的任务，先把相关背景写进你的请求里。</p></aside>
+
+        <h3>弱点三：它的知识有截止时间</h3>
+        <p>它是用过去某个时间点前的资料「训练」出来的。「训练」就是让它反复阅读大量文字，从中学会怎么读、怎么写，跟人学习差不多。在那之后发生的事、最新的价格和政策，它可能不知道，也可能误以为还是旧的样子。</p>
+        <aside class="callout note" data-label="对策"><p>凡是时效性强的内容——价格、政策、近期消息——都要去官方渠道核对一遍，不要只信它给出的答案。</p></aside>
+
+        <h3>弱点四：同一个问题，两次回答可能不一样</h3>
+        <p>你把同一个问题问两遍，得到的回答可能有出入。这是正常现象，不代表哪一次「坏了」，也不代表哪一次「更对」。</p>
+        <aside class="callout note" data-label="对策"><p>不要迷信「问出一个标准答案」。真正重要的不是它一次答得多准，而是你自己养成检查的习惯——第 5 章会详细教怎么检查。</p></aside>
+
+        <h3>弱点五：它会动手，所以它也可能做过头</h3>
+        <p>一个只会说话的工具，最坏的结果是说错话；一个会动手的工具，最坏的结果是把你的文件改乱、把不该发的东西发出去。Codex 默认只能碰你指定的那个文件夹，出圈之前会先问你——但如果你随手点了「永久允许」，这道闸就没了。</p>
+        <aside class="callout note" data-label="对策"><p>权限模式留在默认的「先问我」（第 3 章）；只给它专门的练习文件夹；每一个确认弹窗都读完再点，看不懂就拒绝。这一条和「一律核实」同样重要。</p></aside>
+      </section>
+
+      <section id="s4">
+        <h2><span class="sn">2.4</span>哪些任务适合交给它</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>适合</th><th>不适合（以及为什么）</th></tr></thead>
+          <tbody>
+            <tr><td>初稿、草稿类工作——反正你要改，让它先写第一版</td><td>最终拍板的决定——判断和责任在你，不能外包</td></tr>
+            <tr><td>有明确材料依据的整理和改写</td><td>需要精确事实、而你自己无法核实的问题（法律、医疗、税务结论请咨询专业人士）</td></tr>
+            <tr><td>你懂行、能一眼看出对错的领域</td><td>你完全不懂、无法判断结果好坏的领域——它错了你也发现不了</td></tr>
+            <tr><td>重复、机械、量大的文字加工</td><td>涉及隐私、密码、保密资料的任何任务（第 1 章的安全底线）</td></tr>
+          </tbody>
+        </table></div>
+        <p>一个简单的判断口诀：<strong>「材料我来给，结果我能查」</strong>。两个条件都满足，就放心交给它；缺一个，就多留一分心。</p>
+      </section>
+
+      <section id="s5">
+        <h2><span class="sn">2.5</span>正确的心态</h2>
+        <p>把 Codex 当成认真负责的新同事，而不是无所不知的权威。落到实处，是两件事：</p>
+        <ul>
+          <li><strong>交代任务像带新人：</strong>说清楚任务、范围、材料和期望（第 4 章会详细教怎么做）。它表现不好，多半是因为你交代得不够清楚。</li>
+          <li><strong>把关像当主管：</strong>它交上来的东西，你要看、要查、要改。署你名字发出去的内容，责任永远在你，不在它。</li>
+        </ul>
+      </section>
+
+      <section class="summary"><h2>本章小结</h2><ul>
+        <li>Codex 现在是 ChatGPT 桌面应用里的一个视图；像一位能力强、手脚麻利的新同事：交代清楚就好用，别指望它读心。</li>
+        <li>它擅长有材料、可检查的文字类任务，还能在你允许的范围内动手：处理文件夹、上网、用你授权的软件、定时干活。</li>
+        <li>五个弱点都有对策：不确定的信息先核实、背景要自己说、时效内容查官方、结果自己检查、动手的边界自己划。</li>
+        <li>口诀：「材料我来给，结果我能查」。决定和责任不外包。</li>
+      </ul></section>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>模块 ID / 状态</dt><dd>CDX-M-0201｜draft（草稿，未进入复核）</dd>
+          <dt>风险级别</dt><dd>低：概念性内容，无平台操作。</dd>
+          <dt>来源与权利</dt><dd>自有原创；示例均为虚构。能力清单依据 11.2 所列官方公告与文档（2026-09-01 查阅）。</dd>
+          <dt>验证状态</dt><dd>unverified（无需平台实测；进入 reviewed 需完成冷却复查）。</dd>
+          <dt>复核日期</dt><dd>撰写：2026-09-01，修订 0.2.0；低风险，最晚复验 2027-02-28。产品能力边界表述若与官方描述出现明显差异，提前复核。</dd>
+        </dl>
+      </details>
+
+
+    </article>
+    <nav class="pager">
+      <a class="prev" href="ch01.html"><span class="k">上一章</span><span class="t">第 1 章　开始前：边界、安全与阅读方法</span></a>
+      <a class="next" href="ch03.html"><span class="k">下一章</span><span class="t">第 3 章　安装、登录与界面</span></a>
+    </nav>
+    <footer class="page"><p>本页为离线教程的一部分，无需联网阅读。<a href="index.html">返回目录</a></p></footer>
+  </main>
+</div>
+</body>
+</html>

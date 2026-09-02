@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第 7 章 Skill｜Codex 中文入门教程</title>
+  <meta name="description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:title" content="第 7 章 Skill｜Codex 中文入门教程">
+  <meta property="og:description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#084a51">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#content">跳到正文</a>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="index.html">Codex 中文入门教程<small>零基础・离线阅读</small></a>
+    <a class="side-toc-link" href="index.html">← 全部章节</a>
+    <nav aria-label="全部章节">
+      <p class="part-label">第一部分 · 基础</p>
+      <ol class="chapters">
+        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch02.html"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch05.html"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第二部分 · 扩展</p>
+      <ol class="chapters">
+        <li><a href="ch06.html"><span class="n">06</span><span class="t">插件</span><span class="dot draft" title="草稿"></span></a></li>
+        <li class="is-current"><a href="ch07.html" aria-current="page"><span class="n">07</span><span class="t">Skill</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch08.html"><span class="n">08</span><span class="t">常见任务场景</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch09.html"><span class="n">09</span><span class="t">完整虚构案例</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第三部分 · 参考</p>
+      <ol class="chapters">
+        <li><a href="ch10.html"><span class="n">10</span><span class="t">排错、安全与求助</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch11.html"><span class="n">11</span><span class="t">参考与维护</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <a class="side-entry" href="prompts.html">行业提示词库</a>
+    </nav>
+    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li><li><span class="dot outline"></span>大纲</li></ul></div>
+  </aside>
+  <main class="doc-main" id="content">
+    <article class="chapter">
+      <header class="chapter-head">
+        <p class="kicker">第 7 章 <span class="badge draft">草稿</span></p>
+        <h1>Skill</h1>
+        <ul class="meta"><li>预计阅读 9 分钟</li><li>适用平台：Windows / macOS（步骤相同）</li><li>前提：读过第 4、5 章；读过第 6 章会更容易理解 Skill 与插件的区别</li></ul>
+      </header>
+
+      <aside class="goal"><strong>本章目标</strong><p>理解 Skill 是什么、它和插件有什么不同；会在对话里调用一个 Skill；会用 Codex 自带的「Skill 制作器」做一个属于自己的 Skill；知道怎么更新、停用和删除它。</p></aside>
+
+      <nav class="section-nav" aria-label="本章内容"><p class="label">本章内容</p><ol>
+        <li><a href="#s1">7.1 Skill 是什么：让 Codex 按固定流程做事</a></li>
+        <li><a href="#s2">7.2 Skill 和插件的区别</a></li>
+        <li><a href="#s3">7.3 安装前的检查：来源、它会执行什么</a></li>
+        <li><a href="#s4">7.4 怎么调用一个 Skill</a></li>
+        <li><a href="#s5">7.5 动手：做一个自己的 Skill</a></li>
+        <li><a href="#s6">7.6 更新、停用与移除</a></li>
+      </ol></nav>
+
+      <aside class="callout note" data-label="关于本章的准确性"><p>依据 2026 年 9 月 1 日查阅的官方文档撰写，未在真实电脑上实测。官方文档对 Skill 存放位置有新旧两种说法，本章采用较新的说法并注明旧说法；界面入口官方未明确；个人免费/Plus 账号在桌面应用里能否看到独立的 Skills 页面，官方未明确说明。</p></aside>
+
+      <section id="s1">
+        <h2><span class="sn">7.1</span>Skill 是什么：让 Codex 按固定流程做事</h2>
+        <p>第 4 章教你每次把「任务・范围・材料・期望」写清楚。用久了你会发现，有些事每周都要做一遍，每次都得重新打一遍同样的要求——比如「把这周的流水整理成周报，格式是……，注意……」。</p>
+        <p><strong>Skill（技能）</strong>就是把这套要求<strong>写成一份固定的说明书</strong>，存在电脑里。以后只要一句「用周报技能处理这份流水」，Codex 就会自己去读那份说明书，照着做。还是「新同事」的比喻：Skill 是你写给他的一页操作手册，写一次，以后每次照办。</p>
+        <p>从电脑的角度看，一个 Skill 就是<strong>一个文件夹</strong>，里面必有一个叫 <code>SKILL.md</code> 的文本文件（写着这个技能叫什么、什么时候用、具体怎么做），可能还有一些参考资料或小程序。这套格式是一个公开标准（叫 Agent Skills），不是 Codex 独有的。</p>
+        <p>Codex 自带几个官方 Skill，其中两个你会在本章用到：<strong>skill-creator</strong>（帮你做新 Skill 的 Skill）和 <strong>skill-installer</strong>（帮你安装别人做的 Skill）。</p>
+      </section>
+
+      <section id="s2">
+        <h2><span class="sn">7.2</span>Skill 和插件的区别</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th></th><th>Skill</th><th>插件（第 6 章）</th></tr></thead>
+          <tbody>
+            <tr><td>本质</td><td>一份「怎么做事」的说明书</td><td>一个安装包，里面可能有说明书，也可能有连接外部账号的「钥匙」</td></tr>
+            <tr><td>需要连接账号吗</td><td>不需要</td><td>大多需要</td></tr>
+            <tr><td>存在哪里</td><td>你自己电脑上的一个文件夹</td><td>由应用统一管理</td></tr>
+            <tr><td>主要风险</td><td>说明书里可能带「小程序」，会在你电脑上运行——所以要看来源</td><td>交出去的账号权限</td></tr>
+            <tr><td>适合谁做</td><td>你自己就能做（7.5）</td><td>通常是开发者或公司做</td></tr>
+          </tbody>
+        </table></div>
+        <p>一句话：<strong>Skill 是说明书，插件是说明书加钥匙。</strong>插件里往往打包了好几个 Skill；反过来，一个 Skill 也可以单独存在、不属于任何插件。</p>
+      </section>
+
+      <section id="s3">
+        <h2><span class="sn">7.3</span>安装前的检查：来源、它会执行什么</h2>
+        <p>Skill 不需要交钥匙，听起来很安全。但它有一个自己的风险点：说明书里可以附带<strong>脚本</strong>（小程序），Codex 执行技能时可能会运行它们。一段脚本能做的事，和你在电脑上手动能做的事一样多——包括删文件。所以来源不明的 Skill 和来源不明的软件一样，不能随便装。</p>
+        <p>三条检查规则：</p>
+        <ol class="steps">
+          <li><strong>只装两种来源：</strong>官方提供的（Codex 自带、或 OpenAI 官方目录里的），以及你自己用 7.5 的方法做的。网上别人分享的 Skill，零基础阶段一律不装——哪怕看起来很实用。</li>
+          <li><strong>装之前把 SKILL.md 读一遍。</strong>它是普通文本，双击就能打开。读不懂没关系，只看一点：里面有没有提到「运行脚本」「执行命令」「删除」之类的词。有的话，不装。</li>
+          <li><strong>留意应用给的标记。</strong>通过应用上传或安装的技能会被自动扫描，标成 Available（可用）、<strong>Needs Review</strong>（需要复核）或 <strong>Blocked</strong>（已拦截）。后两种不要碰。官方也说了，扫描「不能代替你自己的检查」。</li>
+        </ol>
+        <aside class="callout note" data-label="Skill 存在电脑的哪里"><p>你自己的 Skill 默认存在你的个人文件夹下一个叫 <code>.agents/skills</code> 的文件夹里（名字以点开头，系统默认把它隐藏起来，这是正常的）。旧版文档写的是 <code>.codex/skills</code>，如果你在别处看到这个说法，指的是同一类东西。你不需要手动去找它——用 7.5 的方法创建时 Codex 会自己放好。</p></aside>
+      </section>
+
+      <section id="s4">
+        <h2><span class="sn">7.4</span>怎么调用一个 Skill</h2>
+        <ul>
+          <li><strong>输入 <code>$</code>。</strong>在 Codex 的输入框里打一个美元符号，会弹出已安装 Skill 的菜单，用鼠标或方向键选一个，再接着写你的要求。也可以直接打全名，比如 <code>$skill-creator</code>。</li>
+          <li><strong>查看有哪些。</strong>输入 <code>/skills</code> 并发送，Codex 会列出当前可用的技能。</li>
+          <li><strong>让它自己挑。</strong>不点名也行：每个 Skill 的说明书里写了「什么时候用」，Codex 会根据你的请求自动判断该不该用某个技能。新手建议还是点名，更可控。</li>
+        </ul>
+        <aside class="callout note" data-label="说明"><p>在 Codex 视图里点名技能用 <code>$</code>；如果你切到 Chat 或 Work 视图，同样的事用 <code>@</code>。记不住也没关系，打错了 Codex 通常会提示。</p></aside>
+      </section>
+
+      <section id="s5">
+        <h2><span class="sn">7.5</span>动手：做一个自己的 Skill</h2>
+        <p>不用写任何代码——Codex 自带的 <strong>skill-creator</strong> 会像面试一样问你几个问题，然后替你把说明书写好、放到正确的位置。下面用蓝溪文具（虚构）的「周报」做例子。</p>
+        <ol class="steps">
+          <li><strong>先想清楚三件事。</strong>这个技能叫什么（周报整理）；什么时候用（每周把销售流水整理成周报）；固定要求是什么（分「本周销售」「异常情况」「下周待办」三部分；只用流水里有的数字；异常情况要写出依据）。这就是第 4 章的四要素，只是要写成「每次都适用」的形式。</li>
+          <li><strong>新开一个对话，发出创建请求。</strong></li>
+        </ol>
+        <div class="callout example" data-label="请求（材料为虚构）">
+          <p class="q">$skill-creator 帮我做一个 Skill，名字叫「周报整理」。
+用途：把我贴进来的一周销售流水整理成周报。
+什么时候用：当我说「整理周报」或贴入一周的流水并要求周报时。
+固定要求：①分三部分——本周销售、异常情况、下周待办；②只使用流水里出现的数字，不要估算或补充；③「异常情况」每一条都要写出判断依据；④总长不超过 300 字。
+不需要任何脚本，纯说明书就好。</p>
+        </div>
+        <ol class="steps" start="3">
+          <li><strong>回答它的追问。</strong>skill-creator 通常会确认用途、触发时机，并问要不要附带脚本——回答<strong>不要</strong>。做完后它会告诉你技能已创建、放在哪个文件夹。</li>
+          <li><strong>试用一次。</strong>新开一个对话，输入 <code>$</code>，菜单里应该出现「周报整理」。选中它，贴一段虚构流水：</li>
+        </ol>
+        <div class="callout example" data-label="试用（材料为虚构）">
+          <p class="q">$周报整理 材料：9/1 樱花笔记本 32 本、荧光笔 18 套；9/2 樱花笔记本 41 本、荧光笔 9 套；9/3 樱花笔记本 12 本（下午停电两小时）、荧光笔 20 套；9/4 樱花笔记本 38 本、荧光笔 15 套；9/5 樱花笔记本 40 本、荧光笔 17 套、钢笔套装 3 套。</p>
+        </div>
+        <ol class="steps" start="5">
+          <li><strong>按第 5 章的三分法检查。</strong>数字是不是流水里的；「异常情况」有没有写依据（比如「9/3 樱花笔记本仅 12 本，流水注明当天停电两小时」）；有没有多出流水里没有的东西。不满意就回到第 3 步的对话，让 skill-creator 修改说明书，而不是每次用的时候临时补要求。</li>
+        </ol>
+        <p><strong>预期结果：</strong>以后每周只要 <code>$周报整理</code> 加一段流水，就能得到格式一致的周报。你写清楚一次，它照办无数次。</p>
+        <aside class="callout stop" data-label="停一停"><strong>做 Skill 时不要把真实的客户名单、供应商联系方式、内部价格表写进说明书。</strong>说明书是一个存在电脑里的文本文件，会在每次调用时被读取、发送到服务器。它应该只写「怎么做」，不写「具体的敏感数据」——数据每次用的时候再作为材料提供。</aside>
+      </section>
+
+      <section id="s6">
+        <h2><span class="sn">7.6</span>更新、停用与移除</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>要做什么</th><th>怎么做</th></tr></thead>
+          <tbody>
+            <tr><td>修改要求</td><td>最省事：新开对话，<code>$skill-creator 把「周报整理」的字数上限改成 400 字</code>。它会替你改说明书。也可以自己用记事本打开 SKILL.md 直接改，保存后 Codex 会自动重新读取（偶尔需要重启应用）。</td></tr>
+            <tr><td>暂时不用</td><td>官方提供的方法是在一个设置文件里把它标为停用，这一步涉及编辑配置文件，零基础读者可以跳过——不点名调用，它就不会主动干扰你。</td></tr>
+            <tr><td>彻底删除</td><td>把它的文件夹从 <code>.agents/skills</code> 里删掉（官方没有专门写删除步骤，这是按「Skill 就是一个文件夹」推断的做法；删除前先把整个文件夹复制到别处备份——第 5 章的习惯）。也可以直接对 Codex 说「帮我删除周报整理这个 Skill 的文件夹」，然后在审批弹窗里核对它要删的路径确实是那个文件夹，再点允许。</td></tr>
+            <tr><td>安装官方目录里的 Skill</td><td><code>$skill-installer</code> 加上技能名称，比如 <code>$skill-installer pdf</code>；装完通常要重启应用。只装官方目录里的（见 7.3）。</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="summary"><h2>本章小结</h2><ul>
+        <li>Skill 是一份固定的说明书，写一次、以后每次照办；本质是电脑里的一个文件夹加一个 SKILL.md。</li>
+        <li>Skill 是说明书，插件是说明书加钥匙。Skill 的风险点是可能附带脚本，所以只装官方的和自己做的。</li>
+        <li>调用：输入 <code>$</code> 选技能；<code>/skills</code> 查看清单。</li>
+        <li>用 <code>$skill-creator</code> 对话式地做自己的 Skill；说明书只写「怎么做」，不写敏感数据。</li>
+        <li>改要求让 skill-creator 改；删除前备份文件夹。</li>
+      </ul></section>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>模块 ID / 状态</dt><dd>CDX-M-0701｜draft（草稿，依据官方文档撰写，未实测）</dd>
+          <dt>风险级别</dt><dd>中：涉及本机文件夹与脚本执行的风险说明；界面入口有不确定项。</dd>
+          <dt>来源与权利</dt><dd>自有原创；事实依据见第 11 章 11.2（Skills 文档、Build skills 文档、Skills and plugins 文档、帮助中心「Skills in ChatGPT」、Agent Skills 标准站），查阅日期 2026-09-01。「周报整理」示例与流水数据为虚构。</dd>
+          <dt>验证状态</dt><dd>unverified。计划：实测 7.5 全流程，记录 skill-creator 的实际追问与生成位置；核实合并后应用中 Skills 独立页面是否存在、个人账号可用性。</dd>
+          <dt>复核日期</dt><dd>撰写：2026-09-01；中风险，最晚复验 2026-11-30。</dd>
+        </dl>
+      </details>
+
+    </article>
+    <nav class="pager">
+      <a class="prev" href="ch06.html"><span class="k">上一章</span><span class="t">第 6 章　插件</span></a>
+      <a class="next" href="ch08.html"><span class="k">下一章</span><span class="t">第 8 章　常见任务场景</span></a>
+    </nav>
+    <footer class="page"><p>本页为离线教程的一部分，无需联网阅读。<a href="index.html">返回目录</a></p></footer>
+  </main>
+</div>
+</body>
+</html>

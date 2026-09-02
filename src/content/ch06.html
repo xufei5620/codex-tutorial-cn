@@ -1,0 +1,138 @@
+      <header class="chapter-head">
+        <p class="kicker">第 6 章 <span class="badge draft">草稿</span></p>
+        <h1>插件</h1>
+        <ul class="meta"><li>预计阅读 10 分钟</li><li>适用平台：Windows / macOS（步骤相同）</li><li>前提：完成第 3 章的安装登录；读过第 5 章，知道什么叫「保留退路」</li></ul>
+      </header>
+
+      <aside class="goal"><strong>本章目标</strong><p>弄清楚插件是什么、什么时候才需要它；能在安装前看懂一个插件要碰你哪些数据；能安全地安装、授权、使用一个插件，并在不需要时把它连同授权一起彻底移除。</p></aside>
+
+      <nav class="section-nav" aria-label="本章内容"><p class="label">本章内容</p><ol>
+        <li><a href="#s1">6.1 插件是什么、什么时候需要</a></li>
+        <li><a href="#s2">6.2 安装前先看什么</a></li>
+        <li><a href="#s3">6.3 安装与授权步骤</a></li>
+        <li><a href="#s4">6.4 使用插件与「审批卡」</a></li>
+        <li><a href="#s5">6.5 完整虚构示例：把清单写进日历</a></li>
+        <li><a href="#s6">6.6 停用、卸载与检查残留授权</a></li>
+      </ol></nav>
+
+      <aside class="callout note" data-label="关于本章的准确性"><p>依据 2026 年 9 月 1 日查阅的官方文档撰写，未在真实电脑上实测。插件功能变化很快，界面以你实际看到的为准。</p></aside>
+
+      <section id="s1">
+        <h2><span class="sn">6.1</span>插件是什么、什么时候需要</h2>
+        <p>不装任何插件，Codex 已经能读你给的文字和文件、写东西、整理东西。<strong>插件（Plugin）</strong>解决的是另一件事：让 Codex 能碰到你在<em>其他软件</em>里的东西——邮箱、日历、网盘、笔记工具、聊天软件等等。</p>
+        <p>用第 2 章那个「新同事」的比喻：不装插件，新同事只能看你递到他桌上的材料；装了邮箱插件，就等于你把邮箱的一把钥匙交给了他，他可以自己去翻邮件、替你起草回复。<strong>方便，同时也意味着交出了一把钥匙。</strong>这就是本章反复强调「先看清楚再装」的原因。</p>
+        <p>一个插件通常打包了下面几样东西中的一种或几种：</p>
+        <ul>
+          <li><strong>Skill（技能）：</strong>一套写好的「做某类事的固定流程」，第 7 章专门讲。只含技能的插件不需要连接任何外部账号，风险最低。</li>
+          <li><strong>连接的应用（Connected apps，官方文档也叫 connector，连接器）：</strong>把你在某个外部服务的账号授权给 Codex 使用。这是需要交钥匙的部分。插件里还可能带一种叫 MCP server 的组件，作用类似，本教程不作区分。</li>
+          <li><strong>其他：</strong>浏览器扩展、定时任务模板等。零基础阶段用不到。</li>
+        </ul>
+        <p><strong>什么时候需要装？</strong>只有一种情况：你反复需要 Codex 处理某个外部工具里的内容，而复制粘贴已经明显太麻烦。仅仅「看起来很酷」不是理由。前五章的全部练习都不需要任何插件。</p>
+      </section>
+
+      <section id="s2">
+        <h2><span class="sn">6.2</span>安装前先看什么</h2>
+        <p>打开一个插件的介绍页，先花两分钟看下面四件事。任何一件看不明白，就先不装。</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>看什么</th><th>怎么判断</th></tr></thead>
+          <tbody>
+            <tr><td>谁做的</td><td>插件目录按来源分组：标着 <strong>OpenAI</strong> 的是官方做的；带 <strong>OpenAI Verified</strong>（已验证）标记的表示 OpenAI 审核过质量。没有任何标记的第三方插件，新手阶段不要装。官方自己也提醒：这些审核「不能消除第三方风险」。</td></tr>
+            <tr><td>要连接哪些账号</td><td>介绍页会列出「必需的应用」和「可选的应用」。要连的账号越多、越敏感（邮箱、支付、通讯录），越要慎重。</td></tr>
+            <tr><td>要什么权限</td><td>连接时会显示它能「读」还是能「改」。只读（比如只能看日历）比可写（能新建、删除日程）安全得多。要「删除」权限的，问问自己真的需要吗。</td></tr>
+            <tr><td>只能在桌面用？</td><td>标着「Desktop only」的插件只能在桌面应用里用，网页版的 ChatGPT 用不了它。这不是坏事，只是提前知道。</td></tr>
+          </tbody>
+        </table></div>
+        <aside class="callout stop" data-label="停一停"><strong>看到下面任意一条，直接不装：</strong>
+          <ul>
+            <li>它要求的权限和它的用途对不上——一个「翻译」插件却要读你的邮箱和通讯录；</li>
+            <li>它要你在插件自己的页面里输入某个服务的<strong>密码</strong>，而不是跳到那个服务的官方网站登录；</li>
+            <li>介绍页没写清楚它会碰哪些数据，或者链接指向的隐私政策打不开；</li>
+            <li>你说不出自己为什么需要它。</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section id="s3">
+        <h2><span class="sn">6.3</span>安装与授权步骤</h2>
+        <ol class="steps">
+          <li><strong>打开插件目录。</strong>在应用里找到 <strong>Plugins</strong>（插件）标签。你应该看到一个目录页，插件按来源分组（OpenAI、你的工作区、Personal），已经装过的会列在 Installed（已安装）一行。</li>
+          <li><strong>搜索或浏览，打开插件详情。</strong>点进去后你应该看到它的介绍、包含的技能、需要连接的应用。按 6.2 的四件事看一遍。</li>
+          <li><strong>点加号或「Install plugin」（安装插件）。</strong>做完后你应该看到它出现在 Installed 里。只含技能的插件到这一步就装好了。</li>
+          <li><strong>需要连接账号的，点「Connect」（连接）。</strong>应用会打开浏览器，跳到<em>那个服务自己的</em>官方网站让你登录并确认授权。看清楚地址栏是那个服务的正规域名，再输密码。授权页会列出它请求的权限，读一遍再点同意。</li>
+          <li><strong>回到应用，新开一个对话。</strong>官方要求装完插件后要新建对话才能使用。你应该能在新对话里用它了（怎么用见 6.4）。</li>
+        </ol>
+        <p><strong>预期结果：</strong>插件出现在 Installed 里；连接过的账号在 <strong>Settings → Apps</strong>（设置 → 应用）里能看到。</p>
+        <aside class="callout note" data-label="说明"><p>有的插件在安装时就要求连接账号，有的等到第一次用时才要求。哪种都正常。有些服务支持「Sign in with ChatGPT」（用 ChatGPT 账号登录），这只共享你的名字、邮箱和头像，<em>不</em>自动授予数据访问权限——具体要什么权限仍会单独问你。</p></aside>
+      </section>
+
+      <section id="s4">
+        <h2><span class="sn">6.4</span>使用插件与「审批卡」</h2>
+        <h3>三种让它用插件的方式</h3>
+        <ul>
+          <li><strong>直接说事。</strong>「把下面这三件事加到我的日历里」——Codex 会自己判断该用哪个已安装的插件。最常用。</li>
+          <li><strong>点名。</strong>在输入框里输入 <code>@</code>，从弹出的菜单里选插件名，再写你的要求。适合你明确知道要用哪个插件时。</li>
+          <li><strong>从来源选。</strong>点输入框附近的 <strong>Sources</strong>（来源）→ <strong>Use plugins</strong>（使用插件），勾选。</li>
+        </ul>
+        <h3>审批卡：每次它要「动手」，都先问你</h3>
+        <p>插件要执行一个有影响的动作（新建日程、发邮件、改笔记）之前，对话里会出现一张<strong>审批卡</strong>，写明它准备做什么，并给你几个按钮，通常是：</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>按钮</th><th>意思</th><th>新手怎么选</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Deny</strong>（拒绝）</td><td>不做这件事</td><td>看不懂它要做什么时，选这个。</td></tr>
+            <tr><td><strong>Allow</strong> / <strong>Allow once</strong>（允许一次）</td><td>只做这一次，下次再问</td><td><strong>默认选这个。</strong></td></tr>
+            <tr><td><strong>Allow low-risk actions</strong>（允许低风险动作）</td><td>以后同类低风险动作不再问</td><td>熟练后可用于纯查看类动作。</td></tr>
+            <tr><td><strong>Always allow</strong>（总是允许）</td><td>以后这类动作都不再问</td><td><strong>不要选。</strong>尤其是涉及新建、修改、删除、发送的动作。</td></tr>
+          </tbody>
+        </table></div>
+        <p>审批卡是你和 Codex 之间最重要的一道闸。每次弹出来，把它当作第 4 章的「三步检查」再做一遍：它要做什么？是我要的吗？有没有多做？</p>
+      </section>
+
+      <section id="s5">
+        <h2><span class="sn">6.5</span>完整虚构示例：把清单写进日历</h2>
+        <p>本例沿用第 9 章的虚构案例（还没读第 9 章也不影响理解）：蓝溪文具的老周已经有了一份「开学季促销」执行清单（贴海报、核对库存、联系供应商各有截止时间）。他每次都要手动抄进日历，嫌麻烦，决定装一个日历插件。下面的账号、日程全部虚构。</p>
+        <ol class="steps">
+          <li><strong>安装前检查。</strong>老周在 Plugins 目录里找到官方（标着 OpenAI）的日历插件。介绍页写明：需要连接一个日历账号；权限包括读取和新建日程。老周用的是一个专门给店里用的日历账号，里面没有私人内容——可以装。</li>
+          <li><strong>安装、连接。</strong>点安装 → Connect → 浏览器跳到日历服务的官方登录页 → 登录店用账号 → 授权页列出「查看日程、创建日程」→ 同意 → 回到应用，新开对话。</li>
+          <li><strong>发出请求。</strong>四要素照旧：</li>
+        </ol>
+        <div class="callout example" data-label="请求（四要素齐全，材料为虚构）">
+          <p class="q">任务：把下面三件事加到店用日历里。
+范围：只新建这三条，不要改动或删除日历里已有的任何日程；每条都设成当天上午 9 点开始、时长 30 分钟。
+材料：①贴海报——9 月 12 日；②核对四款产品库存——9 月 11 日；③联系供应商确认到货——9 月 10 日。
+期望：加完后列一张表给我核对：事项、日期、时间。</p>
+        </div>
+        <ol class="steps" start="4">
+          <li><strong>逐张处理审批卡。</strong>Codex 每新建一条日程前都弹一张审批卡，写着「将在店用日历创建日程：贴海报，9 月 12 日 09:00–09:30」。老周逐条核对日期，每张都点 <strong>Allow once</strong>。三张卡，三次确认。</li>
+          <li><strong>检查结果。</strong>Codex 回了一张三行的表。老周对照清单核对日期，再<em>打开日历本身</em>看一眼——三条都在，没有多出来的，也没有被改动的旧日程。</li>
+        </ol>
+        <aside class="callout stop" data-label="停一停"><strong>如果审批卡上写的是「删除日程」「修改已有日程」，而你的请求里根本没让它删和改——点 Deny，然后在对话里问它为什么要这样做。</strong>这类「多做」在插件场景下后果比纯文字场景严重得多，因为它改的是你日历里真实的东西。</aside>
+      </section>
+
+      <section id="s6">
+        <h2><span class="sn">6.6</span>停用、卸载与检查残留授权</h2>
+        <p>不再需要一个插件时，要做的不只是「卸载」，还要把交出去的那把钥匙收回来。三步走完才算干净：</p>
+        <ol class="steps">
+          <li><strong>卸载插件。</strong>在 Plugins 里打开这个插件，选 <strong>Uninstall plugin</strong>（卸载插件）。做完后它应该从 Installed 里消失。</li>
+          <li><strong>断开账号授权。</strong>到 <strong>Settings → Apps</strong>（设置 → 应用），找到对应的那个应用，查看 Connected accounts（已连接账号）并断开。官方文档把「卸载插件」和「断开应用」列为两个独立的步骤——只做第 1 步，授权可能还在。</li>
+          <li><strong>去那个服务本身再看一眼。</strong>登录那个服务（比如日历、邮箱）的网站，在它的「账号安全」或「已授权的第三方应用」页面里，确认 ChatGPT / Codex 的授权已经不在了；还在就在那边撤销。</li>
+        </ol>
+        <p>另外建议每隔一两个月打开 Settings → Apps 看一次：有哪些授权是你早就不用的，顺手断开。钥匙交出去容易，收回来要靠习惯。</p>
+      </section>
+
+      <section class="summary"><h2>本章小结</h2><ul>
+        <li>插件让 Codex 能碰你其他软件里的东西——方便，但等于交出一把钥匙。前五章的内容都不需要插件。</li>
+        <li>装之前看四件事：谁做的、连哪些账号、要什么权限、能否在桌面用。权限和用途对不上就不装。</li>
+        <li>授权只在那个服务的官方网站上完成；审批卡默认选 Allow once，不选 Always allow。</li>
+        <li>移除要三步：卸载插件、在 Settings → Apps 断开、去那个服务自己的授权页确认。</li>
+      </ul></section>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>模块 ID / 状态</dt><dd>CDX-M-0601｜draft（草稿，依据官方文档撰写，未实测）</dd>
+          <dt>风险级别</dt><dd>高：涉及第三方账号授权与可写权限；目录与界面变化快。</dd>
+          <dt>来源与权利</dt><dd>自有原创；事实依据见第 11 章 11.2（插件文档、帮助中心「Plugins in ChatGPT and Codex」「Connectors (Apps)」「Admin controls, security and compliance」），查阅日期 2026-09-01。6.5 的插件与账号为虚构演示，不指向任何真实账户。</dd>
+          <dt>验证状态</dt><dd>unverified。计划：用一个专门注册的测试账号，在两个平台实测 6.3 与 6.6 全流程并截图；核对审批卡按钮的实际文案。</dd>
+          <dt>复核日期</dt><dd>撰写：2026-09-01；高风险，最晚复验 2026-10-01。</dd>
+        </dl>
+      </details>

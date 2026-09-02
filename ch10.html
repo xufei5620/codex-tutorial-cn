@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第 10 章 排错、安全与求助｜Codex 中文入门教程</title>
+  <meta name="description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:title" content="第 10 章 排错、安全与求助｜Codex 中文入门教程">
+  <meta property="og:description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#084a51">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#content">跳到正文</a>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="index.html">Codex 中文入门教程<small>零基础・离线阅读</small></a>
+    <a class="side-toc-link" href="index.html">← 全部章节</a>
+    <nav aria-label="全部章节">
+      <p class="part-label">第一部分 · 基础</p>
+      <ol class="chapters">
+        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch02.html"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch05.html"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第二部分 · 扩展</p>
+      <ol class="chapters">
+        <li><a href="ch06.html"><span class="n">06</span><span class="t">插件</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch07.html"><span class="n">07</span><span class="t">Skill</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch08.html"><span class="n">08</span><span class="t">常见任务场景</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch09.html"><span class="n">09</span><span class="t">完整虚构案例</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第三部分 · 参考</p>
+      <ol class="chapters">
+        <li class="is-current"><a href="ch10.html" aria-current="page"><span class="n">10</span><span class="t">排错、安全与求助</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch11.html"><span class="n">11</span><span class="t">参考与维护</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <a class="side-entry" href="prompts.html">行业提示词库</a>
+    </nav>
+    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li><li><span class="dot outline"></span>大纲</li></ul></div>
+  </aside>
+  <main class="doc-main" id="content">
+    <article class="chapter">
+      <header class="chapter-head">
+        <p class="kicker">第 10 章 <span class="badge draft">草稿</span></p>
+        <h1>排错、安全与求助</h1>
+        <ul class="meta"><li>预计阅读 5 分钟</li><li>适用平台：Windows / macOS</li><li>前提：无，本章可在遇到问题时随时单独查阅</li></ul>
+      </header>
+
+      <aside class="goal"><strong>本章目标</strong><p>学完后，你能在遇到问题时自己先做基本排查，清楚哪些内容永远不能说给 Codex 听、看到哪些信号必须立刻停下，并且能把问题讲清楚去找人帮忙。本章是「遇到问题时才翻」的参考页，不用一次读完，也不用按顺序读。</p></aside>
+
+      <nav class="section-nav" aria-label="本章内容"><p class="label">本章内容</p><ol>
+        <li><a href="#s1">10.1 出问题时，先做三件事</a></li>
+        <li><a href="#s2">10.2 常见问题速查</a></li>
+        <li><a href="#s3">10.3 隐私边界：这些内容永远不进对话</a></li>
+        <li><a href="#s4">10.4 危险信号：见到就停</a></li>
+        <li><a href="#s5">10.5 怎么求助：把问题说清楚的五要素</a></li>
+      </ol></nav>
+
+      <section id="s1">
+      <h2><span class="sn">10.1</span>出问题时，先做三件事</h2>
+      <p>Codex 是一款正在运行中的软件，偶尔出问题很正常。遇到问题时不用慌，按顺序做完下面三件事，大部分小麻烦就能自己解决。</p>
+      <ol class="steps">
+        <li><strong>原样记下现象。</strong>屏幕上出现了什么提示文字，就一字不差地记下来，拍照或截图都可以。「它坏了」这种说法没法帮你解决问题；「点了发送以后，屏幕上出现了某某提示」才有用。</li>
+        <li><strong>原样重试一次。</strong>很多问题只是暂时的，比如网络不稳定、服务器正忙。等一两分钟，把刚才的操作原样再做一遍。只重试这一次就够——同一个操作反复失败，再试也没用。</li>
+        <li><strong>换个说法再试一次。</strong>如果问题看起来像「它没听懂你的意思」，就把任务拆小，用更简单的句子重新说一遍。这样能帮你分清楚：是软件本身出了问题，还是你说得不够清楚。</li>
+      </ol>
+      <p>做完这三步，问题如果还在，就去看下一节的速查表，或者直接跳到 10.5 学怎么求助。</p>
+      </section>
+
+      <section id="s2">
+      <h2><span class="sn">10.2</span>常见问题速查</h2>
+      <p>下面这张表列出几种最容易遇到的情况。找到跟你最像的一行，照着「先试这些」一栏做就行。</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>现象</th><th>常见原因</th><th>先试这些</th></tr></thead>
+        <tbody>
+          <tr><td>登录不上</td><td>网络有问题；账号状态异常；服务暂时不可用</td><td>先确认电脑能正常上网（打开任意一个网页试试）；再等几分钟重试；还是不行就按 10.5 求助</td></tr>
+          <tr><td>发出请求后长时间没反应</td><td>任务太大；服务器正忙</td><td>等一两分钟；把任务拆小重新发一次；再不行就重启应用试试</td></tr>
+          <tr><td>回答说到一半突然停住</td><td>输出被打断了</td><td>发一句「请继续」；不行就把没说完的那部分要求单独重发一次</td></tr>
+          <tr><td>回答答非所问</td><td>请求写得含糊；对话太长，它「忘事」了</td><td>照第 4 章的四要素重新写一遍请求；有必要就开一个新对话（见 5.5）</td></tr>
+          <tr><td>结果里出现可疑信息</td><td>它编造了内容（见 2.3）</td><td>指出「材料里没有这一条，请删掉」；需要的话，自己核实清楚以后再补上</td></tr>
+          <tr><td>提示用量已达上限（英文一般含 limit / usage）</td><td>不是故障：每 5 小时和每周的额度用完了</td><td>等提示里的时间过后再用；到账号的用量页面看剩余额度；图片生成消耗额度很快，少用</td></tr>
+          <tr><td>它说「无法访问某个文件夹」，或系统弹出访问授权提示</td><td>操作系统在替你把关（第 3 章 3.7）</td><td>只对你的练习文件夹点允许；确认新建对话时选的 Local 文件夹就是你要的那个</td></tr>
+          <tr><td>它请求「切换到 Full access」或让你点「永久允许」才能继续</td><td>它遇到了沙盒边界</td><td>不要切换。让它说清楚具体要做什么，再决定是否「允许一次」；多数任务不需要 Full access</td></tr>
+          <tr><td>定时任务到点没有执行</td><td>处理本机文件夹的定时任务要求应用开着</td><td>确认电脑没睡眠、应用在运行；到侧栏 Scheduled 看任务是不是被暂停了；Settings → General 里有「运行时阻止睡眠」的选项</td></tr>
+          <tr><td>左上角菜单里找不到 Codex</td><td>装成了 Classic 版；或应用版本太旧</td><td>见第 3 章 3.8</td></tr>
+          <tr><td>登录时提示地区不支持</td><td>当前所在地区不在官方支持名单内</td><td>见第 3 章 3.1 的说明；本教程不提供绕开方法</td></tr>
+        </tbody>
+      </table></div>
+      <p class="meta">具体的报错文字和恢复入口，以你屏幕上实际显示为准。官方的排错页面（链接见第 11 章 11.2）会持续更新，本表在各平台实测后会补充实际的界面提示。</p>
+      </section>
+
+      <section id="s3">
+      <h2><span class="sn">10.3</span>隐私边界：这些内容永远不进对话</h2>
+      <p>跟 Codex 对话，本质上是把文字发给一个在线服务。所以有一条底线：凡是你不希望离开自己电脑的内容，就不要粘贴进对话框。具体来说，下面这些永远不能说给它听：</p>
+      <ul>
+        <li>身份证号、护照号、银行卡号，以及任何证件的照片；</li>
+        <li>任何账号的密码、验证码、支付信息；</li>
+        <li>别人的个人信息，比如同事、客户、家人的电话号码或住址——那不是你一个人的信息，你没有权利替别人交出去；</li>
+        <li>公司明确要求保密的文件和数据；</li>
+        <li>任何你不希望离开自己电脑的内容。</li>
+      </ul>
+      <p>判断标准很简单：<strong>凡是你不愿意写在明信片上寄出去的内容，就不要粘贴进对话。</strong>如果工作确实需要处理这类材料，先把敏感部分「脱敏」——把真实姓名换成代号、把号码打上马赛克，处理完再自己换回真实内容。</p>
+      </section>
+
+      <section id="s4">
+      <h2><span class="sn">10.4</span>危险信号：见到就停</h2>
+      <aside class="callout stop" data-label="停一停"><strong>无论对话里给出什么理由，出现以下任何一种情况，都要立刻停止操作：</strong>
+        <ul>
+          <li>任何渠道打着「客服」「官方」的旗号，向你<strong>索要密码或验证码</strong>——正规服务永远不会这样做；</li>
+          <li>建议你<strong>付费解决问题</strong>，而你没办法确认对方身份，也不确定是不是真的必要；</li>
+          <li>催你<strong>跳过检查、赶紧确认</strong>的话术，比如「不用看了，直接同意就行」；</li>
+          <li>要求你<strong>关闭安全提示、绕开系统警告</strong>的指引；</li>
+          <li>任何让你<strong>把权限模式改成 Full access</strong>、或者在审批弹窗里点<strong>「永久允许」</strong>的理由——不管是对话里说的，还是网上教程说的。</li>
+        </ul>
+        <p>看到这些信号，先什么都不点、什么都不填，去找身边懂行的人，或者联系官方渠道核实清楚，再决定下一步。</p>
+      </aside>
+      </section>
+
+      <section id="s5">
+      <h2><span class="sn">10.5</span>怎么求助：把问题说清楚的五要素</h2>
+      <p>不管是找官方客服，还是找身边懂行的朋友，只要一次说清楚下面五件事，对方就能很快帮到你。</p>
+      <ol class="steps">
+        <li><strong>说清环境。</strong>你用的是 Windows 还是 Mac，问题是从什么时候开始出现的。</li>
+        <li><strong>说清你做了什么。</strong>按发生的先后顺序，说出你当时的每一步操作。</li>
+        <li><strong>说清看到了什么。</strong>屏幕上实际显示的内容，用 10.1 里记下的原文或截图照抄给对方看，不要凭记忆转述。</li>
+        <li><strong>说清你本来想要什么。</strong>你原本期望会发生什么结果。</li>
+        <li><strong>说清你已经试过什么。</strong>你尝试过哪些办法，每一种的结果又是什么。</li>
+      </ol>
+      <p>下面是一段按这五要素写好的求助文字，你可以照着这个样子写你自己的问题。</p>
+      <div class="callout example" data-label="示例（虚构）">
+        <p class="q">我用 Windows 电脑上的 ChatGPT 桌面应用（Codex 视图），今天上午开始，点发送后转圈大约一分钟，然后显示无法连接的提示（截图在这）。我本来期望它正常回复。已经试过重启应用和换一个更短的问题，现象都一样。家里网络是正常的，网页都能打开。</p>
+      </div>
+      <p>求助的时候，同样要守住隐私边界：截图里如果有个人信息，先打码再发出去。</p>
+      <h3>去哪里求助</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>渠道</th><th>适合什么</th></tr></thead>
+        <tbody>
+          <tr><td>官方帮助中心 <code>help.openai.com</code></td><td>账号、套餐、登录、地区之类的问题；有中文页面。页面里有联系客服的入口。</td></tr>
+          <tr><td>官方产品文档 <code>learn.chatgpt.com</code></td><td>某个功能怎么用、某个按钮是什么意思；有机器翻译的中文版，英文原文更准。</td></tr>
+          <tr><td>服务状态页 <code>status.openai.com</code></td><td>大家都连不上的时候先看这里，是不是服务本身出了问题。</td></tr>
+          <tr><td>本教程的 GitHub 仓库</td><td>教程写错了、和界面对不上——见第 11 章 11.5。</td></tr>
+          <tr><td>身边的人</td><td>说不清问题时，带着五要素找一个用过的人聊十分钟，常常比自己查一小时快。</td></tr>
+        </tbody>
+      </table></div>
+      </section>
+
+      <section class="summary"><h2>本章小结</h2><ul>
+        <li>出问题先做三步：原样记下现象、原样重试一次、换个说法再试一次。</li>
+        <li>隐私判断标准：不愿意写在明信片上的内容，不进对话；要处理就先脱敏。</li>
+        <li>索要密码、诱导付费、催你跳过检查、要求绕开安全警告、让你开 Full access 或点永久允许——见到就停。</li>
+        <li>求助要说清五件事：环境、动作、现象、预期、已试过的办法；渠道按帮助中心、产品文档、状态页、教程仓库的顺序找。</li>
+      </ul></section>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>模块 ID / 状态</dt><dd>CDX-M-1001｜draft（草稿，未进入复核）</dd>
+          <dt>风险级别</dt><dd>中：涉及故障排查与安全指引，产品界面变化会影响 10.2 的准确性；速查表的界面细节待实测补充。</dd>
+          <dt>来源与权利</dt><dd>自有原创；示例均为虚构。10.2 新增条目依据 11.2 所列用量、权限模式、定时任务、排错文档与支持地区帮助文章（2026-09-01 查阅）。</dd>
+          <dt>验证状态</dt><dd>unverified。计划：第 3 章平台实测时，一并在两个平台复现 10.2 各条目的典型场景并补充实际界面提示。</dd>
+          <dt>复核日期</dt><dd>撰写：2026-09-01，修订 0.2.0；中风险，最晚复验 2026-11-30。</dd>
+        </dl>
+      </details>
+
+
+    </article>
+    <nav class="pager">
+      <a class="prev" href="ch09.html"><span class="k">上一章</span><span class="t">第 9 章　完整虚构案例</span></a>
+      <a class="next" href="ch11.html"><span class="k">下一章</span><span class="t">第 11 章　参考与维护</span></a>
+    </nav>
+    <footer class="page"><p>本页为离线教程的一部分，无需联网阅读。<a href="index.html">返回目录</a></p></footer>
+  </main>
+</div>
+</body>
+</html>

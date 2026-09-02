@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>维护框架：逐条补课与发布</title>
+  <style>
+    :root { font-family: "Segoe UI", "PingFang SC", sans-serif; color: #172033; background: #f5f7fb; line-height: 1.65; }
+    body { margin: 0; } main { max-width: 980px; margin: auto; padding: 44px 24px 72px; }
+    h1, h2, h3 { color: #101828; line-height: 1.25; } h2 { margin-top: 42px; padding-top: 24px; border-top: 1px solid #d8deea; }
+    a { color: #175cd3; } code { background: #e9eef8; border-radius: 4px; padding: .1em .35em; overflow-wrap: anywhere; }
+    .lede { color: #475467; font-size: 1.08rem; } .notice { padding: 15px 18px; border: 1px solid #f4c56a; background: #fff7e8; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; } th, td { padding: 10px 12px; border: 1px solid #d8deea; text-align: left; vertical-align: top; }
+    th { background: #eef2f8; } .flow { padding: 16px; background: #101828; color: #f8fafc; border-radius: 10px; overflow-wrap: anywhere; }
+    footer { margin-top: 48px; color: #667085; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <p><a href="index.html">返回框架首页 index.html</a></p>
+    <h1>逐条补课与发布</h1>
+    <p class="lede">框架先稳定，课程以后逐条补。每个模块独立通过同一条生命周期，避免“目录看起来完整、正文其实未验证”。</p>
+  </header>
+
+  <aside class="notice"><strong>发布原则：</strong>先完成一个可审计模块，再扩展下一个。未到 <code>release-ready</code> 的内容只能处于私有维护层，不能因为章节目录已有位置就被当作已发布课程。</aside>
+
+  <section>
+    <h2>单条课程的状态机</h2>
+    <p class="flow"><code>outline</code> → <code>draft</code> → <code>reviewed</code> → <code>platform-verified</code> → <code>release-ready</code></p>
+    <table>
+      <thead><tr><th>状态</th><th>完成条件</th><th>不允许的捷径</th></tr></thead>
+      <tbody>
+        <tr><td><code>outline</code></td><td>确定模块 ID、读者目标、边界、前提、来源候选和验证计划。</td><td>不能把目录标题当作教学内容。</td></tr>
+        <tr><td><code>draft</code></td><td>完成可离线阅读的 HTML：步骤、预期、风险、检查、修正、来源和版本信息齐全。</td><td>不能用“待补图”“以后验证”代替必需内容。</td></tr>
+        <tr><td><code>reviewed</code></td><td>另一次检查确认新手能理解、术语被解释、链接/许可/隐私边界正确。</td><td>作者自评不等于审阅。</td></tr>
+        <tr><td><code>platform-verified</code></td><td>按声明的平台、浏览器和产品版本复现步骤，记录实际结果与限制。</td><td>官方文档、截图或另一平台的成功不能替代实测。</td></tr>
+        <tr><td><code>release-ready</code></td><td>构建、链接、许可、安全、可访问性和发行清单全部通过；无阻断风险。</td><td>不能跳过清单或手改构建产物。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>每条课程的固定交付包</h2>
+    <ul>
+      <li>语义 HTML 正文及永久模块 ID。</li>
+      <li>明确的目标、前提、步骤、预期结果、检查方法、一次修正闭环和风险提醒。</li>
+      <li>来源、固定版本/日期、许可证与使用方式；自有示例与第三方素材分开登记。</li>
+      <li>模块 × 平台 × 浏览器 × 产品/扩展版本的验证记录，以及六种公开验证状态之一。</li>
+      <li>若涉及插件或 Skill：安装、权限/数据、基础使用、更新、停用/移除和残留检查。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>版本、过期与复验</h2>
+    <p>稳定版本采用 <code>YYYY.MM.N</code>，对应不可变标签 <code>vYYYY.MM.N</code>；RC 仅使用内部编号，不占用稳定版本。构建 ZIP、校验值和发行清单一经发布不回写，修改必须形成新版本。</p>
+    <table>
+      <thead><tr><th>风险级别</th><th>最晚复验</th><th>提前过期事件</th></tr></thead>
+      <tbody>
+        <tr><td>高</td><td>30 天</td><td>权限、费用、删除、外部发送、安全行为或核心步骤改变</td></tr>
+        <tr><td>中</td><td>90 天</td><td>产品界面、功能、依赖、许可证或关键来源改变</td></tr>
+        <tr><td>低</td><td>180 天</td><td>可复现反馈、链接失效或资料出现矛盾</td></tr>
+      </tbody>
+    </table>
+    <p>过期并不等于错误，但必须显示 <code>verification-expired</code>，并暂停受影响的核心路径；更新前先查依赖图，只复验被影响的模块与代表读者路径。</p>
+  </section>
+
+  <section>
+    <h2>安全例外、撤回与备份</h2>
+    <p>发现密钥、个人隐私、侵权素材或恶意载荷时，立即停止下载、推荐、公开 Notion 和未来 GitHub 分发。不得用同版本偷偷换包。保留版本号、旧校验值、发现时间、原因、处理记录和必要哈希作为墓碑；危险字节不再分发，修复后另发热修版本。</p>
+    <p>维护前先制作可恢复备份并记录其位置、来源版本和校验值；备份只能用于恢复，不得成为未审查内容重新流入公开产物的渠道。恢复后仍需重新构建和验证。</p>
+  </section>
+
+  <section>
+    <h2>GitHub 的公开边界</h2>
+    <p>如果以后创建 GitHub 仓库，它必须是<strong>公开仓库</strong>。但它不等于本机维护仓库的镜像：只从经批准的公开白名单导出读者 HTML、必要自有资产、许可和发行资料。草稿历史、私有 Notion 内容、原始反馈、详细环境日志、未清权素材、秘密和本机完整历史绝不推送。</p>
+  </section>
+
+  <footer><p>维护框架，不是课程正文。最后更新：2026-09-01。</p></footer>
+</main>
+</body>
+</html>
