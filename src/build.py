@@ -214,20 +214,20 @@ def build_site():
         if os.path.isdir(p): shutil.rmtree(p)
         elif os.path.exists(p): os.remove(p)
     os.makedirs(os.path.join(SITE, 'assets'))
-    open(os.path.join(SITE, 'assets', 'style.css'), 'w', encoding='utf-8').write(css)
-    open(os.path.join(SITE, 'assets', 'favicon.svg'), 'w', encoding='utf-8').write(FAVICON)
-    open(os.path.join(SITE, 'index.html'), 'w', encoding='utf-8').write(
+    open(os.path.join(SITE, 'assets', 'style.css'), 'w', encoding='utf-8', newline='\n').write(css)
+    open(os.path.join(SITE, 'assets', 'favicon.svg'), 'w', encoding='utf-8', newline='\n').write(FAVICON)
+    open(os.path.join(SITE, 'index.html'), 'w', encoding='utf-8', newline='\n').write(
         page_shell(SITE_TITLE, 'home', home_body('multi')))
-    open(os.path.join(SITE, '404.html'), 'w', encoding='utf-8').write(
+    open(os.path.join(SITE, '404.html'), 'w', encoding='utf-8', newline='\n').write(
         page_shell(f'找不到页面｜{SITE_TITLE}', 'home', NOT_FOUND, css_href='/assets/style.css'))
-    open(os.path.join(SITE, 'robots.txt'), 'w', encoding='utf-8').write('User-agent: *\nAllow: /\nDisallow: /templates/\nDisallow: /specs/\nDisallow: /schemas/\nDisallow: /registry/\nDisallow: /src/\nDisallow: /deploy/\n')
+    open(os.path.join(SITE, 'robots.txt'), 'w', encoding='utf-8', newline='\n').write('User-agent: *\nAllow: /\nDisallow: /templates/\nDisallow: /specs/\nDisallow: /schemas/\nDisallow: /registry/\nDisallow: /src/\nDisallow: /deploy/\n')
     shutil.copytree(os.path.join(ROOT, 'deploy'), os.path.join(SITE, 'deploy'))
     for cid in ORDER:
         c = CH[cid]
-        open(os.path.join(SITE, cid + '.html'), 'w', encoding='utf-8').write(
+        open(os.path.join(SITE, cid + '.html'), 'w', encoding='utf-8', newline='\n').write(
             page_shell(f'第 {c["num"]} 章 {c["title"]}｜{SITE_TITLE}', '', doc_page(cid, 'multi')))
     for eid, e in EXTRAS.items():
-        open(os.path.join(SITE, eid + '.html'), 'w', encoding='utf-8').write(
+        open(os.path.join(SITE, eid + '.html'), 'w', encoding='utf-8', newline='\n').write(
             page_shell(f'{e["title"]}｜{SITE_TITLE}', '', doc_page(eid, 'multi')))
     # 维护者文件：从原仓库原样复制
     for name in ['maintenance-release.html', 'notion-workflow.html', 'source-research.html', 'templates', 'specs', 'schemas']:
@@ -243,16 +243,16 @@ def build_site():
     reg['productNote'] = ('2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），'
                           '教程中的“Codex”指该应用左上角菜单中的 Codex 视图。')
     reg['generatedDate'] = cfg['site']['date']
-    json.dump(reg, open(os.path.join(SITE, 'registry', 'framework-v1.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+    json.dump(reg, open(os.path.join(SITE, 'registry', 'framework-v1.json'), 'w', encoding='utf-8', newline='\n'), ensure_ascii=False, indent=2)
     # README
-    open(os.path.join(SITE, 'README.md'), 'w', encoding='utf-8').write(readme())
+    open(os.path.join(SITE, 'README.md'), 'w', encoding='utf-8', newline='\n').write(readme())
     # manifest + SHA256SUMS
     files = []
     for dp, dns, fns in os.walk(SITE):
         dns[:] = [d for d in dns if d not in ('.git', 'src', 'downloads')]
         for fn in fns:
-            if fn in ('manifest.json', 'SHA256SUMS.txt') or fn.startswith('.'):
-                continue
+            if fn in ('manifest.json', 'SHA256SUMS.txt', 'AGENTS.md') or fn.startswith('.'):
+                continue   # AGENTS.md 是给 AI 代理的仓库规则，不属于站点
             p = os.path.join(dp, fn)
             rel = os.path.relpath(p, SITE).replace(os.sep, '/')
             data = open(p, 'rb').read()
@@ -260,8 +260,8 @@ def build_site():
     files.sort(key=lambda f: f['path'])
     manifest = {'schemaVersion': '1.0.0', 'artifact': 'codex-tutorial-cn', 'version': cfg['site']['version'],
                 'status': 'draft-complete-unverified', 'generatedDate': cfg['site']['date'], 'entry': 'index.html', 'files': files}
-    json.dump(manifest, open(os.path.join(SITE, 'manifest.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
-    open(os.path.join(SITE, 'SHA256SUMS.txt'), 'w', encoding='utf-8').write(
+    json.dump(manifest, open(os.path.join(SITE, 'manifest.json'), 'w', encoding='utf-8', newline='\n'), ensure_ascii=False, indent=2)
+    open(os.path.join(SITE, 'SHA256SUMS.txt'), 'w', encoding='utf-8', newline='\n').write(
         ''.join(f"{f['sha256']}  {f['path']}\n" for f in files))
     # 离线版 ZIP（放进 downloads/，不计入清单，避免自包含）
     import zipfile
@@ -274,7 +274,7 @@ def build_site():
         for dp, dns, fns in os.walk(SITE):
             dns[:] = sorted(d for d in dns if d not in ('.git', 'src', 'downloads', 'deploy'))
             for fn in sorted(fns):
-                if fn.startswith('.'): continue
+                if fn.startswith('.') or fn == 'AGENTS.md': continue
                 p = os.path.join(dp, fn)
                 arcname = os.path.join('codex-tutorial-cn', os.path.relpath(p, SITE)).replace(os.sep, '/')
                 zi = zipfile.ZipInfo(arcname, date_time=zip_time)
@@ -313,6 +313,7 @@ def readme():
 - `src/` —— **内容源与构建脚本**：改内容请改 `src/content/*.html` 与 `src/chapters.json`，然后运行 `python3 src/build.py` 重新生成以上全部页面（不要直接改根目录的 HTML，会被覆盖）；`python3 src/check.py` 做发布前检查
 - `templates/`、`specs/`、`schemas/`、`registry/`、`maintenance-release.html`、`source-research.html`、`notion-workflow.html` —— 维护者资料
 - `manifest.json`、`SHA256SUMS.txt` —— 文件清单与校验和
+- `AGENTS.md` —— 给本地 Codex / AI 代理看的仓库规则（不进站点与离线包）；当前交接任务见 `src/HANDOFF.md`
 
 ## 维护约定
 
@@ -354,7 +355,7 @@ def build_preview():
 {chr(10).join(routes)}
 {js}
 '''
-    open(os.path.join(ROOT, 'preview.html'), 'w', encoding='utf-8').write(html)  # 内部预览用，不属于站点
+    open(os.path.join(ROOT, 'preview.html'), 'w', encoding='utf-8', newline='\n').write(html)  # 内部预览用，不属于站点
 
 if __name__ == '__main__':
     build_site()

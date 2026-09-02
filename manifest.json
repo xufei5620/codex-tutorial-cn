@@ -13,8 +13,8 @@
     },
     {
       "path": "README.md",
-      "size": 3237,
-      "sha256": "9475b99da860a832fc55feffde824e4e37b9f54deed3afc6caf37aa27116f813"
+      "size": 3375,
+      "sha256": "d32372eba7bc082434382150db2fce93ce4709d60d5b964e193c609af7501792"
     },
     {
       "path": "assets/favicon.svg",
@@ -78,8 +78,8 @@
     },
     {
       "path": "ch11.html",
-      "size": 22803,
-      "sha256": "872e8cb9c464d949a5735f0ab2c8a4ec78b1acabebe6d31730c2fa861e71e97d"
+      "size": 22839,
+      "sha256": "644dc718876dedc0b3a63d83b46c47fef8d36879af7ef9f37ac4fa06fd469b9b"
     },
     {
       "path": "deploy/Caddyfile",
@@ -88,8 +88,8 @@
     },
     {
       "path": "deploy/DEPLOY.md",
-      "size": 3153,
-      "sha256": "5798f6a3ad58c067acbcc044fa394ce260c87bf44c11a54cc468fcdef3fb3d21"
+      "size": 3193,
+      "sha256": "cb67385f7a013d225f3b5b0ebbf6a31d248e4bbd3cdd9ae583500142217a1fba"
     },
     {
       "path": "deploy/Dockerfile",

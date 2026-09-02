@@ -35,6 +35,7 @@
 - `src/` —— **内容源与构建脚本**：改内容请改 `src/content/*.html` 与 `src/chapters.json`，然后运行 `python3 src/build.py` 重新生成以上全部页面（不要直接改根目录的 HTML，会被覆盖）；`python3 src/check.py` 做发布前检查
 - `templates/`、`specs/`、`schemas/`、`registry/`、`maintenance-release.html`、`source-research.html`、`notion-workflow.html` —— 维护者资料
 - `manifest.json`、`SHA256SUMS.txt` —— 文件清单与校验和
+- `AGENTS.md` —— 给本地 Codex / AI 代理看的仓库规则（不进站点与离线包）；当前交接任务见 `src/HANDOFF.md`
 
 ## 维护约定
 

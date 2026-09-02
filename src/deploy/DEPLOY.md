@@ -22,7 +22,7 @@ docker compose -f deploy/docker-compose.yml up -d --build
 
 ```bash
 sudo mkdir -p /var/www/codex-tutorial
-rsync -a --delete --exclude .git --exclude src ./ /var/www/codex-tutorial/   # 在仓库目录里执行；没有 rsync 就用 cp -r ./*
+rsync -a --delete --exclude .git --exclude src --exclude AGENTS.md ./ /var/www/codex-tutorial/   # 在仓库目录里执行；没有 rsync 就用 cp -r ./*
 sudo cp deploy/Caddyfile /etc/caddy/Caddyfile     # 先把里面的域名改成你的
 sudo systemctl reload caddy
 ```
@@ -33,7 +33,7 @@ Caddy 会自动申请并续期 HTTPS 证书，不需要你管。
 
 ```bash
 sudo mkdir -p /var/www/codex-tutorial
-rsync -a --delete --exclude .git --exclude src ./ /var/www/codex-tutorial/   # 没有 rsync 就用 cp -r ./*
+rsync -a --delete --exclude .git --exclude src --exclude AGENTS.md ./ /var/www/codex-tutorial/   # 没有 rsync 就用 cp -r ./*
 sudo cp deploy/nginx.conf /etc/nginx/conf.d/codex-tutorial.conf   # 先改域名
 sudo nginx -t && sudo nginx -s reload
 ```

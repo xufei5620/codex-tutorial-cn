@@ -1,5 +1,7 @@
-# 构建镜像时排除：版本库与内容源不属于站点
+# 构建镜像时排除：版本库、内容源与代理规则不属于站点
 .git
 .gitignore
+.gitattributes
 .dockerignore
 src
+AGENTS.md

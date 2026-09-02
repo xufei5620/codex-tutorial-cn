@@ -1,0 +1,5 @@
+# 所有文本文件在任何平台都以 LF 检出，保证 build.py 生成的清单、校验和与离线 ZIP 在 Windows 上也字节一致
+* text=auto eol=lf
+*.zip binary
+*.png binary
+*.svg text eol=lf
