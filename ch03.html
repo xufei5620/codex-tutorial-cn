@@ -64,20 +64,20 @@
         <li><a href="#s8">3.8 装不上、登不进怎么办</a></li>
       </ol></nav>
 
-      <aside class="callout note" data-label="关于本章的准确性"><p>本章依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未在真实电脑上逐步实测</strong>。按钮名称以你屏幕上实际显示为准；官方界面目前以英文为主，教程在英文名称后附了中文解释。发现不一致的地方，请按第 11 章的方式反馈。</p></aside>
+      <aside class="callout note" data-label="关于本章的准确性"><p>本章依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未在真实电脑上逐步实测</strong>。按钮名称以你屏幕上实际显示为准；官方界面目前以英文为主，教程在英文名称后附了中文解释。发现不一致的地方，请按<a href="ch11.html">第 11 章</a>的方式反馈。</p></aside>
 
       <section id="s1">
         <h2><span class="sn">3.1</span>开始前：你需要什么</h2>
         <div class="table-wrap"><table>
           <thead><tr><th>需要</th><th>说明</th></tr></thead>
           <tbody>
-            <tr><td>一台电脑</td><td><strong>macOS：</strong>macOS 14 或更新，Apple 芯片（M1 及之后）或 Intel 芯片都可以，官方下载页默认给出的是 Apple 芯片版本。<strong>Windows：</strong>通过 Microsoft Store 安装，官方没有写明最低版本；一般需要 Windows 10 或 11，并且 Microsoft Store 能正常使用。</td></tr>
-            <tr><td>一个 ChatGPT 账号</td><td>没有就在登录时顺手注册，需要一个邮箱。所有套餐（包括免费）都能使用 Codex，只是每 5 小时和每周的用量额度不同，用完要等额度恢复或购买额外额度。</td></tr>
-            <tr><td>网络</td><td>安装和使用都要联网。Codex 是在线服务，你的对话会发送到服务器处理（第 1 章的隐私底线由此而来）。</td></tr>
+            <tr><td>一台电脑</td><td><strong>macOS：</strong>macOS 14 或更新，Apple 芯片（M1 及之后）或 Intel 芯片都可以；下载页如果同时给出两种版本，按自己电脑的芯片选（不确定就打开「关于本机」看一眼）。<strong>Windows：</strong>通过 Microsoft Store 安装，官方没有写明最低版本；按经验，能正常使用 Microsoft Store 的 Windows 10 / 11 一般可以（这是推断，以商店页面的提示为准）。</td></tr>
+            <tr><td>一个 ChatGPT 账号</td><td>没有就在登录时顺手注册，需要一个邮箱。所有套餐（包括免费）都能使用 Codex，只是每 5 小时和每周的用量额度不同，用完要等额度恢复。</td></tr>
+            <tr><td>网络</td><td>安装和使用都要联网。Codex 是在线服务，你的对话会发送到服务器处理（<a href="ch01.html">第 1 章</a>的隐私底线由此而来）。</td></tr>
             <tr><td>大约 20 分钟</td><td>下载、安装、登录、认识界面。别赶时间，看到不认识的提示框就停下来读一读。</td></tr>
           </tbody>
         </table></div>
-        <aside class="callout stop" data-label="停一停"><strong>关于地区可用性：</strong>OpenAI 在官方帮助中心公布了 ChatGPT 的支持国家和地区名单，<strong>中国大陆与香港目前不在名单内</strong>；欧洲部分地区有些功能（如操作电脑、记忆）暂不开放。名单会变化，请以官方页面为准（链接见第 11 章 11.2）。本教程只讲在支持地区的正常使用方法，不提供任何绕开地区限制的做法——那样做可能违反服务条款，也可能违反你所在地的法规。</aside>
+        <aside class="callout stop" data-label="停一停"><strong>关于地区可用性：</strong>OpenAI 在官方帮助中心公布了 ChatGPT 的支持国家和地区名单，<strong>中国大陆与香港目前不在名单内</strong>；欧洲部分地区有些功能（如操作电脑、记忆）暂不开放。名单会变化，请以官方页面为准（链接见<a href="ch11.html#s2">第 11 章 11.2</a>）。本教程只讲在支持地区的正常使用方法，不提供任何绕开地区限制的做法——那样做可能违反服务条款，也可能违反你所在地的法规。</aside>
       </section>
 
       <section id="s2">
@@ -86,8 +86,8 @@
         <p>三件容易弄错的事：</p>
         <ul>
           <li><strong>别下载成「ChatGPT Classic」。</strong>下载页上还有一个叫 Classic（经典版）的旧应用，它<em>没有</em> Codex。要装的是不带 Classic 字样的 ChatGPT。</li>
-          <li><strong>网页版和手机 App 里用不了 Codex。</strong>Codex 视图只在 macOS 和 Windows 的桌面应用里有。手机 App 只能远程查看电脑上正在进行的 Codex 对话。</li>
-          <li><strong>网上很多资料讲的是「Codex CLI」。</strong>那是给程序员用的命令行版本，和本教程无关（第 1 章说过，我们不讲命令行）。看到满屏黑底白字的命令，说明那份资料不是给你看的。</li>
+          <li><strong>手机 App 里用不了 Codex。</strong>Codex 视图在 macOS 和 Windows 的桌面应用里；手机 App 只能远程查看电脑上正在进行的 Codex 对话。网页版有没有 Codex 视图，官方文档没有明确说明，本教程只讲桌面应用。</li>
+          <li><strong>网上很多资料讲的是「Codex CLI」。</strong>那是给程序员用的命令行工具（本教程未核实其细节，也不涉及——<a href="ch01.html">第 1 章</a>说过，我们不讲命令行）。看到满屏黑底白字的命令，说明那份资料不是给你看的。</li>
         </ul>
       </section>
 
@@ -96,30 +96,30 @@
         <ol class="steps">
           <li><strong>打开官方下载页。</strong>在浏览器地址栏输入 <code>chatgpt.com/download</code> 并回车。你应该看到 OpenAI 的下载页面，上面有 Windows 和 macOS 的下载按钮。<em>只从这个官方地址下载</em>，不要从搜索结果里的其他网站下载安装包。</li>
           <li><strong>点 Windows 的下载按钮。</strong>它会打开 Microsoft Store（Windows 自带的应用商店），显示名为「ChatGPT」的应用页面。确认应用名不带「Classic」。</li>
-          <li><strong>在 Store 里点「获取」或「安装」。</strong>你应该看到进度条，等它走完。如果 Store 让你登录 Microsoft 账号，登不登都可以试试，通常不登录也能安装。</li>
+          <li><strong>在 Store 里点「获取」或「安装」。</strong>你应该看到进度条，等它走完。中途 Store 有什么提示，照提示做即可。</li>
           <li><strong>打开应用。</strong>安装完成后点「打开」，或者在开始菜单搜索「ChatGPT」。你应该看到应用窗口，上面有登录按钮。</li>
         </ol>
         <p><strong>预期结果：</strong>桌面或开始菜单里出现 ChatGPT 应用，能正常打开到登录界面。接下来跳到 3.5。</p>
-        <aside class="callout note" data-label="说明"><p>Windows 版的 Codex 底层默认使用 PowerShell（Windows 自带的一个命令执行工具）来完成它的工作。你不需要碰它。极少数情况下应用会提示需要调整 PowerShell 的「执行策略」——遇到这种提示不要自己改设置，按 3.8 的方式求助。</p></aside>
+        <aside class="callout note" data-label="说明"><p>Windows 版在后台会用到系统自带的命令工具来完成它的工作，你不需要碰它。如果应用弹出你看不懂的技术性提示（要求修改某项系统设置之类），不要自己改，按 3.8 的方式求助。</p></aside>
       </section>
 
       <section id="s4">
         <h2><span class="sn">3.4</span>macOS 安装步骤</h2>
         <ol class="steps">
-          <li><strong>打开官方下载页。</strong>在浏览器地址栏输入 <code>chatgpt.com/download</code> 并回车。页面会自动识别你的 Mac 芯片类型，给出对应的下载按钮。确认按钮不带「Classic」字样。</li>
+          <li><strong>打开官方下载页。</strong>在浏览器地址栏输入 <code>chatgpt.com/download</code> 并回车。页面会给出 Mac 版的下载按钮；如果同时列出 Apple 芯片和 Intel 两种版本，按 3.1 说的选。确认按钮不带「Classic」字样。</li>
           <li><strong>下载 .dmg 文件。</strong>点下载后，浏览器右上角会显示下载进度；完成后在「下载」文件夹里能看到一个 <code>.dmg</code> 文件（这是 Mac 上常见的安装包格式）。</li>
           <li><strong>双击 .dmg，把图标拖进「应用程序」。</strong>通常会弹出一个小窗口，左边是 ChatGPT 图标，右边是「Applications（应用程序）」文件夹——把左边拖到右边即可。这一步官方文档没有细写，属于 macOS 安装应用的通用做法。</li>
-          <li><strong>从「启动台」或「应用程序」文件夹打开 ChatGPT。</strong>首次打开时 macOS 可能弹出「是否打开从互联网下载的应用」的确认框，点「打开」。你应该看到应用窗口和登录按钮。</li>
+          <li><strong>从「启动台」或「应用程序」文件夹打开 ChatGPT。</strong>首次打开时，macOS 可能会弹出确认框，问你是否打开这个从网上下载的应用——这是 macOS 对所有下载应用的通用做法，确认打开即可（文案以实际为准）。你应该看到应用窗口和登录按钮。</li>
         </ol>
         <p><strong>预期结果：</strong>「应用程序」文件夹里有 ChatGPT，能正常打开到登录界面。</p>
-        <aside class="callout note" data-label="Intel 芯片的 Mac"><p>官方说明 Intel 芯片的 Mac 也能安装（下载页会给出对应版本），但 Codex 视图里某些功能是否在 Intel 机器上完整可用，官方没有明确说明。如果你的 Mac 是 2020 年以前的 Intel 机型，遇到功能缺失时先不要怀疑自己操作错了。</p></aside>
+        <aside class="callout note" data-label="Intel 芯片的 Mac"><p>官方说明 Intel 芯片的 Mac 也能安装（下载页会给出对应版本），但 Codex 视图里某些功能是否在 Intel 机器上完整可用，官方没有明确说明。如果你用的是 Intel 机型，遇到功能缺失时先不要怀疑自己操作错了。</p></aside>
       </section>
 
       <section id="s5">
         <h2><span class="sn">3.5</span>首次登录，切换到 Codex</h2>
         <ol class="steps">
           <li><strong>点「Continue to sign in」（继续登录）。</strong>应用会打开你的浏览器，跳到 OpenAI 的登录页。没有账号就在这里注册，用邮箱即可。</li>
-          <li><strong>在浏览器里完成登录。</strong>输入邮箱和密码（或用其他账号登录）。成功后浏览器会提示「可以回到应用了」，有时会问「是否允许打开 ChatGPT」，点允许。</li>
+          <li><strong>在浏览器里完成登录。</strong>输入邮箱和密码（或用其他账号登录）。登录成功后，按浏览器的提示回到应用；如果浏览器问是否允许打开 ChatGPT，允许即可（具体文案以实际为准）。</li>
           <li><strong>回到应用，找到左上角的菜单。</strong>你应该看到自己已登录，界面默认可能停在 Chat 或 Work 视图。点应用<strong>左上角</strong>的菜单，选择 <strong>Codex</strong>。</li>
           <li><strong>看到 Codex 视图。</strong>左侧是一列侧栏，中间偏下是一个大输入框。到这里就算成功了。</li>
         </ol>
@@ -133,16 +133,16 @@
         <div class="table-wrap"><table>
           <thead><tr><th>区域</th><th>在哪里</th><th>它是干什么的</th></tr></thead>
           <tbody>
-            <tr><td>侧栏</td><td>窗口左侧</td><td>列出你的东西：<strong>Chats</strong>（对话）、<strong>Projects</strong>（项目，也就是你让它处理的文件夹）、<strong>Scheduled</strong>（定时任务）、<strong>Activity</strong>（需要你关注的对话汇总）。顶部有搜索框。</td></tr>
-            <tr><td>输入框</td><td>窗口中下方</td><td>你打字、粘贴材料、发送请求的地方。可以拖文件进去作为材料。</td></tr>
+            <tr><td>侧栏</td><td>窗口左侧</td><td>列出你的东西：<strong>Chats</strong>（对话）、<strong>Projects</strong>（项目，也就是你让它处理的文件夹）、<strong>Scheduled</strong>（定时任务）、<strong>Activity</strong>（活动，具体内容以界面为准）。顶部有搜索框。</td></tr>
+            <tr><td>输入框</td><td>窗口中下方</td><td>你打字、粘贴材料、发送请求的地方。通常也可以把文件拖进去作为材料（以实际界面为准）。</td></tr>
             <tr><td>输入框下面的两个小选择器</td><td>紧贴输入框下沿</td><td>一个是<strong>模型选择</strong>（用哪个 AI 模型，新手用默认即可），另一个是<strong>权限模式</strong>（Codex 被允许做到什么程度——3.7 专门讲）。</td></tr>
-            <tr><td>对话与审阅区</td><td>窗口中间大块</td><td>显示 Codex 的回复。当它修改了你文件夹里的文件时，这里会出现一个<strong>审阅面板（review panel）</strong>，逐行显示改了什么，并提供撤销（撤销能力的边界见第 5 章 5.4）。</td></tr>
+            <tr><td>对话与审阅区</td><td>窗口中间大块</td><td>显示 Codex 的回复。当它修改了你文件夹里的文件时，这里会出现一个<strong>审阅面板（review panel）</strong>，逐行显示改了什么，并提供撤销（撤销能力的边界见<a href="ch05.html#s4">第 5 章 5.4</a>）。</td></tr>
             <tr><td>设置（Settings）</td><td>头像菜单里（具体位置以实际界面为准）</td><td>分为 General（通用）、Notifications（通知）、Appearance（外观）、Personalization（个性化，含「记忆」开关）、Computer Use（操作电脑）、Browser（内置浏览器）等。新手只需要知道它在哪。</td></tr>
           </tbody>
         </table></div>
-        <p>还有两个东西你会在后面章节遇到：<strong>Plugins</strong>（插件，第 6 章）和输入 <code>$</code> 弹出的 <strong>Skill</strong> 菜单（第 7 章）。现在不用管。</p>
+        <p>还有两个东西你会在后面章节遇到：<strong>Plugins</strong>（插件，<a href="ch06.html">第 6 章</a>）和输入 <code>$</code> 弹出的 <strong>Skill</strong> 菜单（<a href="ch07.html">第 7 章</a>）。现在不用管。</p>
         <h3>「新建对话」时会问你两件事</h3>
-        <p>点新建对话，Codex 可能让你选<strong>在哪里工作</strong>：<strong>Local</strong>（本机的某个文件夹）、<strong>Worktree</strong>（给程序员用的隔离副本）、<strong>Cloud</strong>（云端）。零基础读者记两条就够：只是聊天、不需要它碰文件，就什么都不选直接开始；需要它整理某个文件夹里的文件，就选 Local 并挑一个<em>专门为练习新建的文件夹</em>。第 8 章会详细讲。</p>
+        <p>点新建对话，Codex 可能让你选<strong>在哪里工作</strong>：<strong>Local</strong>（本机的某个文件夹）、<strong>Worktree</strong>（给程序员用的隔离副本）、<strong>Cloud</strong>（云端）。零基础读者记两条就够：只是聊天、不需要它碰文件，就什么都不选直接开始；需要它整理某个文件夹里的文件，就选 Local 并挑一个<em>专门为练习新建的文件夹</em>。<a href="ch08.html">第 8 章</a>会详细讲。</p>
       </section>
 
       <section id="s7">
@@ -153,7 +153,7 @@
           <tbody>
             <tr><td><strong>Ask for approval</strong><br>（先问我）</td><td>默认模式。可以读写<em>你指定的那个文件夹</em>里的文件、运行常规操作；要上网、或要碰文件夹以外的东西时，<strong>先弹窗问你</strong>。</td><td><strong>本教程全程使用这个模式。</strong></td></tr>
             <tr><td><strong>Approve for me</strong><br>（替我审批）</td><td>边界和上面一样，但越界请求改由一个 AI 审阅员自动审核，并显示风险等级。</td><td>熟练之后、处理低风险任务时可以考虑。新手不用。</td></tr>
-            <tr><td><strong>Full access</strong><br>（完全访问）</td><td>去掉沙盒和审批：可以改电脑上任何文件、随时上网、不再问你。</td><td><strong>不要用。</strong>看到它就当它不存在。</td></tr>
+            <tr><td><strong>Full access</strong><br>（完全访问）</td><td>去掉沙盒（沙盒就是把它圈在你指定的那个文件夹里的安全范围）和审批：可以改电脑上任何文件、随时上网、不再问你。</td><td><strong>不要用。</strong>看到它就当它不存在。</td></tr>
           </tbody>
         </table></div>
         <p>当 Codex 弹出审批请求时，通常可以选「允许一次」「本次对话都允许」「永久允许」。新手一律选<strong>允许一次</strong>，看清楚它要做什么再点。看不懂它要做什么，就点拒绝——拒绝永远不会造成损失。</p>
@@ -165,7 +165,7 @@
           </ul>
         </aside>
         <h3>第一次打开某些文件夹时的系统提示</h3>
-        <p>macOS 在 Codex 第一次访问「桌面」「下载」「文稿」等文件夹时，会弹出系统级的授权提示；Windows 也可能有类似的确认。这是操作系统在替你把关，属于正常现象。只对你准备用来练习的文件夹点允许；对「音乐」「照片」之类它没理由碰的文件夹，点不允许。</p>
+        <p>macOS 在 Codex 第一次访问「桌面」「下载」等文件夹时，会弹出系统级的授权提示；Windows 也可能有类似的确认。这是操作系统在替你把关，属于正常现象。只对你准备用来练习的文件夹点允许；对「音乐」「照片」之类它没理由碰的文件夹，点不允许。</p>
       </section>
 
       <section id="s8">
@@ -175,13 +175,13 @@
           <tbody>
             <tr><td>下载页打不开或很慢</td><td>换一个网络试试；确认地址是 <code>chatgpt.com/download</code>，没有拼错。</td></tr>
             <tr><td>Windows 的 Microsoft Store 打不开或安装失败</td><td>先在 Store 里随便安装一个别的免费应用，确认 Store 本身正常；重启电脑再试一次。</td></tr>
-            <tr><td>macOS 提示「无法打开，因为它来自身份不明的开发者」</td><td>先确认你是从官方地址下载的。如果是，在「系统设置 → 隐私与安全性」底部通常有「仍要打开」。如果不是官方地址下载的，删掉重下。</td></tr>
+            <tr><td>macOS 提示「无法打开，因为它来自身份不明的开发者」</td><td>先确认你是从官方地址下载的。如果是，这是 macOS 对新应用的通用拦截，在系统设置的「隐私与安全性」里通常能找到允许打开的选项（具体位置以你的 macOS 版本为准）。如果不是官方地址下载的，删掉重下。</td></tr>
             <tr><td>登录时浏览器显示地区不支持（英文提示里含 <code>unsupported_country</code> 之类字样）</td><td>这表示你当前所在地区不在官方支持名单内。请看 3.1 的「停一停」——本教程不提供绕开方法。</td></tr>
             <tr><td>登录成功，但左上角菜单里找不到 Codex</td><td>确认装的不是 Classic 版本；把应用更新到最新版（应用内通常有更新提示）；退出重新登录一次。</td></tr>
             <tr><td>提示用量已达上限</td><td>不是故障。免费与付费套餐的额度不同，等提示里给出的时间过后再用，或到账号的用量页面查看。</td></tr>
           </tbody>
         </table></div>
-        <p>都试过还不行，按第 10 章 10.5 的五要素把问题写清楚，去官方帮助中心（<code>help.openai.com</code>）求助。求助前把截图里的邮箱等个人信息打码。</p>
+        <p>都试过还不行，按<a href="ch10.html#s5">第 10 章 10.5</a> 的五要素把问题写清楚，去官方帮助中心（<code>help.openai.com</code>）求助。求助前把截图里的邮箱等个人信息打码。</p>
       </section>
 
       <section class="summary"><h2>本章小结</h2><ul>

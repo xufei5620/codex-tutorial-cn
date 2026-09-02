@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.2.1",
   "status": "draft-complete-unverified",
   "authority": {
     "canonicalSource": {
@@ -352,5 +352,5 @@
     "reviewPolicy": "replace-or-approve-item-by-item-later"
   },
   "productNote": "2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），教程中的“Codex”指该应用左上角菜单中的 Codex 视图。",
-  "generatedDate": "2026-09-01"
+  "generatedDate": "2026-09-02"
 }

@@ -26,6 +26,8 @@
 - 文档：Skills https://learn.chatgpt.com/codex/skills ；创建 Skill https://learn.chatgpt.com/codex/build-skills ；Skills 与插件 https://learn.chatgpt.com/codex/skills-and-plugins
 - 文档：设置 https://learn.chatgpt.com/codex/reference/settings ；排错 https://learn.chatgpt.com/codex/reference/troubleshooting ；定价与额度 https://learn.chatgpt.com/codex/pricing ；更新记录 https://learn.chatgpt.com/docs/whats-new
 - 下载页 https://chatgpt.com/download/
+- 用量查询页（需登录）https://chatgpt.com/codex/settings/usage
+- 服务状态页 https://status.openai.com
 - 仓库：openai/plugins https://github.com/openai/plugins ；openai/skills（已标注弃用）https://github.com/openai/skills ；问题反馈 https://github.com/openai/codex/issues
 - Agent Skills 开放标准 https://agentskills.io
 
