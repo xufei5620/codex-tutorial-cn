@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex 长期教程：框架优先补充说明</title>
+  <style>
+    :root { color-scheme: light; --ink:#15202b; --muted:#52616b; --line:#d7e0e6; --paper:#fff; --wash:#f4f8fa; --accent:#0969a9; }
+    * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:var(--wash); font:16px/1.75 system-ui,"Microsoft YaHei",sans-serif; }
+    main { max-width:980px; margin:32px auto; padding:36px; background:var(--paper); border:1px solid var(--line); border-radius:14px; }
+    h1,h2 { line-height:1.3; } h1 { margin-top:0; } h2 { margin-top:2rem; border-bottom:1px solid var(--line); padding-bottom:.4rem; } a { color:var(--accent); } .lead { font-size:1.12rem; } .callout { padding:14px 18px; border-left:4px solid var(--accent); background:#edf6fc; } table { width:100%; border-collapse:collapse; } th,td { padding:.65rem; border:1px solid var(--line); vertical-align:top; text-align:left; } th { background:var(--wash); } code { background:#eef2f5; padding:.1em .3em; border-radius:3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Codex 长期教程：框架优先补充说明</h1>
+    <p class="lead">本补充说明将首版目标收束为可长期维护的<strong>课程框架、模板、来源与发布规则</strong>。当前已有的课程正文仅作为结构验证用的 seed/sample，不代表已完成或最终定稿；后续按模块逐条补充、审核与发布。</p>
+
+    <section>
+      <h2>定位与受众</h2>
+      <p>这是面向刚接触 AI、刚接触 Codex、可能也不熟悉电脑操作的中文入门教程。它采用离线可打开的多文件 HTML：下载或解压后双击 <code>index.html</code> 即可阅读，不依赖网站、账号、联网、远程脚本或追踪。</p>
+      <p>首版覆盖 Windows 与 macOS 的桌面 Codex 使用。为避免把零基础读者带离目标，首版不教授软件开发、命令行（CLI）、IDE、API、SDK、Git 工作流或 Linux；这些内容未来如有必要，将以独立、明确标注的扩展课程处理。</p>
+    </section>
+
+    <section>
+      <h2>首版知识架构：11 章</h2>
+      <ol>
+        <li>开始前：这套教程、边界与安全原则</li>
+        <li>认识 Codex：能做什么、不能做什么</li>
+        <li>安装、登录与界面导航（Windows / macOS）</li>
+        <li>第一次对话：把需求说清楚</li>
+        <li>日常协作：检查、修改、验证与回退意识</li>
+        <li>插件：选择、安装、权限、使用与移除</li>
+        <li>Skill：发现、安装、调用、更新与移除</li>
+        <li>常见任务场景：从想法到可检查结果</li>
+        <li>一个完整的虚构项目案例</li>
+        <li>排错、安全、隐私与求助</li>
+        <li>参考资料、术语、版本与维护记录</li>
+      </ol>
+      <p>“行业提示词库”是与 11 章并列的独立入口，不把它误当成某一行业的完整课程。</p>
+    </section>
+
+    <section>
+      <h2>可维护的目录与内容单元</h2>
+      <p>每个插件或 Skill 都使用其自身名称建立独立目录，分别保存读者页、来源证据、版本/许可、风险、验证记录和必要的自有示例。不得把不同扩展的资料混放，也不得把第三方内容当作无来源的原创教程。</p>
+      <p>每个课程单元必须有：学习目标、前提条件、准确的操作步骤、预期结果、风险/权限提示、验证方法、来源、复核日期和内容状态。内容状态按 <strong>候选 → 来源复核 → 技术复核 → 读者试读 → 可发布 → 已发布 → 需复核/已撤回</strong> 流转；高/中/低风险资料默认分别在 30/90/180 天后重新复核。</p>
+    </section>
+
+    <section>
+      <h2>插件、Skill 与外部来源规则</h2>
+      <p>GitHub 及其他网站只用于方法研究、来源比对和许可判断。引入前必须记录固定版本或提交、作者/上游地址、许可、允许复制的范围、权限与安全风险；不因“教程好用”就复制文件或照搬提示词。官方文档、第三方项目和自有内容必须标明不同的证明范围。</p>
+      <p>插件和 Skill 的教学均以最小权限、虚构数据和可回退步骤为默认原则。涉及账号、连接器、真实业务数据、外发、删除或覆盖操作，必须独立提示并由读者确认。</p>
+    </section>
+
+    <section>
+      <h2>行业提示词库与效果图</h2>
+      <p>提示词库按行业组织，首版固定五个入口：通用办公、电商、餐饮与本地服务、内容与媒体、教育与培训。每个入口覆盖六类任务：调研整理、写作改写、方案规划、数据理解、视觉创意、复盘优化。</p>
+      <p>首版规划 <strong>26 条唯一提示词</strong>，以跨入口复用形成 <strong>30 个展示位</strong>；每张卡片包含适用场景、可复制提示词、可替换字段、输入提醒、预期效果图、局限与来源/版权说明。效果图只使用自有或明确许可的虚构示例，不使用真实客户数据或未经许可的 GitHub 图片。</p>
+    </section>
+
+    <section>
+      <h2>Notion 与公开发布边界</h2>
+      <p>Notion 用作私有维护台账：收集候选、排期、审核、复核到期和反馈。对外内容由受控的公开投影生成，投影前剔除内部备注、账号信息、未通过内容和不应公开的来源材料。Notion 不是唯一内容源，Git 仓库中的可发布 HTML 与登记表保持可追溯关系。</p>
+      <div class="callout"><strong>GitHub 规则：</strong>当前不创建远程仓库、不公开发布。若在验收后创建 GitHub 仓库，必须创建为<strong>公开仓库</strong>，且只推送通过公开白名单审查的内容；本地开发历史、内部审核材料和未验收内容不自动公开。</div>
+    </section>
+
+    <section>
+      <h2>首版验收重点</h2>
+      <table>
+        <thead><tr><th>验收对象</th><th>首版要证明的事</th></tr></thead>
+        <tbody>
+          <tr><td>框架</td><td>11 章、行业库、模板、来源/许可、状态流程和版本机制均有可进入的位置。</td></tr>
+          <tr><td>可读性</td><td>Windows 与 macOS 上可离线打开；结构清楚，零基础读者知道下一步去哪里。</td></tr>
+          <tr><td>边界</td><td>明确排除开发、CLI、Linux；不把样例正文误报为完整课程。</td></tr>
+          <tr><td>可维护性</td><td>新增内容能套用模板，来源与验证有记录，公开与私有材料有边界。</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

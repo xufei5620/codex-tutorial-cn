@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>行业提示词库｜Codex 中文入门教程</title>
+  <meta name="description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:title" content="行业提示词库｜Codex 中文入门教程">
+  <meta property="og:description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#084a51">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#content">跳到正文</a>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="index.html">Codex 中文入门教程<small>零基础・离线阅读</small></a>
+    <a class="side-toc-link" href="index.html">← 全部章节</a>
+    <nav aria-label="全部章节">
+      <p class="part-label">第一部分 · 基础</p>
+      <ol class="chapters">
+        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch02.html"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch05.html"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第二部分 · 扩展</p>
+      <ol class="chapters">
+        <li><a href="ch06.html"><span class="n">06</span><span class="t">插件</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch07.html"><span class="n">07</span><span class="t">Skill</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch08.html"><span class="n">08</span><span class="t">常见任务场景</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch09.html"><span class="n">09</span><span class="t">完整虚构案例</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第三部分 · 参考</p>
+      <ol class="chapters">
+        <li><a href="ch10.html"><span class="n">10</span><span class="t">排错、安全与求助</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch11.html"><span class="n">11</span><span class="t">参考与维护</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <a class="side-entry is-current" href="prompts.html">行业提示词库</a>
+    </nav>
+    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li><li><span class="dot outline"></span>大纲</li></ul></div>
+  </aside>
+  <main class="doc-main" id="content">
+    <article class="chapter prompts">
+      <header class="chapter-head">
+        <p class="kicker">独立入口 <span class="badge draft">首批建设中</span></p>
+        <h1>行业提示词库</h1>
+        <ul class="meta"><li>预计阅读 14 分钟</li><li>跨行业通用：6 / 6 张完成草稿</li><li>后续四个行业入口规划中</li></ul>
+      </header>
+
+      <nav class="section-nav" aria-label="本页内容"><p class="label">本页内容</p><ol>
+        <li><a href="#s1">提示词卡怎么用</a></li>
+        <li><a href="#s2">跨行业通用卡片清单</a></li>
+        <li><a href="#prm-com-0001">卡片：会议记录整理成纪要（PRM-COM-0001）</a></li>
+        <li><a href="#prm-com-0002">卡片：长文材料压缩成要点（PRM-COM-0002）</a></li>
+        <li><a href="#prm-com-0003">卡片：杂乱文件清单归类（PRM-COM-0003）</a></li>
+        <li><a href="#prm-com-0004">卡片：表格数据初步解读（PRM-COM-0004）</a></li>
+        <li><a href="#prm-com-0005">卡片：一件事的调研提纲（PRM-COM-0005）</a></li>
+        <li><a href="#prm-com-0006">卡片：配图与视觉需求描述（PRM-COM-0006）</a></li>
+        <li><a href="#s9">后续入口（规划）</a></li>
+      </ol></nav>
+
+      <section id="s1">
+      <h2>提示词卡怎么用</h2>
+      <p>提示词卡是可以直接复制使用的请求模板。每张卡都写清楚了适用场景、要准备什么材料，以及怎么判断结果做得对不对。用的时候，把提示词整段复制、粘贴进对话框，再把〖 〗里的内容换成你自己的材料和要求，然后发送。</p>
+      <p>每张卡都配了虚构示例（统一用「蓝溪文具」演示），全部材料为自有原创或虚构，不依赖任何外部网站或第三方素材。</p>
+      <aside class="callout note" data-label="建设顺序">首批「跨行业通用」入口的 6 张卡（下表）已全部完成草稿。电商与零售、餐饮与本地生活、传媒与内容创作、教育与培训四个行业入口，将在这 6 张通用卡经过复核后再开工，避免铺开太多、每张都做不精。</aside>
+      </section>
+
+      <section id="s2">
+      <h2>跨行业通用卡片清单</h2>
+      <p>下面 6 张卡不限行业，任何人整理沟通、文档、文件、表格、调研或视觉需求时都能用。点击卡片名称可以跳到对应小节。</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>编号</th><th>卡片</th><th>任务分类</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td>PRM-COM-0001</td><td><a href="#prm-com-0001">会议记录整理成纪要</a></td><td>沟通协作</td><td><span class="badge draft">草稿</span></td></tr>
+          <tr><td>PRM-COM-0002</td><td><a href="#prm-com-0002">长文材料压缩成要点</a></td><td>文档报告</td><td><span class="badge draft">草稿</span></td></tr>
+          <tr><td>PRM-COM-0003</td><td><a href="#prm-com-0003">杂乱文件清单归类</a></td><td>文件整理</td><td><span class="badge draft">草稿</span></td></tr>
+          <tr><td>PRM-COM-0004</td><td><a href="#prm-com-0004">表格数据初步解读</a></td><td>表格数据</td><td><span class="badge draft">草稿</span></td></tr>
+          <tr><td>PRM-COM-0005</td><td><a href="#prm-com-0005">一件事的调研提纲</a></td><td>调研计划</td><td><span class="badge draft">草稿</span></td></tr>
+          <tr><td>PRM-COM-0006</td><td><a href="#prm-com-0006">配图与视觉需求描述</a></td><td>视觉创意</td><td><span class="badge draft">草稿</span></td></tr>
+        </tbody>
+      </table></div>
+      </section>
+
+      <section class="prompt-card" id="prm-com-0001">
+      <h2>卡片：会议记录整理成纪要（PRM-COM-0001） <span class="badge draft">草稿</span></h2>
+      <dl class="card">
+        <dt>行业 / 任务分类</dt><dd>跨行业通用｜沟通协作</dd>
+        <dt>适用场景</dt><dd>开完会后手里只有一堆凌乱的记录（谁说了什么、随手记的片段），需要发给同事一份清晰的纪要。</dd>
+        <dt>输入准备</dt><dd>你的会议记录文字。练习时请使用虚构内容；使用真实记录前，先删除不该外传的人名与敏感信息。</dd>
+      </dl>
+
+      <h3>可复制提示词</h3>
+      <div class="callout example" data-label="复制下面这段，把〖 〗里的内容换成你自己的">
+        <p class="q">任务：把下面的会议记录整理成一份会议纪要。
+范围：只整理记录里出现的内容，不要补充或推测没提到的信息；记录里没有的负责人或时间就标注「待定」。
+期望：分三部分——「结论」「待办（每条注明负责人和时间）」「遗留问题」，用列表，总长不超过〖300〗字，语气正式。
+材料：〖粘贴你的会议记录〗</p>
+      </div>
+      <p><strong>可调变量：</strong>字数上限、语气（正式/轻松）、分区方式（也可按议题分）、输出格式（列表/表格）。</p>
+
+      <h3>效果示例（输入与输出均为虚构演示材料）</h3>
+      <div class="callout example" data-label="虚构输入：蓝溪文具周会的原始记录">
+        <p class="q">9/1 周会。老周说樱花本子这个月卖得不错，下月想加两个新色。小梅提到仓库那边发货慢，客户有抱怨，她去问问原因。促销的事没定，李姐说预算要再算算。下周三之前把新色的样品图发群里（老周）。</p>
+      </div>
+      <div class="callout output" data-label="输出示例">
+        <p><strong>会议纪要（2026-09-01 周会）</strong></p>
+        <p><strong>结论</strong></p>
+        <ul><li>樱花笔记本本月销售表现良好，下月计划新增两个颜色。</li></ul>
+        <p><strong>待办</strong></p>
+        <ul>
+          <li>新色样品图发至工作群——负责人：老周，时间：下周三前</li>
+          <li>了解仓库发货慢的原因——负责人：小梅，时间：待定</li>
+        </ul>
+        <p><strong>遗留问题</strong></p>
+        <ul><li>促销方案未定，待李姐核算预算后再议。</li></ul>
+      </div>
+      <p class="meta">效果示例说明：以上输出由本卡提示词对上述虚构输入实际生成后人工核对；2026-09-01 制作，无真实人物与企业。</p>
+
+      <h3>验收方式</h3>
+      <ul>
+        <li>纪要里的每一条都能在原始记录中找到出处；</li>
+        <li>没有凭空出现的负责人、时间或结论（记录里没有的应标「待定」）；</li>
+        <li>三部分齐全，长度和语气符合你的设定。</li>
+      </ul>
+
+      <aside class="callout stop" data-label="停一停"><strong>风险与停止条件：</strong>会议记录常含真实姓名和内部信息。练习一律用虚构记录；处理真实记录前先脱敏，公司明确要求保密的内容不要粘贴。纪要发出前必须自己通读一遍——你（而不是 Codex）对发出去的内容负责。</aside>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>版本 / 状态</dt><dd>v0.1 草稿，2026-09-01</dd>
+          <dt>来源与权利</dt><dd>提示词为自有原创；示例输入输出为自制虚构材料。无第三方引用。</dd>
+          <dt>复核</dt><dd>低风险，最晚复验 2027-02-28；提示词措辞或产品行为明显变化时提前复核。</dd>
+        </dl>
+      </details>
+      </section>
+
+      <section class="prompt-card" id="prm-com-0002">
+      <h2>卡片：长文材料压缩成要点（PRM-COM-0002） <span class="badge draft">草稿</span></h2>
+      <dl class="card">
+        <dt>行业 / 任务分类</dt><dd>跨行业通用｜文档报告</dd>
+        <dt>适用场景</dt><dd>拿到一篇很长的材料（报告、说明、文章），需要先提炼出关键要点，给自己或同事看，不想从头读到尾。</dd>
+        <dt>输入准备</dt><dd>你的长文材料文字。练习时请使用虚构材料；使用真实材料前，确认内容是否允许你查看和外传。</dd>
+      </dl>
+
+      <h3>可复制提示词</h3>
+      <div class="callout example" data-label="复制下面这段，把〖 〗里的内容换成你自己的">
+        <p class="q">任务：把下面的长文材料压缩成要点列表。
+范围：只整理材料里出现的内容，不要补充材料没提到的信息；材料中含糊不清的地方标注「原文未说明」。
+期望：输出不超过〖8〗条要点，每条不超过〖40〗字，按重要程度从高到低排序，用列表。
+材料：〖粘贴你的长文材料〗</p>
+      </div>
+      <p><strong>可调变量：</strong>要点条数上限、每条字数上限、排序方式（重要程度/出现顺序）、是否需要分类小标题。</p>
+
+      <h3>效果示例（输入与输出均为虚构演示材料）</h3>
+      <div class="callout example" data-label="虚构输入：蓝溪文具「仓库备货说明」节选">
+        <p class="q">本季度仓库备货说明：樱花系列笔记本近两月销量持续上升，建议下季度备货量在现有基础上增加三成，具体比例待和销售部门再核实。牛皮纸笔记本销量平稳，维持现有备货节奏即可。文具盒类目本季度出现退货增多的情况，具体原因仓库这边暂时说不清楚，需要和客服部门一起排查。包装材料库存偏紧，近期已联系供应商加单，到货时间还没确定。</p>
+      </div>
+      <div class="callout output" data-label="输出示例">
+        <ul>
+          <li>樱花系列笔记本销量持续上升，建议下季度增加备货。</li>
+          <li>樱花系列具体增加比例：原文未说明，待与销售部门核实。</li>
+          <li>牛皮纸笔记本销量平稳，维持现有备货节奏。</li>
+          <li>文具盒类目本季度退货增多。</li>
+          <li>文具盒退货原因：原文未说明，需与客服部门排查。</li>
+          <li>包装材料库存偏紧，已联系供应商加单。</li>
+          <li>包装材料到货时间：原文未说明。</li>
+        </ul>
+      </div>
+      <p class="meta">效果示例说明：以上输出由本卡提示词对上述虚构输入实际生成后人工核对；2026-09-01 制作，无真实人物与企业。</p>
+
+      <h3>验收方式</h3>
+      <ul>
+        <li>每条要点都能在原文中找到依据；</li>
+        <li>原文含糊或没写清楚的地方标了「原文未说明」，没有被当作确定结论说出来；</li>
+        <li>条数和每条字数符合你的设定。</li>
+      </ul>
+
+      <aside class="callout stop" data-label="停一停"><strong>风险与停止条件：</strong>长文材料可能包含商业机密或未公开数据。练习一律用虚构材料；处理真实材料前先确认是否允许外传、是否需要删除敏感段落。压缩后的要点如果要用来做决定，先回头核对原文，不要只看要点就下判断。</aside>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>版本 / 状态</dt><dd>v0.1 草稿，2026-09-01</dd>
+          <dt>来源与权利</dt><dd>提示词为自有原创；示例输入输出为自制虚构材料。无第三方引用。</dd>
+          <dt>复核</dt><dd>低风险，最晚复验 2027-02-28；提示词措辞或产品行为明显变化时提前复核。</dd>
+        </dl>
+      </details>
+      </section>
+
+      <section class="prompt-card" id="prm-com-0003">
+      <h2>卡片：杂乱文件清单归类（PRM-COM-0003） <span class="badge draft">草稿</span></h2>
+      <dl class="card">
+        <dt>行业 / 任务分类</dt><dd>跨行业通用｜文件整理</dd>
+        <dt>适用场景</dt><dd>电脑里或某个文件夹堆了一堆命名杂乱的文件，需要先按用途粗略分类，方便后续手动整理。</dd>
+        <dt>输入准备</dt><dd>一份文件名清单，每行一个文件名。文件名本身不要包含真实客户姓名或账号；练习用虚构清单。</dd>
+      </dl>
+
+      <h3>可复制提示词</h3>
+      <div class="callout example" data-label="复制下面这段，把〖 〗里的内容换成你自己的">
+        <p class="q">任务：把下面这份文件名清单按用途分类。
+范围：只处理清单里出现的文件名，不要臆测文件里的具体内容；无法判断类别的归到「待定」。
+期望：用表格列出，列为「文件名」「建议分类」「判断依据（从文件名能看出的线索）」，分类数量不超过〖6〗类。
+材料：〖粘贴你的文件名清单，每行一个〗</p>
+      </div>
+      <p><strong>可调变量：</strong>分类数量上限、是否允许新建子分类、是否按日期或项目再细分。</p>
+
+      <h3>效果示例（输入与输出均为虚构演示材料）</h3>
+      <div class="callout example" data-label="虚构输入：蓝溪文具某台电脑桌面的文件名清单">
+        <p class="q">樱花本子11月备货.xlsx
+周会记录0825
+logo新版.png
+报价单_旧
+牛皮本文案第三版.docx
+仓库照片</p>
+      </div>
+      <div class="callout output" data-label="输出示例">
+        <div class="table-wrap"><table>
+          <thead><tr><th>文件名</th><th>建议分类</th><th>判断依据</th></tr></thead>
+          <tbody>
+            <tr><td>樱花本子11月备货.xlsx</td><td>库存与备货</td><td>文件名含「备货」，格式为表格。</td></tr>
+            <tr><td>周会记录0825</td><td>会议记录</td><td>文件名含「周会记录」和日期。</td></tr>
+            <tr><td>logo新版.png</td><td>视觉素材</td><td>文件名含「logo」，格式为图片。</td></tr>
+            <tr><td>报价单_旧</td><td>待定</td><td>只知道是报价单，看不出对应哪次报价。</td></tr>
+            <tr><td>牛皮本文案第三版.docx</td><td>文案稿件</td><td>文件名含「文案」，格式为文档。</td></tr>
+            <tr><td>仓库照片</td><td>待定</td><td>只知道是照片，看不出具体用途。</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p class="meta">效果示例说明：以上输出由本卡提示词对上述虚构输入实际生成后人工核对；2026-09-01 制作，无真实人物与企业。</p>
+
+      <h3>验收方式</h3>
+      <ul>
+        <li>每一行的「判断依据」都只来自文件名本身，没有编造文件内容；</li>
+        <li>看不出用途的文件归到了「待定」，而不是被随意归类；</li>
+        <li>分类数量没有超过你设定的上限。</li>
+      </ul>
+
+      <aside class="callout stop" data-label="停一停"><strong>风险与停止条件：</strong>清单里如果混入了含真实姓名、账号或密码的文件名，先删除或替换成占位内容再使用。分类结果只是建议，正式整理（尤其是删除文件）前，自己再确认一遍，不要直接按建议批量操作。</aside>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>版本 / 状态</dt><dd>v0.1 草稿，2026-09-01</dd>
+          <dt>来源与权利</dt><dd>提示词为自有原创；示例输入输出为自制虚构材料。无第三方引用。</dd>
+          <dt>复核</dt><dd>低风险，最晚复验 2027-02-28；提示词措辞或产品行为明显变化时提前复核。</dd>
+        </dl>
+      </details>
+      </section>
+
+      <section class="prompt-card" id="prm-com-0004">
+      <h2>卡片：表格数据初步解读（PRM-COM-0004） <span class="badge draft">草稿</span></h2>
+      <dl class="card">
+        <dt>行业 / 任务分类</dt><dd>跨行业通用｜表格数据</dd>
+        <dt>适用场景</dt><dd>手里有一张表格（销量、库存、开支等），想先看懂大概情况——哪里高、哪里低、有什么变化，再决定要不要深入分析。</dd>
+        <dt>输入准备</dt><dd>把表格内容整理成文字（每行一条记录，字段之间用顿号或逗号隔开）。练习用虚构数据；真实经营数据先确认是否允许你查看和外传。</dd>
+      </dl>
+
+      <h3>可复制提示词</h3>
+      <div class="callout example" data-label="复制下面这段，把〖 〗里的内容换成你自己的">
+        <p class="q">任务：帮我初步解读下面这张表格的数据。
+范围：只根据表格里出现的数字下结论，不要编造表格没有的原因或趋势；数据不足以下结论的地方要写「数据不足，无法判断」。
+期望：分三部分——「整体情况」「明显的高点/低点」「值得进一步核实的疑点」，每部分不超过〖3〗条，用列表。
+材料：〖粘贴你的表格文字，每行一条记录〗</p>
+      </div>
+      <p><strong>可调变量：</strong>每部分条数上限、重点关注的维度（销量/库存/成本）、是否需要按时间段对比。</p>
+
+      <h3>效果示例（输入与输出均为虚构演示材料）</h3>
+      <div class="callout example" data-label="虚构输入：蓝溪文具两个月的品类销量">
+        <p class="q">樱花本子、8月380本、9月410本
+牛皮笔记本、8月290本、9月150本
+文具盒、8月120本、9月125本</p>
+      </div>
+      <div class="callout output" data-label="输出示例">
+        <p><strong>整体情况</strong></p>
+        <ul><li>樱花本子和文具盒 9 月比 8 月略有增长；牛皮笔记本明显下降。</li></ul>
+        <p><strong>明显的高点/低点</strong></p>
+        <ul><li>牛皮笔记本 9 月销量（150 本）比 8 月（290 本）低约一半，是表中最明显的变化。</li></ul>
+        <p><strong>值得进一步核实的疑点</strong></p>
+        <ul><li>牛皮笔记本下降的原因表格没有给出，数据不足，无法判断，需要再核实是否有促销结束、缺货等情况。</li></ul>
+      </div>
+      <p class="meta">效果示例说明：以上输出由本卡提示词对上述虚构输入实际生成后人工核对；2026-09-01 制作，无真实人物与企业。</p>
+
+      <h3>验收方式</h3>
+      <ul>
+        <li>三部分的每一条都能对应到表格里的具体数字；</li>
+        <li>「数据不足，无法判断」的地方没有被偷偷换成确定结论；</li>
+        <li>条数符合你的设定，读起来是初步解读而不是最终结论。</li>
+      </ul>
+
+      <aside class="callout stop" data-label="停一停"><strong>风险与停止条件：</strong>经营数据可能涉及商业机密，练习一律用虚构数据；真实数据先确认是否允许外传。这份解读只是初步参考，重要的经营判断（比如要不要停产某个品类）必须自己核对原始数据后再决定，不能只看这份解读就下结论。</aside>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>版本 / 状态</dt><dd>v0.1 草稿，2026-09-01</dd>
+          <dt>来源与权利</dt><dd>提示词为自有原创；示例输入输出为自制虚构材料。无第三方引用。</dd>
+          <dt>复核</dt><dd>低风险，最晚复验 2027-02-28；提示词措辞或产品行为明显变化时提前复核。</dd>
+        </dl>
+      </details>
+      </section>
+
+      <section class="prompt-card" id="prm-com-0005">
+      <h2>卡片：一件事的调研提纲（PRM-COM-0005） <span class="badge draft">草稿</span></h2>
+      <dl class="card">
+        <dt>行业 / 任务分类</dt><dd>跨行业通用｜调研计划</dd>
+        <dt>适用场景</dt><dd>要开始了解一个新话题或考虑一件新事情（比如要不要新增一个品类），不知道从哪儿查起，需要先列一份调研提纲。</dd>
+        <dt>输入准备</dt><dd>一句话说清楚你想调研什么、为什么；如果已经知道一些背景信息也可以提供。练习用虚构目的和背景。</dd>
+      </dl>
+
+      <h3>可复制提示词</h3>
+      <div class="callout example" data-label="复制下面这段，把〖 〗里的内容换成你自己的">
+        <p class="q">任务：帮我针对下面这件事，列一份调研提纲。
+范围：只根据我提供的目的和背景来设计提纲，不要假设我还没提到的限制条件（比如预算、时间）；需要我补充的信息用〖待补充〗标出。
+期望：分「要弄清楚的问题」「可能的信息来源类型（不点名具体网站或产品）」「建议的先后顺序」三部分，每部分不超过〖5〗条，用列表。
+材料：调研目的：〖一句话说明你想调研什么、为什么〗
+已知背景：〖填写，没有就写"无"〗</p>
+      </div>
+      <p><strong>可调变量：</strong>每部分条数上限、是否要给出具体调研方法（比如问卷、试用、同行请教）、是否需要标注优先级。</p>
+
+      <h3>效果示例（输入与输出均为虚构演示材料）</h3>
+      <div class="callout example" data-label="虚构输入：蓝溪文具的调研目的与背景">
+        <p class="q">调研目的：了解要不要新增儿童文具品类，因为想扩大产品线。
+已知背景：目前主要卖成人办公文具，最近有几位老客户问过有没有适合小孩用的本子。</p>
+      </div>
+      <div class="callout output" data-label="输出示例">
+        <p><strong>要弄清楚的问题</strong></p>
+        <ul>
+          <li>儿童文具的大致需求量有多大。</li>
+          <li>已经在做儿童文具的同类店铺情况如何。</li>
+          <li>供应链能否找到合适的儿童文具货源。</li>
+          <li>大致定价区间在什么水平。</li>
+        </ul>
+        <p><strong>可能的信息来源类型</strong></p>
+        <ul>
+          <li>向问过的老客户直接询问具体需求。</li>
+          <li>行业相关的公开统计或报告类资料。</li>
+          <li>同类店铺的公开经营情况观察。</li>
+          <li>供应商询价与打样反馈。</li>
+        </ul>
+        <p><strong>建议的先后顺序</strong></p>
+        <ul>
+          <li>先问老客户，确认需求是否真实存在。</li>
+          <li>再找供应商询价，看货源和成本是否可行。</li>
+          <li>最后再决定是否小批量试销。</li>
+        </ul>
+      </div>
+      <p class="meta">效果示例说明：以上输出由本卡提示词对上述虚构输入实际生成后人工核对；2026-09-01 制作，无真实人物与企业。</p>
+
+      <h3>验收方式</h3>
+      <ul>
+        <li>三部分内容都能追溯到「调研目的」和「已知背景」，没有凭空加限制条件；</li>
+        <li>信息来源类型是类型描述，没有点名具体网站或产品；</li>
+        <li>建议顺序读得出先后逻辑，不是随意排列。</li>
+      </ul>
+
+      <aside class="callout stop" data-label="停一停"><strong>风险与停止条件：</strong>调研提纲只是起点，不能替代真正的市场核实；练习一律用虚构目的和背景。如果调研内容涉及打听他人隐私或未公开的商业信息，先确认这样做是否合适、是否合法，不要直接照提纲执行。</aside>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>版本 / 状态</dt><dd>v0.1 草稿，2026-09-01</dd>
+          <dt>来源与权利</dt><dd>提示词为自有原创；示例输入输出为自制虚构材料。无第三方引用。</dd>
+          <dt>复核</dt><dd>低风险，最晚复验 2027-02-28；提示词措辞或产品行为明显变化时提前复核。</dd>
+        </dl>
+      </details>
+      </section>
+
+      <section class="prompt-card" id="prm-com-0006">
+      <h2>卡片：配图与视觉需求描述（PRM-COM-0006） <span class="badge draft">草稿</span></h2>
+      <dl class="card">
+        <dt>行业 / 任务分类</dt><dd>跨行业通用｜视觉创意</dd>
+        <dt>适用场景</dt><dd>需要一张配图（比如宣传海报、文章头图），但脑子里只有模糊的想法，需要先把视觉需求写清楚，方便后续找人做图、或者直接让 Codex 生成（Codex 自带图片生成，但消耗额度比文字多好几倍——先用这张卡把需求写清楚，再让它画，能少返工）。</dd>
+        <dt>输入准备</dt><dd>这张图的用途，以及你脑子里模糊的想法（哪怕只是几个关键词）。不要提供任何真实人物照片或未经许可的他人素材。</dd>
+      </dl>
+
+      <h3>可复制提示词</h3>
+      <div class="callout example" data-label="复制下面这段，把〖 〗里的内容换成你自己的">
+        <p class="q">任务：帮我把下面这个模糊的配图想法，整理成一份清楚的视觉需求描述。
+范围：只根据我提供的用途和想法来整理，不要替我决定没提到的风格细节（比如具体颜色、字体），这些留给我自己填；材料里没说的一律标「未定，需你补充」。
+期望：分「用途与尺寸场景」「画面主要元素」「风格关键词」「需要我确认的空白点」四部分，每部分不超过〖4〗条，用列表。
+材料：用途：〖比如朋友圈海报、文章头图〗
+我的模糊想法：〖填写几个关键词或一句话描述〗</p>
+      </div>
+      <p><strong>可调变量：</strong>每部分条数上限、是否需要给出配色建议、是否要整理成能转给设计师看的简报格式。</p>
+
+      <h3>效果示例（输入与输出均为虚构演示材料）</h3>
+      <div class="callout example" data-label="虚构输入：蓝溪文具的配图想法">
+        <p class="q">用途：朋友圈海报，宣传樱花笔记本上新。
+我的模糊想法：想要春天的感觉，粉粉的，好看就行。</p>
+      </div>
+      <div class="callout output" data-label="输出示例">
+        <p><strong>用途与尺寸场景</strong></p>
+        <ul>
+          <li>朋友圈海报，以竖版构图为主。</li>
+          <li>主要在手机屏幕上观看，主体信息要清楚可辨。</li>
+        </ul>
+        <p><strong>画面主要元素</strong></p>
+        <ul>
+          <li>樱花笔记本产品图。</li>
+          <li>樱花花瓣作点缀元素。</li>
+          <li>「蓝溪文具」店铺名字样。</li>
+        </ul>
+        <p><strong>风格关键词</strong></p>
+        <ul><li>春天感、粉色系、清新。</li></ul>
+        <p><strong>需要我确认的空白点</strong></p>
+        <ul>
+          <li>具体色号：未定，需你补充。</li>
+          <li>是否需要标注价格或活动文字：未定，需你补充。</li>
+          <li>字体风格倾向：未定，需你补充。</li>
+        </ul>
+      </div>
+      <p class="meta">效果示例说明：以上输出由本卡提示词对上述虚构输入实际生成后人工核对；2026-09-01 制作，无真实人物与企业。</p>
+
+      <h3>验收方式</h3>
+      <ul>
+        <li>四部分内容都能对应到「用途」和「模糊想法」，没有替你决定没提到的风格细节；</li>
+        <li>没定的地方清楚列在「需要我确认的空白点」，而不是被擅自补全；</li>
+        <li>整理出来的描述能直接转给别人参考，而不是一段成品文案。</li>
+      </ul>
+
+      <aside class="callout stop" data-label="停一停"><strong>风险与停止条件：</strong>整理需求描述本身不涉及版权问题，但选用参考图和最终生成或制作的配图可能涉及版权。不要用他人真实照片或未获授权的素材作为参考依据；正式对外发布配图前，先确认图片来源和使用权限是否清楚。</aside>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>版本 / 状态</dt><dd>v0.1 草稿，2026-09-01</dd>
+          <dt>来源与权利</dt><dd>提示词为自有原创；示例输入输出为自制虚构材料。无第三方引用。</dd>
+          <dt>复核</dt><dd>低风险，最晚复验 2027-02-28；提示词措辞或产品行为明显变化时提前复核。</dd>
+        </dl>
+      </details>
+      </section>
+
+      <section id="s9">
+      <h2>后续入口（规划）</h2>
+      <p class="meta">电商与零售、餐饮与本地生活、传媒与内容创作、教育与培训——每个入口 5 张卡（其中「杂乱文件清单归类」跨入口复用）。整体规划 26 张唯一卡片、30 个展示位，在通用入口完成复核后按此顺序逐个开工。</p>
+      </section>
+
+      <section class="summary"><h2>本页小结</h2><ul>
+        <li>提示词卡按「复制提示词→换掉〖 〗里的内容→发送→按验收方式检查」的方式使用。</li>
+        <li>首批「跨行业通用」6 张卡（沟通协作、文档报告、文件整理、表格数据、调研计划、视觉创意）已全部完成草稿，正文与示例均为虚构演示。</li>
+        <li>每张卡的提示词都写明了范围限制（只处理材料里出现的内容）和输出格式要求，帮助结果保持可控、可核对。</li>
+        <li>四个行业专属入口尚未开工，将在通用卡复核后按规划顺序推进。</li>
+      </ul></section>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>模块 ID / 状态</dt><dd>PRM-COM（跨行业通用入口）｜draft（6 张卡均为草稿，未进入复核）</dd>
+          <dt>风险级别</dt><dd>低：方法类内容，提示词本身不涉及权限、付费或删除操作；每张卡另有自己的风险提示。</dd>
+          <dt>来源与权利</dt><dd>自有原创；全部示例（含「蓝溪文具」）为虚构材料。无第三方引用。</dd>
+          <dt>验证状态</dt><dd>unverified。计划：进入 reviewed 后，逐张核对提示词在当前版 Codex 桌面端的实际输出与本页效果示例是否一致。</dd>
+          <dt>复核日期</dt><dd>撰写：2026-09-01；低风险，最晚复验 2027-02-28。</dd>
+        </dl>
+      </details>
+
+
+    </article>
+    <footer class="page"><p>本页为离线教程的一部分，无需联网阅读。<a href="index.html">返回目录</a></p></footer>
+  </main>
+</div>
+</body>
+</html>

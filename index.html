@@ -3,88 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Codex 长期教程｜框架总览</title>
-  <style>
-    :root { --ink:#18232d; --muted:#5c6973; --paper:#fff; --bg:#f3f7f8; --line:#d6e0e4; --accent:#0b6f78; --accent-dark:#07545b; --note:#fff6dd; }
-    * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 system-ui,"Microsoft YaHei",sans-serif; }
-    header { background:linear-gradient(135deg,#073e47,#0b6f78); color:#fff; padding:3.5rem max(1.2rem,calc((100% - 1080px)/2)); } header p { max-width:760px; margin-bottom:0; color:#daf1f3; } main { max-width:1080px; margin:0 auto; padding:2rem 1.2rem 4rem; } h1 { margin:0; font-size:clamp(2rem,5vw,3.3rem); line-height:1.15; } h2 { margin:2.4rem 0 .8rem; font-size:1.45rem; } a { color:var(--accent-dark); font-weight:650; } .notice { background:var(--note); border:1px solid #ead8a6; border-radius:10px; padding:1rem 1.15rem; } .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem; } .card { background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:1.1rem; } .card h3 { margin:.1rem 0 .4rem; font-size:1.05rem; } .card p { margin:0; color:var(--muted); } .stage { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.6rem; list-style:none; padding:0; } .stage li { padding:.7rem; border-radius:8px; background:#e8f2f3; text-align:center; } .links { columns:2 260px; padding-left:1.2rem; } .links li { margin:.55rem 0; } footer { color:var(--muted); border-top:1px solid var(--line); margin-top:3rem; padding-top:1rem; } code { background:#e8eef0; padding:.1em .3em; border-radius:3px; }
-  </style>
+  <title>Codex 中文入门教程</title>
+  <meta name="description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:title" content="Codex 中文入门教程">
+  <meta property="og:description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#084a51">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
 </head>
-<body>
-  <header>
-    <h1>Codex 长期教程：框架总览</h1>
-    <p>给第一次接触 AI 与 Codex 的中文读者：先建立清晰、可离线阅读、可持续维护的学习地图；每一课的正文随后按相同标准逐条补齐。</p>
+<body class="home">
+  <a class="skip" href="#content">跳到正文</a>
+  <header class="hero">
+    <div class="hero-in">
+      <p class="eyebrow">零基础 · 在线 / 离线阅读 · Windows / macOS</p>
+      <h1>Codex 中文入门教程</h1>
+      <p class="lede">写给第一次接触 AI 与 Codex 的读者：不需要编程、命令行或 Git 基础。在线阅读，或下载离线版——解压后双击打开即可，无需联网、无需账号。</p>
+      <div class="hero-actions">
+        <a class="btn" href="ch01.html">从第 1 章开始</a>
+        <a class="btn ghost" href="downloads/codex-tutorial-cn-v0.2.0-offline.zip" download>下载离线版（ZIP）</a>
+        <p class="progress">正文草稿已完成 11 / 11 章</p>
+      </div>
+    </div>
   </header>
-  <main>
-    <aside class="notice"><strong>当前状态：框架优先。</strong>页面中已有的正文、示例和演示材料均是 seed/sample，用来验证信息架构和发布流程，不等同于最终课程。后续新增或替换任何课程时，必须使用下方模板、完成来源与验证记录，再进入发布状态。</aside>
-
-    <section>
-      <h2>这套教程服务谁，以及不服务什么</h2>
-      <div class="grid">
-        <article class="card"><h3>目标读者</h3><p>刚接触 AI、Codex 或电脑操作的中文读者。用最少前置知识完成实际协作任务，并知道何时停止、检查和求助。</p></article>
-        <article class="card"><h3>支持的平台</h3><p>Windows 与 macOS。教程提供平台差异提示与验证记录；页面本身可在本地离线打开。</p></article>
-        <article class="card"><h3>首版边界</h3><p>不讲软件开发、CLI、IDE、API、SDK、Git 或 Linux。它们不是“默认前提”，未来如需加入会独立成扩展路线。</p></article>
-      </div>
-    </section>
-
-    <section>
-      <h2>11 章学习地图</h2>
-      <div class="grid">
-        <article class="card"><h3>01 开始前</h3><p>教程边界、安全原则与阅读方法。</p></article>
-        <article class="card"><h3>02 认识 Codex</h3><p>能力、限制与适合求助的任务。</p></article>
-        <article class="card"><h3>03 安装与界面</h3><p>Windows/macOS 安装、登录、导航。</p></article>
-        <article class="card"><h3>04 第一次对话</h3><p>说清任务、范围、材料和期望结果。</p></article>
-        <article class="card"><h3>05 日常协作</h3><p>检查、修改、验证与回退意识。</p></article>
-        <article class="card"><h3>06 插件</h3><p>选择、安装、权限、使用与移除。</p></article>
-        <article class="card"><h3>07 Skill</h3><p>发现、安装、调用、更新与移除。</p></article>
-        <article class="card"><h3>08 常见场景</h3><p>从想法到可检查结果的日常任务。</p></article>
-        <article class="card"><h3>09 完整案例</h3><p>一个完全虚构项目的端到端练习。</p></article>
-        <article class="card"><h3>10 排错与安全</h3><p>常见问题、隐私、风险和求助边界。</p></article>
-        <article class="card"><h3>11 参考与维护</h3><p>术语、来源、版本、更新和变更记录。</p></article>
-      </div>
-    </section>
-
-    <section>
-      <h2>独立入口：行业提示词库 + 效果图</h2>
-      <p>提示词按五个行业入口组织：通用办公、电商、餐饮与本地服务、内容与媒体、教育与培训。每个入口覆盖六类任务：调研整理、写作改写、方案规划、数据理解、视觉创意、复盘优化。首版结构预留 <strong>26 条唯一提示词</strong>与<strong>30 个展示位</strong>；效果图均使用自有或明确许可的虚构材料。</p>
-    </section>
-
-    <section>
-      <h2>插件与 Skill：一项一目录</h2>
-      <p>每个插件、每个 Skill 均在其主目录下以自身名称建立独立目录。目录中分别保存读者页、来源证据、许可与版本、权限/风险、验证记录和自有示例；不混放第三方资料，也不把外部项目直接改写为无来源内容。</p>
-    </section>
-
-    <section>
-      <h2>内容从候选到发布</h2>
-      <ol class="stage"><li>候选</li><li>来源复核</li><li>技术复核</li><li>读者试读</li><li>可发布</li><li>已发布</li><li>需复核 / 已撤回</li></ol>
-      <p>高、中、低风险资料分别默认在 30、90、180 天复核。每一课都应写清目标、前提、步骤、预期结果、风险、验证方式、来源与复核日期。</p>
-    </section>
-
-    <section>
-      <h2>GitHub、Notion 与公开边界</h2>
-      <p>GitHub 和其他网站用于方法研究、来源比对与许可判断；引入内容前记录固定版本/提交、上游、许可、复制范围、风险与复核日期。Notion 是私有维护台账，用于候选、审核、排期、反馈与复核提醒；对外只发布经过受控投影的 HTML 内容，内部笔记和未验收材料不外泄。</p>
-      <p><strong>若创建 GitHub 仓库，必须是公开仓库，并且仅在验收后创建。</strong>公开仓库只包含通过公开白名单的发布内容，不自动包含本地开发历史、内部审核或草稿。</p>
-    </section>
-
-    <section>
-      <h2>后续补课时使用的固定模板</h2>
-      <ul class="links">
-        <li><a href="templates/module-template.html">课程模块模板</a></li>
-        <li><a href="templates/plugin-template.html">插件模板</a></li>
-        <li><a href="templates/skill-template.html">Skill 模板</a></li>
-        <li><a href="templates/prompt-card-template.html">提示词卡片模板</a></li>
-        <li><a href="templates/source-review-template.html">来源复核模板</a></li>
-        <li><a href="templates/verification-template.html">验证记录模板</a></li>
-        <li><a href="notion-workflow.html">Notion 私有维护流程</a></li>
-        <li><a href="maintenance-release.html">维护与发布流程</a></li>
-        <li><a href="source-research.html">来源研究方法</a></li>
-        <li><a href="registry/framework-v1.json" download>框架 V1 登记表（未来生成）</a></li>
+  <main id="content">
+    <aside class="callout note" data-label="阅读须知">
+      <p>全部 11 章均已有可读正文，但都还是「<strong>草稿</strong>」：内容依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未在真实的 Windows / macOS 电脑上逐步实测</strong>。软件界面更新很快，若你看到的按钮名称与教程不同，以屏幕上实际显示为准，并欢迎反馈。每一章都会经过写作、复核、实测三步后才标记为完成。</p>
+      <ul class="legend">
+        <li><span class="badge draft">草稿</span> 正文可读，待复核与实测</li>
+        <li><span class="badge outline">大纲</span> 只有规划，正文未写</li>
       </ul>
-      <p>上述链接是固定的后续交付位置；在对应页面与登记表落地前，读者应从本总览和规格说明理解框架，而不把空链接视为已完成课程。</p>
+    </aside>
+
+    <section class="part">
+      <div class="part-head"><h2>第一部分　基础</h2><p>从零开始，到能安全地发出请求并检查结果</p></div>
+      <ol class="toc">
+        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="d">这套教程讲什么、不讲什么，以及安全使用的三条底线。</span><span class="badge draft">草稿</span></a></li>
+        <li><a href="ch02.html"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="d">它是什么、能做什么、在哪里不可靠，哪些任务适合交给它。</span><span class="badge draft">草稿</span></a></li>
+        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="d">Windows 与 macOS 的安装、账号登录、进入 Codex 和认识界面。</span><span class="badge draft">草稿</span></a></li>
+        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="d">用「任务・范围・材料・期望」四要素发出第一个请求。</span><span class="badge draft">草稿</span></a></li>
+        <li><a href="ch05.html"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="d">看懂结果、提出修改、用审阅面板和权限模式保留退路。</span><span class="badge draft">草稿</span></a></li>
+      </ol>
     </section>
+    <section class="part">
+      <div class="part-head"><h2>第二部分　扩展</h2><p>插件、Skill、常见场景与一个完整案例</p></div>
+      <ol class="toc">
+        <li><a href="ch06.html"><span class="n">06</span><span class="t">插件</span><span class="d">插件是什么、安装前看什么、怎么安装授权、怎么彻底移除。</span><span class="badge draft">草稿</span></a></li>
+        <li><a href="ch07.html"><span class="n">07</span><span class="t">Skill</span><span class="d">让 Codex 按固定流程做事：发现、调用、自己做一个、管理与移除。</span><span class="badge draft">草稿</span></a></li>
+        <li><a href="ch08.html"><span class="n">08</span><span class="t">常见任务场景</span><span class="d">整理、起草、读表、做计划，以及让 Codex 直接处理文件夹里的文件。</span><span class="badge draft">草稿</span></a></li>
+        <li><a href="ch09.html"><span class="n">09</span><span class="t">完整虚构案例</span><span class="d">用一个完全虚构的小项目走完端到端流程。</span><span class="badge draft">草稿</span></a></li>
+      </ol>
+    </section>
+    <section class="part">
+      <div class="part-head"><h2>第三部分　参考</h2><p>遇到问题时翻阅</p></div>
+      <ol class="toc">
+        <li><a href="ch10.html"><span class="n">10</span><span class="t">排错、安全与求助</span><span class="d">常见问题、权限与隐私边界、风险信号和官方求助渠道。</span><span class="badge draft">草稿</span></a></li>
+        <li><a href="ch11.html"><span class="n">11</span><span class="t">参考与维护</span><span class="d">术语表、来源清单、版本与更新记录、各章验证状态。</span><span class="badge draft">草稿</span></a></li>
+      </ol>
+    </section>
+
+    <section class="part">
+      <div class="part-head"><h2>独立入口</h2><p>与章节并列，随时可查</p></div>
+      <a class="entry" href="prompts.html"><strong>行业提示词库</strong><span class="badge draft">首批建设中</span><span>按行业组织的可复制提示词卡，每张配虚构示例与验收方法。首批只做「跨行业通用」入口（6 张卡）。</span></a>
+    </section>
+
+    <details class="maint">
+      <summary>维护者资料（读者可以忽略）</summary>
+      <ul class="aux">
+        <li><a href="specs/2026-09-01-framework-first-addendum.html">框架说明</a><span class="muted">定位、受众与首版边界</span></li>
+        <li><a href="maintenance-release.html">维护与发布流程</a><span class="muted">状态机、复验周期、撤回规则</span></li>
+        <li><a href="source-research.html">来源研究方法</a><span class="muted">外部素材的权利登记规则</span></li>
+        <li><a href="notion-workflow.html">Notion 工作流（暂缓）</a><span class="muted">留待将来协作时启用</span></li>
+        <li><a href="templates/module-template.html">课程模块模板</a><span class="muted">写新章节时复制使用</span></li>
+        <li><a href="templates/prompt-card-template.html">提示词卡模板</a><span class="muted">写新卡片时复制使用</span></li>
+        <li><a href="templates/plugin-template.html">插件模板</a> / <a href="templates/skill-template.html">Skill 模板</a><span class="muted">扩展条目模板</span></li>
+        <li><a href="templates/source-review-template.html">来源复核模板</a> / <a href="templates/verification-template.html">验证记录模板</a><span class="muted">复核与实测记录</span></li>
+        <li><a href="registry/framework-v1.json" download>框架登记表（JSON）</a><span class="muted">机器可读的进度与规则登记</span></li>
+      </ul>
+    </details>
 
     <footer>
-      <p>配套规格：<a href="specs/2026-09-01-framework-first-addendum.html">框架优先补充说明</a>。内容格式：HTML；离线优先；无 JavaScript、无远程资源。</p>
+      <p>本教程为纯静态 HTML：无 JavaScript、无远程资源、无跟踪。在线版与离线版内容完全相同，离线版解压后双击 <code>index.html</code> 即可阅读。版本 0.2.0（2026-09-01），更新记录见<a href="ch11.html#s3">第 11 章</a>。</p>
     </footer>
   </main>
 </body>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第 1 章 开始前：边界、安全与阅读方法｜Codex 中文入门教程</title>
+  <meta name="description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:title" content="第 1 章 开始前：边界、安全与阅读方法｜Codex 中文入门教程">
+  <meta property="og:description" content="写给零基础中文读者的 Codex 入门教程：安装登录、把需求说清楚、检查与回退、插件、Skill、常见场景与完整案例。纯静态网页，可在线读也可下载离线读。">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#084a51">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#content">跳到正文</a>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="index.html">Codex 中文入门教程<small>零基础・离线阅读</small></a>
+    <a class="side-toc-link" href="index.html">← 全部章节</a>
+    <nav aria-label="全部章节">
+      <p class="part-label">第一部分 · 基础</p>
+      <ol class="chapters">
+        <li class="is-current"><a href="ch01.html" aria-current="page"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch02.html"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch05.html"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第二部分 · 扩展</p>
+      <ol class="chapters">
+        <li><a href="ch06.html"><span class="n">06</span><span class="t">插件</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch07.html"><span class="n">07</span><span class="t">Skill</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch08.html"><span class="n">08</span><span class="t">常见任务场景</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch09.html"><span class="n">09</span><span class="t">完整虚构案例</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <p class="part-label">第三部分 · 参考</p>
+      <ol class="chapters">
+        <li><a href="ch10.html"><span class="n">10</span><span class="t">排错、安全与求助</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch11.html"><span class="n">11</span><span class="t">参考与维护</span><span class="dot draft" title="草稿"></span></a></li>
+      </ol>
+      <a class="side-entry" href="prompts.html">行业提示词库</a>
+    </nav>
+    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li><li><span class="dot outline"></span>大纲</li></ul></div>
+  </aside>
+  <main class="doc-main" id="content">
+    <article class="chapter">
+      <header class="chapter-head">
+        <p class="kicker">第 1 章 <span class="badge draft">草稿</span></p>
+        <h1>开始前：边界、安全与阅读方法</h1>
+        <ul class="meta"><li>预计阅读 3 分钟</li><li>适用平台：Windows / macOS</li><li>前提：无</li></ul>
+      </header>
+
+      <aside class="goal"><strong>本章目标</strong><p>读完后，你清楚这套教程讲什么、不讲什么。你记住三条安全底线。你知道该按什么顺序读，遇到红色提示框要先停下来。</p></aside>
+
+      <nav class="section-nav" aria-label="本章内容"><p class="label">本章内容</p><ol>
+        <li><a href="#s1">1.1 这套教程写给谁</a></li>
+        <li><a href="#s2">1.2 教程不讲什么</a></li>
+        <li><a href="#s3">1.3 三条安全底线</a></li>
+        <li><a href="#s4">1.4 怎么读这套教程</a></li>
+        <li><a href="#s5">1.5 遇到问题去哪里求助</a></li>
+      </ol></nav>
+
+      <section id="s1">
+        <h2><span class="sn">1.1</span>这套教程写给谁</h2>
+        <p>这套教程写给第一次接触 AI（人工智能，也就是能像人一样读懂文字、给出回答的电脑程序）、第一次接触 Codex 的中文读者。Codex 是 OpenAI 出品的一款 AI 工具，现在藏在「ChatGPT 桌面应用」里，是它的一个视图。它和普通聊天机器人最大的区别是：在你允许的范围内，它能<strong>替你动手</strong>——整理文件夹里的文件、上网查东西、操作你的其他软件。它具体是什么、能做什么，第 2 章会详细讲。</p>
+        <p>你不需要会编程，不需要懂命令行，甚至不太熟悉电脑操作也没关系。教程里每一步都会写清楚「做什么」和「你应该看到什么」。</p>
+        <p>学完这套教程，你能做到什么？大致是这样：把日常工作里整理、写作、总结这类任务，清楚地交给 Codex。你能看懂它给回来的结果，判断能不能用。不满意时，你知道怎么让它改。</p>
+      </section>
+
+      <section id="s2">
+        <h2><span class="sn">1.2</span>教程不讲什么</h2>
+        <p>这套教程<strong>不教</strong>下面这些内容：软件开发、编程语言、命令行（CLI，一种靠打字输入命令、而不是点鼠标来操作电脑的方式）、开发工具（IDE，程序员写代码专用的软件）、API 和 SDK（这两个都是开发者之间约定好的技术接口，普通用户用不到）、Git（一种记录代码改动历史的工具）、Linux（一种电脑操作系统）。</p>
+        <p>原因很简单：这些都不是使用 Codex 的前提。很多网上的教程默认读者是程序员，一上来就是术语和代码，零基础读者第一页就会被劝退。这套教程刻意避开这些内容。你在这里看到的每一个操作，都只需要普通的电脑使用能力。</p>
+        <p>如果将来你对开发感兴趣，那是另外一条学习路线，不影响你现在把 Codex 用好。</p>
+      </section>
+
+      <section id="s3">
+        <h2><span class="sn">1.3</span>三条安全底线</h2>
+        <p>下面这三条贯穿整套教程，比任何具体技巧都重要。</p>
+        <aside class="callout stop" data-label="停一停"><strong>无论学到第几章，这三条永远成立：</strong>
+          <ul>
+            <li><strong>练习一律用虚构材料。</strong>教程里所有例子都围绕一个虚构品牌「蓝溪文具」展开，没有任何真实企业和个人。你自己练习时也一样：先用编出来的内容把方法练熟，再考虑用真实材料。</li>
+            <li><strong>隐私和密码永远不进对话。</strong>身份证号、住址、他人的个人信息、任何账号密码、支付信息、公司要求保密的资料——无论多方便，都不要粘贴进对话框。这条没有例外。</li>
+            <li><strong>不可逆的操作先停下来。</strong>凡是涉及付费、删除文件、把内容发送给别人的操作，在你完全弄懂后果之前，先停下，不要继续。Codex 会在动手前弹出确认框（第 3 章会讲），看不懂就点拒绝。停下来永远不会造成损失，继续可能会。</li>
+          </ul>
+        </aside>
+        <aside class="callout note" data-label="一个不得不说的前提"><p>OpenAI 的服务有官方公布的支持地区名单，<strong>中国大陆与香港目前不在名单内</strong>。本教程只讲在支持地区的正常用法，不提供绕开限制的方法。名单会变，请以官方页面为准（第 3 章 3.1 和第 11 章 11.2 有说明和链接）。</p></aside>
+      </section>
+
+      <section id="s4">
+        <h2><span class="sn">1.4</span>怎么读这套教程</h2>
+        <ul>
+          <li><strong>按章节顺序读。</strong>后面的章节默认你掌握了前面的方法，跳着读容易卡住。</li>
+          <li><strong>边读边动手。</strong>标着「动手」的小节都设计了可以直接照做的练习。光看不练记不住。</li>
+          <li><strong>认识状态标记。</strong>目录里每章带一个标记。「草稿」表示正文可读，但还没有经过复核，也没有在真实电脑上逐步实测；「大纲」表示只有规划，正文还没写。教程对自己的完成度是诚实的，不会把没写完、没验证的内容装作已经完成。</li>
+          <li><strong>遇到红色提示框先停。</strong>正文里红色的「停一停」提示框，标记的是真实风险。读到时请放慢速度，就像上一节的三条底线那样。</li>
+        </ul>
+      </section>
+
+      <section id="s5">
+        <h2><span class="sn">1.5</span>遇到问题去哪里求助</h2>
+        <p>遇到问题时，按下面的顺序尝试：</p>
+        <ol>
+          <li><strong>第 10 章。</strong>常见问题的排查方法都收在那里，也包括「怎么向别人描述你遇到的问题」。</li>
+          <li><strong>官方帮助。</strong>OpenAI 的官方帮助中心和产品文档，是产品问题的最终依据（链接都在第 11 章 11.2）。教程与官方说法不一致时，以官方为准；也欢迎你按 11.5 的方式把差异反馈给教程维护者。</li>
+          <li><strong>身边的人。</strong>求助不丢人。第 10 章会教你怎么把问题说清楚，让帮你的人一听就懂。</li>
+        </ol>
+      </section>
+
+      <section class="summary"><h2>本章小结</h2><ul>
+        <li>这套教程零基础可读，刻意不涉及任何开发知识。</li>
+        <li>三条底线：虚构材料练习、隐私密码不进对话、不可逆操作先停。</li>
+        <li>按顺序读、动手练、认识「草稿/大纲」标记、红色提示框要当真。</li>
+      </ul></section>
+
+      <details class="maint">
+        <summary>维护者信息（读者可以忽略）</summary>
+        <dl class="card">
+          <dt>模块 ID / 状态</dt><dd>CDX-M-0101｜draft（草稿，未进入复核）</dd>
+          <dt>风险级别</dt><dd>低：原则性内容，无平台操作。</dd>
+          <dt>来源与权利</dt><dd>自有原创；「蓝溪文具」为虚构品牌。地区名单的说法依据帮助中心「ChatGPT supported countries」（见 11.2）。</dd>
+          <dt>验证状态</dt><dd>unverified（无需平台实测；进入 reviewed 需完成冷却复查）。</dd>
+          <dt>复核日期</dt><dd>撰写：2026-09-01，修订 0.2.0；低风险，最晚复验 2027-02-28。地区名单每次复验时核对。</dd>
+        </dl>
+      </details>
+    
+
+    </article>
+    <nav class="pager">
+      <span class="spacer"></span>
+      <a class="next" href="ch02.html"><span class="k">下一章</span><span class="t">第 2 章　认识 AI 与 Codex</span></a>
+    </nav>
+    <footer class="page"><p>本页为离线教程的一部分，无需联网阅读。<a href="index.html">返回目录</a></p></footer>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Codex 中文入门教程 —— Caddy 配置（自动申请 HTTPS 证书，最省事）
+# 用法：把本文件放到 /etc/caddy/Caddyfile，站点文件放到 /var/www/codex-tutorial，
+#      然后 systemctl reload caddy。域名要先解析到这台服务器。
+codex.example.com {
+    root * /var/www/codex-tutorial
+    encode gzip
+    file_server
+    handle_errors {
+        @404 expression {http.error.status_code} == 404
+        rewrite @404 /404.html
+        file_server
+    }
+}

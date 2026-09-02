@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>维护框架：来源研究与权利登记</title>
+  <style>
+    :root { font-family: "Segoe UI", "PingFang SC", sans-serif; color: #172033; background: #f5f7fb; line-height: 1.65; }
+    body { margin: 0; } main { max-width: 980px; margin: auto; padding: 44px 24px 72px; }
+    h1, h2, h3 { color: #101828; line-height: 1.25; } h2 { margin-top: 42px; padding-top: 24px; border-top: 1px solid #d8deea; }
+    a { color: #175cd3; } code { background: #e9eef8; border-radius: 4px; padding: .1em .35em; overflow-wrap: anywhere; }
+    .lede { color: #475467; font-size: 1.08rem; } .notice { padding: 15px 18px; border: 1px solid #f4c56a; background: #fff7e8; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; } th, td { padding: 10px 12px; border: 1px solid #d8deea; text-align: left; vertical-align: top; }
+    th { background: #eef2f8; } .flow { padding: 16px; background: #101828; color: #f8fafc; border-radius: 10px; overflow-wrap: anywhere; }
+    footer { margin-top: 48px; color: #667085; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <p><a href="index.html">返回框架首页 index.html</a></p>
+    <h1>来源研究与权利登记</h1>
+    <p class="lede">GitHub、官方文档、社区教程和其他公开来源用于发现与核实方法；课程的解释、示例、提示词和效果图必须能独立交付，不能要求读者访问 GitHub。</p>
+  </header>
+
+  <aside class="notice"><strong>核心规则：</strong>“看得到”不等于“可以复制或再分发”。没有明确许可证或授权时，只能记录链接和方法，不把原文、代码、图片、包或示例文件放进课程产物。</aside>
+
+  <section>
+    <h2>每个外部发现的研究流程</h2>
+    <p class="flow">发现候选 → 固定版本/commit → 阅读许可证、说明、脚本与权限 → 判断可用范围 → 吸收方法并独立重写 → 制作自有虚构示例/效果图 → 登记权利与验证 → 决定链接、快照或拒绝</p>
+    <ol>
+      <li><strong>发现：</strong>GitHub、官方帮助中心、产品文档、维护者发布说明、论文或社区资料都可作为线索，但搜索摘要和 star 数不是通过证据。</li>
+      <li><strong>固定：</strong>记录原始 URL、访问日期、产品/插件版本或完整 commit；不用会漂移的分支名充当唯一来源。</li>
+      <li><strong>审查：</strong>阅读 LICENSE、NOTICE、README、安装说明、scripts、依赖、二进制、网络、账号、密钥、文件读写、外部发送与删除/覆盖行为。</li>
+      <li><strong>重写：</strong>只吸收可验证的方法和结构；中文解释、步骤、提示词、示例输入和检查方法由本教程独立编写。</li>
+      <li><strong>再创作：</strong>使用虚构品牌、自有合成数据和自行生成的效果图，避免把第三方真实客户、截图和原始案例直接搬入课程。</li>
+      <li><strong>登记：</strong>将结论写入来源与权利登记；未通过或不确定的候选也记录拒绝原因，避免以后误用。</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>权利登记的最小字段</h2>
+    <table>
+      <thead><tr><th>字段</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>来源身份</td><td>项目/作者/维护者名称、原始 URL、发现日期。</td></tr>
+        <tr><td>固定证据</td><td>完整 commit、版本号、发布日期或已保存的文档版本；记录实际审阅路径。</td></tr>
+        <tr><td>许可与通知</td><td>许可证名称、文件路径、NOTICE/署名要求、商标限制及是否允许复制、修改、再分发。</td></tr>
+        <tr><td>行为与权限</td><td>脚本、依赖、二进制、网络、账号、密钥、读取数据、写入/删除/覆盖与外部发送。</td></tr>
+        <tr><td>使用决定</td><td><code>自有</code>、<code>已清权</code>、<code>仅链接</code>、<code>拒绝</code>之一；说明为什么。</td></tr>
+        <tr><td>课程映射</td><td>关联模块 ID、采用的方法、独立重写位置、自有示例/效果图路径、复验日期。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>GitHub Skill 或插件的额外门禁</h2>
+    <p>每个候选对象使用其<strong>单独命名目录</strong>：<code>skills/&lt;stable-skill-key&gt;/</code> 或 <code>plugins/&lt;stable-plugin-key&gt;/</code>。目录内再分开读者教程、可合法快照包和私有维护资料；只有许可证明确允许的原始文件才能进入可分发快照区。</p>
+    <ul>
+      <li>固定 commit 后逐文件检查；不要只阅读仓库首页。</li>
+      <li>确认安装、启用、更新和移除路径，及其 Windows/macOS 可验证范围。</li>
+      <li>明确是否读取工作区、连接第三方账号、使用 OAuth/密钥、发送数据、执行命令或删除/覆盖文件。</li>
+      <li>若是“仅链接”，课程只写独立步骤与来源链接，不复制第三方包字节。</li>
+      <li>许可不明、权限过宽、必需敏感数据、未知二进制或维护状态不清，默认拒绝进入必修路径。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>提示词与效果图的独立性</h2>
+    <p>行业提示词库按行业和任务组织。来自 GitHub 或其他站点的提示只用于学习目标、约束、输出结构和检查思路；最终提示词独立改写，并配套虚构输入、实际产出、检查标准、修正方法、安全说明与来源登记。图片效果图使用自有或合成素材重新生成，不把他人的图或品牌当作示例。</p>
+    <p>因此，即使读者无法访问 GitHub，也能打开离线 HTML、使用本地示例、复制提示词并完成检查；外部链接只是可选的出处，不是课程步骤的依赖。</p>
+  </section>
+
+  <section>
+    <h2>发布前的权利判断</h2>
+    <p>公开文件只允许三种状态：<code>自有</code>、<code>已清权</code>、<code>仅链接</code>。未知、冲突、待确认或包含敏感信息的状态一律阻止发布。每次新增/更新来源都要重新确认许可证、固定版本和权限是否变化；如果变化影响已发布内容，则标记相关模块待复验或撤回。</p>
+  </section>
+
+  <footer><p>维护框架，不是课程正文。最后更新：2026-09-01。</p></footer>
+</main>
+</body>
+</html>

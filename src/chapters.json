@@ -1,0 +1,30 @@
+{
+  "site": {
+    "title": "Codex 中文入门教程",
+    "tagline": "零基础・离线阅读",
+    "version": "0.2.0",
+    "date": "2026-09-01",
+    "repo": "https://github.com/xufei5620/codex-tutorial-cn"
+  },
+  "parts": [
+    {"label": "第一部分　基础", "short": "第一部分 · 基础", "desc": "从零开始，到能安全地发出请求并检查结果", "chapters": ["ch01", "ch02", "ch03", "ch04", "ch05"]},
+    {"label": "第二部分　扩展", "short": "第二部分 · 扩展", "desc": "插件、Skill、常见场景与一个完整案例", "chapters": ["ch06", "ch07", "ch08", "ch09"]},
+    {"label": "第三部分　参考", "short": "第三部分 · 参考", "desc": "遇到问题时翻阅", "chapters": ["ch10", "ch11"]}
+  ],
+  "chapters": {
+    "ch01": {"num": 1, "title": "开始前：边界、安全与阅读方法", "desc": "这套教程讲什么、不讲什么，以及安全使用的三条底线。", "status": "draft"},
+    "ch02": {"num": 2, "title": "认识 AI 与 Codex", "desc": "它是什么、能做什么、在哪里不可靠，哪些任务适合交给它。", "status": "draft"},
+    "ch03": {"num": 3, "title": "安装、登录与界面", "desc": "Windows 与 macOS 的安装、账号登录、进入 Codex 和认识界面。", "status": "draft"},
+    "ch04": {"num": 4, "title": "第一次对话：把需求说清楚", "desc": "用「任务・范围・材料・期望」四要素发出第一个请求。", "status": "draft"},
+    "ch05": {"num": 5, "title": "日常协作：检查、修改与回退", "desc": "看懂结果、提出修改、用审阅面板和权限模式保留退路。", "status": "draft"},
+    "ch06": {"num": 6, "title": "插件", "desc": "插件是什么、安装前看什么、怎么安装授权、怎么彻底移除。", "status": "draft"},
+    "ch07": {"num": 7, "title": "Skill", "desc": "让 Codex 按固定流程做事：发现、调用、自己做一个、管理与移除。", "status": "draft"},
+    "ch08": {"num": 8, "title": "常见任务场景", "desc": "整理、起草、读表、做计划，以及让 Codex 直接处理文件夹里的文件。", "status": "draft"},
+    "ch09": {"num": 9, "title": "完整虚构案例", "desc": "用一个完全虚构的小项目走完端到端流程。", "status": "draft"},
+    "ch10": {"num": 10, "title": "排错、安全与求助", "desc": "常见问题、权限与隐私边界、风险信号和官方求助渠道。", "status": "draft"},
+    "ch11": {"num": 11, "title": "参考与维护", "desc": "术语表、来源清单、版本与更新记录、各章验证状态。", "status": "draft"}
+  },
+  "extras": {
+    "prompts": {"title": "行业提示词库", "badge": "首批建设中", "status": "draft", "desc": "按行业组织的可复制提示词卡，每张配虚构示例与验收方法。首批只做「跨行业通用」入口（6 张卡）。"}
+  }
+}

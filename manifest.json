@@ -1,15 +1,120 @@
 {
   "schemaVersion": "1.0.0",
-  "artifact": "codex-tutorial-framework-v1",
-  "status": "framework-review",
-  "sourceCommit": "55eb4888a1bed16731ab700fb450849b25bc147c",
+  "artifact": "codex-tutorial-cn",
+  "version": "0.2.0",
+  "status": "draft-complete-unverified",
   "generatedDate": "2026-09-01",
   "entry": "index.html",
   "files": [
     {
+      "path": "404.html",
+      "size": 1501,
+      "sha256": "7fb48e9ff0896b3d15c6389f26b63b123e42394360a23d1fbc49fa1e1c0361c6"
+    },
+    {
+      "path": "README.md",
+      "size": 3115,
+      "sha256": "6c4d7fc00d6bfb975fcf01a580792cf781309ad9c2b342ecef8c832325386e72"
+    },
+    {
+      "path": "assets/favicon.svg",
+      "size": 332,
+      "sha256": "0bb05ef07a4febb333368f5a71bb86580052c1c2c838bc8126b7e7db54f6e46e"
+    },
+    {
+      "path": "assets/style.css",
+      "size": 18021,
+      "sha256": "83828f16fe9b598a87b174e4d794eb74d20171899c0ac80081de3490a575982a"
+    },
+    {
+      "path": "ch01.html",
+      "size": 11760,
+      "sha256": "80f564577e8d87ba0500772f5a5620eb1a6783cb90d8f31dcffc907ac7570d6c"
+    },
+    {
+      "path": "ch02.html",
+      "size": 16820,
+      "sha256": "870d3a164885ed7fc30fad4e7926f4aa7e7f16b2019def39ba1558602eb2d6e2"
+    },
+    {
+      "path": "ch03.html",
+      "size": 23317,
+      "sha256": "89842a82f9b20bfa43e5f77e23c56d9055a6d7175e9ba0d9277a99d1559ca0a8"
+    },
+    {
+      "path": "ch04.html",
+      "size": 14790,
+      "sha256": "7b90c783795247966ba0aa8b4d1d8373ef299ca95a381640919c4127cceade5b"
+    },
+    {
+      "path": "ch05.html",
+      "size": 14811,
+      "sha256": "b1b45561c36f54664123c205b786c950b0c7c4080ec44984148685d9706b475c"
+    },
+    {
+      "path": "ch06.html",
+      "size": 19130,
+      "sha256": "42504e88b7e9074a59fa0feec58fcdcb2d2f2bb6428f96d70d437200221a22d1"
+    },
+    {
+      "path": "ch07.html",
+      "size": 17974,
+      "sha256": "da0078e25e796069df0dcf13d2e95b627f8e949673565aaa74da4fdb5b2b7683"
+    },
+    {
+      "path": "ch08.html",
+      "size": 23407,
+      "sha256": "565e192ad3c7928f5b06449baf6bf4290e71d4ac8ef67dfe57adfedc0b788f8a"
+    },
+    {
+      "path": "ch09.html",
+      "size": 19322,
+      "sha256": "f26874f6674e9ac8851fd203300bb2480f6e58d3820b3a487867c855f994c6a7"
+    },
+    {
+      "path": "ch10.html",
+      "size": 16417,
+      "sha256": "7f2125cfbc927df2c8b1bf576819dbf2e4a59f3f45e482578c384cf5f8c669a1"
+    },
+    {
+      "path": "ch11.html",
+      "size": 21009,
+      "sha256": "4f64d3b63d8fae1dfea8a67a75f9638e1ad98801ef4665e9da06231351be136d"
+    },
+    {
+      "path": "deploy/Caddyfile",
+      "size": 490,
+      "sha256": "c72f7aea888b817d5b428d1ae80e10fcd1e0f12b785f65fdfdde0ebd25a28811"
+    },
+    {
+      "path": "deploy/DEPLOY.md",
+      "size": 2691,
+      "sha256": "0aa75690e60517b4424bf884995e95366d21adbf286a595181a1af8da642bc74"
+    },
+    {
+      "path": "deploy/Dockerfile",
+      "size": 368,
+      "sha256": "b9c04088846ef2d1d6048ff16e39d31ded0b7c74ddbd46e3ac6e97a1d85c159d"
+    },
+    {
+      "path": "deploy/docker-compose.yml",
+      "size": 319,
+      "sha256": "4a6b3638ec7f5a21d1e555889abd8460b1d49e6def47dff07dfeaa090ec4d38c"
+    },
+    {
+      "path": "deploy/nginx.conf",
+      "size": 939,
+      "sha256": "0dc3461891edcb9fbcaff45b17283250318f862af2afc75aa76e3221b70edb89"
+    },
+    {
+      "path": "deploy/nginx.docker.conf",
+      "size": 319,
+      "sha256": "ee5d086ded4f5ae32507df5552a1177302c3c66708f3e479b0ded48940f2df44"
+    },
+    {
       "path": "index.html",
-      "size": 7884,
-      "sha256": "a1fe4448aa534b5cb4359802de0f578e55e8ff83ffd171a78d501d1322260193"
+      "size": 8100,
+      "sha256": "c85bc8de6794188f5cf51cf9d4d7d6d2f7d0597e9020790ed917a6ac699bf229"
     },
     {
       "path": "maintenance-release.html",
@@ -22,9 +127,19 @@
       "sha256": "ea69ae927f6c5fb6398256ea5e8565267a703f72c8e8132e2fdb10b4823697b3"
     },
     {
+      "path": "prompts.html",
+      "size": 34213,
+      "sha256": "31bfebc6145c99ceb2596729846fd82b1e955bb702bd7b52106e4f4adef7d11d"
+    },
+    {
       "path": "registry/framework-v1.json",
-      "size": 7456,
-      "sha256": "3204931750b03601f4d2f06d36368868a9dc928d7e4e6a9d277175bd377e903b"
+      "size": 8618,
+      "sha256": "6b975548bb354f586c8d6daf99149839eaa01fe8871a96fc15806b79b26835b5"
+    },
+    {
+      "path": "robots.txt",
+      "size": 104,
+      "sha256": "d22ac775ad201d0c5eee35f3f4645099ef7a492b27535d82bc26e5fff83e05f6"
     },
     {
       "path": "schemas/framework-v1.schema.json",
