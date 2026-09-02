@@ -38,6 +38,12 @@
         <tr><td><code>release-ready</code></td><td>构建、链接、许可、安全、可访问性和发行清单全部通过；无阻断风险。</td><td>不能跳过清单或手改构建产物。</td></tr>
       </tbody>
     </table>
+    <h3>单人维护时 <code>reviewed</code> 的替代规则</h3>
+    <p>没有第二位审阅人时，按以下方式满足"另一次检查"，并在模块的维护者信息中留下记录（日期 + 采用的方式）：</p>
+    <ul>
+      <li><strong>冷却复查：</strong>草稿完成后至少间隔 24 小时，以读者视角按固定清单逐项重读：新手能否照做、术语是否都解释过、链接/许可/隐私边界是否正确、有没有未验证的断言。</li>
+      <li><strong>辅助审阅：</strong>可用 AI 辅助按同一清单出具审阅意见，但采纳与否由维护者人工判断并记录；辅助审阅不能替代冷却复查，只能叠加。</li>
+    </ul>
   </section>
 
   <section>
@@ -72,8 +78,13 @@
   </section>
 
   <section>
-    <h2>GitHub 的公开边界</h2>
-    <p>如果以后创建 GitHub 仓库，它必须是<strong>公开仓库</strong>。但它不等于本机维护仓库的镜像：只从经批准的公开白名单导出读者 HTML、必要自有资产、许可和发行资料。草稿历史、私有 Notion 内容、原始反馈、详细环境日志、未清权素材、秘密和本机完整历史绝不推送。</p>
+    <h2>开发仓库与正式发布</h2>
+    <p><strong>开发</strong>与<strong>发布</strong>是两回事。用于备份和日常开发的远程 Git 仓库（即本项目当前所在的仓库）随时可用，不受验收限制。<strong>面向读者的正式发布</strong>——打版本标签、发 Release、部署到服务器——须在用户验收后进行，且只发布通过公开白名单审查的内容：读者 HTML、必要自有资产、许可和发行资料。原始反馈、详细环境日志、未清权素材、秘密和内部审核材料绝不进入发布内容。</p>
+  </section>
+
+  <section>
+    <h2>进度追踪：以 Git 登记表为准</h2>
+    <p>当前阶段不启用 Notion 台账。各章与各卡片的状态以 <code>src/chapters.json</code>（构建时写入 <code>registry/framework-v1.json</code>）和各页面顶部的状态标记为唯一事实来源。Notion 工作流（见 <a href="notion-workflow.html">notion-workflow.html</a>）保留为未来多人协作时的扩展方案。</p>
   </section>
 
   <footer><p>维护框架，不是课程正文。最后更新：2026-09-01。</p></footer>

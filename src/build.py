@@ -220,7 +220,7 @@ def build_site():
         page_shell(SITE_TITLE, 'home', home_body('multi')))
     open(os.path.join(SITE, '404.html'), 'w', encoding='utf-8').write(
         page_shell(f'找不到页面｜{SITE_TITLE}', 'home', NOT_FOUND, css_href='/assets/style.css'))
-    open(os.path.join(SITE, 'robots.txt'), 'w', encoding='utf-8').write('User-agent: *\nAllow: /\nDisallow: /templates/\nDisallow: /specs/\nDisallow: /schemas/\nDisallow: /registry/\n')
+    open(os.path.join(SITE, 'robots.txt'), 'w', encoding='utf-8').write('User-agent: *\nAllow: /\nDisallow: /templates/\nDisallow: /specs/\nDisallow: /schemas/\nDisallow: /registry/\nDisallow: /src/\nDisallow: /deploy/\n')
     shutil.copytree(os.path.join(ROOT, 'deploy'), os.path.join(SITE, 'deploy'))
     for cid in ORDER:
         c = CH[cid]
@@ -310,13 +310,13 @@ def readme():
 - `assets/` —— 共用样式与图标；`404.html`、`robots.txt` —— 在线部署用
 - `downloads/` —— 离线版 ZIP（由构建脚本生成）
 - `deploy/` —— 服务器部署配置与说明
-- `src/` —— **内容源与构建脚本**：改内容请改 `src/content/*.html` 与 `src/chapters.json`，然后运行 `python3 src/build.py` 重新生成以上全部页面（不要直接改根目录的 HTML，会被覆盖）
+- `src/` —— **内容源与构建脚本**：改内容请改 `src/content/*.html` 与 `src/chapters.json`，然后运行 `python3 src/build.py` 重新生成以上全部页面（不要直接改根目录的 HTML，会被覆盖）；`python3 src/check.py` 做发布前检查
 - `templates/`、`specs/`、`schemas/`、`registry/`、`maintenance-release.html`、`source-research.html`、`notion-workflow.html` —— 维护者资料
 - `manifest.json`、`SHA256SUMS.txt` —— 文件清单与校验和
 
 ## 维护约定
 
-**改内容的正确姿势：** 编辑 `src/content/` 里对应章节的 HTML 片段（章节标题、状态在 `src/chapters.json`），运行 `python3 src/build.py`（只需要 Python 3，无第三方依赖），根目录下的所有页面、README、清单、离线 ZIP 会一起重新生成；把生成结果一并提交。跨页链接写成 `{{link:ch04}}` 或 `{{link:prompts#prm-com-0001}}`，构建时自动换成正确地址。
+**改内容的正确姿势：** 编辑 `src/content/` 里对应章节的 HTML 片段（章节标题、状态在 `src/chapters.json`），运行 `python3 src/build.py`（只需要 Python 3，无第三方依赖），根目录下的所有页面、README、清单、离线 ZIP 会一起重新生成；再运行 `python3 src/check.py` 检查链接、锚点、徽章与登记表；把生成结果一并提交。跨页链接写成 `{{link:ch04}}` 或 `{{link:prompts#prm-com-0001}}`，构建时自动换成正确地址。
 
 每一章底部都有「维护者信息」：模块 ID、风险级别、来源与权利、验证状态、复核日期。新增或修改内容请使用 `templates/` 中的模板，并在第 11 章更新版本记录与验证状态表。来源清单见第 11 章 11.2。
 '''

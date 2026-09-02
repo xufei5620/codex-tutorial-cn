@@ -4,6 +4,9 @@
 codex.example.com {
     root * /var/www/codex-tutorial
     encode gzip
+    # 内容源与点文件即使被复制上来也不对外提供
+    @hidden path /src/* /.*
+    respond @hidden 404
     file_server
     handle_errors {
         @404 expression {http.error.status_code} == 404

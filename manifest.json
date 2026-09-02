@@ -13,8 +13,8 @@
     },
     {
       "path": "README.md",
-      "size": 3115,
-      "sha256": "6c4d7fc00d6bfb975fcf01a580792cf781309ad9c2b342ecef8c832325386e72"
+      "size": 3237,
+      "sha256": "77a416f16653f791dc8102ad2dd72f54f3c634a5b3b7cd838a04a4286a3bebaf"
     },
     {
       "path": "assets/favicon.svg",
@@ -83,13 +83,13 @@
     },
     {
       "path": "deploy/Caddyfile",
-      "size": 490,
-      "sha256": "c72f7aea888b817d5b428d1ae80e10fcd1e0f12b785f65fdfdde0ebd25a28811"
+      "size": 609,
+      "sha256": "939be30499458c6be87a400e60df68c20f03c94cb7ea0d5e87c0e89faa48989f"
     },
     {
       "path": "deploy/DEPLOY.md",
-      "size": 2691,
-      "sha256": "0aa75690e60517b4424bf884995e95366d21adbf286a595181a1af8da642bc74"
+      "size": 3153,
+      "sha256": "5798f6a3ad58c067acbcc044fa394ce260c87bf44c11a54cc468fcdef3fb3d21"
     },
     {
       "path": "deploy/Dockerfile",
@@ -103,13 +103,13 @@
     },
     {
       "path": "deploy/nginx.conf",
-      "size": 939,
-      "sha256": "0dc3461891edcb9fbcaff45b17283250318f862af2afc75aa76e3221b70edb89"
+      "size": 1094,
+      "sha256": "31ee859fc721df27d3af2b7c8deb1dccbf70ef91c95c7aeecd7d09ff6643bf1e"
     },
     {
       "path": "deploy/nginx.docker.conf",
-      "size": 319,
-      "sha256": "ee5d086ded4f5ae32507df5552a1177302c3c66708f3e479b0ded48940f2df44"
+      "size": 354,
+      "sha256": "c28b98aa9ca7fff12aafca4e99be6d83696594ccc63b6270dabc7a1176ec0362"
     },
     {
       "path": "index.html",
@@ -118,13 +118,13 @@
     },
     {
       "path": "maintenance-release.html",
-      "size": 6009,
-      "sha256": "132c67819a3ad52400691eb2b912001f6a15515ccd1cf09e28467eafabef7fc1"
+      "size": 7338,
+      "sha256": "acea9cf0dbb99afeb67db12af5d775e651262b561477c4ccfc5efdd3f4d53964"
     },
     {
       "path": "notion-workflow.html",
-      "size": 5509,
-      "sha256": "ea69ae927f6c5fb6398256ea5e8565267a703f72c8e8132e2fdb10b4823697b3"
+      "size": 5877,
+      "sha256": "e25ab3e99520439edf7ed1cc02056b04b7bc64e5ae3506dfbaeed3ddb65398d3"
     },
     {
       "path": "prompts.html",
@@ -138,13 +138,13 @@
     },
     {
       "path": "robots.txt",
-      "size": 104,
-      "sha256": "d22ac775ad201d0c5eee35f3f4645099ef7a492b27535d82bc26e5fff83e05f6"
+      "size": 139,
+      "sha256": "6a4429e6f799a119f78c436d60b77168b342a292ccb0fb268611c320c301cbe5"
     },
     {
       "path": "schemas/framework-v1.schema.json",
-      "size": 21342,
-      "sha256": "dc26e0e8f0ed8787e850ff6a3ea1c4e996bde9829046719e10f2477e0aec5ca6"
+      "size": 14320,
+      "sha256": "0a20672303e26e51410acb1514bff857fdd06993f98523a4fc149b42c1dbe1d0"
     },
     {
       "path": "source-research.html",
@@ -153,8 +153,8 @@
     },
     {
       "path": "specs/2026-09-01-framework-first-addendum.html",
-      "size": 6785,
-      "sha256": "ceabd86354ebcc46d37d409782c61258d73ac3ae8262fc98e1b30f0beb97b25e"
+      "size": 7663,
+      "sha256": "662eca7d03de34a8081931b755205b5778675c63474bf7f1d51bf6cbb4f5cd98"
     },
     {
       "path": "templates/module-template.html",

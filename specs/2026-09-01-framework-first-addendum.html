@@ -25,18 +25,19 @@
     <section>
       <h2>首版知识架构：11 章</h2>
       <ol>
-        <li>开始前：这套教程、边界与安全原则</li>
-        <li>认识 Codex：能做什么、不能做什么</li>
-        <li>安装、登录与界面导航（Windows / macOS）</li>
+        <li>开始前：边界、安全与阅读方法</li>
+        <li>认识 AI 与 Codex</li>
+        <li>安装、登录与界面（Windows / macOS）</li>
         <li>第一次对话：把需求说清楚</li>
-        <li>日常协作：检查、修改、验证与回退意识</li>
-        <li>插件：选择、安装、权限、使用与移除</li>
-        <li>Skill：发现、安装、调用、更新与移除</li>
-        <li>常见任务场景：从想法到可检查结果</li>
-        <li>一个完整的虚构项目案例</li>
-        <li>排错、安全、隐私与求助</li>
-        <li>参考资料、术语、版本与维护记录</li>
+        <li>日常协作：检查、修改与回退</li>
+        <li>插件</li>
+        <li>Skill</li>
+        <li>常见任务场景</li>
+        <li>完整虚构案例</li>
+        <li>排错、安全与求助</li>
+        <li>参考与维护</li>
       </ol>
+      <p>以上为各章的规范标题，以 <code>src/chapters.json</code> 为唯一来源；目录页、各章页面与登记表由构建脚本据此生成（括号内为补充说明，不属于标题本身）。</p>
       <p>“行业提示词库”是与 11 章并列的独立入口，不把它误当成某一行业的完整课程。</p>
     </section>
 
@@ -61,7 +62,7 @@
     <section>
       <h2>Notion 与公开发布边界</h2>
       <p>Notion 用作私有维护台账：收集候选、排期、审核、复核到期和反馈。对外内容由受控的公开投影生成，投影前剔除内部备注、账号信息、未通过内容和不应公开的来源材料。Notion 不是唯一内容源，Git 仓库中的可发布 HTML 与登记表保持可追溯关系。</p>
-      <div class="callout"><strong>GitHub 规则：</strong>当前不创建远程仓库、不公开发布。若在验收后创建 GitHub 仓库，必须创建为<strong>公开仓库</strong>，且只推送通过公开白名单审查的内容；本地开发历史、内部审核材料和未验收内容不自动公开。</div>
+      <div class="callout"><strong>GitHub 规则（2026-09-01 修订）：</strong>用于备份与开发的远程 Git 仓库随时可用，不受验收限制。<strong>面向读者的正式发布</strong>（打标签、发 Release、部署到服务器）须在验收后进行，且只发布通过公开白名单审查的内容；内部审核材料和未验收内容不自动公开。</div>
     </section>
 
     <section>
@@ -73,6 +74,18 @@
           <tr><td>可读性</td><td>Windows 与 macOS 上可离线打开；结构清楚，零基础读者知道下一步去哪里。</td></tr>
           <tr><td>边界</td><td>明确排除开发、CLI、Linux；不把样例正文误报为完整课程。</td></tr>
           <tr><td>可维护性</td><td>新增内容能套用模板，来源与验证有记录，公开与私有材料有边界。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>修订记录</h2>
+      <table>
+        <thead><tr><th>日期 / 版本</th><th>修订</th></tr></thead>
+        <tbody>
+          <tr><td>2026-09-01（0.2.1）</td><td>统一各处章节标题（以 <code>src/chapters.json</code> 为准）；GitHub 规则改为区分开发仓库与正式发布；Notion 台账暂缓、进度以 Git 登记表为准；补充单人维护时 <code>reviewed</code> 的替代规则；登记表 schema 改为结构校验；新增 <code>src/check.py</code> 质检。</td></tr>
+          <tr><td>2026-09-01（0.2.0）</td><td>11 章全部正文、提示词库首批 6 张卡、在线/离线双版本、构建脚本与部署配置。</td></tr>
+          <tr><td>2026-09-01（0.1.0）</td><td>首次发布框架。</td></tr>
         </tbody>
       </table>
     </section>

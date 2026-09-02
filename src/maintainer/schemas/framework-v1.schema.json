@@ -1,7 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://codex-tutorial.local/schemas/framework-v1.schema.json",
-  "title": "Codex tutorial V1 maintainable framework",
+  "title": "Codex tutorial framework registry",
+  "description": "校验 registry/framework-v1.json（由 src/build.py 从 src/maintainer/framework-v1.json 生成）。只约束结构与枚举，不把标题等自由文本钉死，日常更新状态无需改 schema。",
   "type": "object",
   "required": [
     "version",
@@ -22,537 +23,629 @@
     "currentSeedContent"
   ],
   "properties": {
-    "version": {"const": "1.0.0"},
-    "status": {"const": "framework-review"},
-    "authority": {"$ref": "#/$defs/authority"},
-    "audience": {"$ref": "#/$defs/audience"},
-    "platforms": {"$ref": "#/$defs/platforms"},
-    "scope": {"$ref": "#/$defs/scope"},
-    "chapters": {"$ref": "#/$defs/chapters"},
-    "extensionCatalog": {"$ref": "#/$defs/extensionCatalog"},
-    "promptLibrary": {"$ref": "#/$defs/promptLibrary"},
-    "contentStatus": {"$ref": "#/$defs/contentStatus"},
-    "sourceRights": {"$ref": "#/$defs/sourceRights"},
-    "verification": {"$ref": "#/$defs/verification"},
-    "notion": {"$ref": "#/$defs/notion"},
-    "publishing": {"$ref": "#/$defs/publishing"},
-    "releaseGate": {"$ref": "#/$defs/releaseGate"},
-    "currentSeedContent": {"$ref": "#/$defs/currentSeedContent"}
-  },
-  "additionalProperties": false,
-  "$defs": {
-    "nonEmptyString": {"type": "string", "minLength": 1},
-    "stringSet": {
-      "type": "array",
-      "items": {"$ref": "#/$defs/nonEmptyString"},
-      "minItems": 1,
-      "uniqueItems": true
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "status": {
+      "enum": [
+        "framework-review",
+        "draft-complete-unverified",
+        "reviewed",
+        "platform-verified",
+        "stable"
+      ]
+    },
+    "generatedDate": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "productNote": {
+      "type": "string"
     },
     "authority": {
       "type": "object",
-      "required": ["canonicalSource", "generatedArtifacts", "github"],
+      "required": [
+        "canonicalSource",
+        "generatedArtifacts",
+        "github"
+      ],
       "properties": {
         "canonicalSource": {
           "type": "object",
-          "required": ["kind", "remoteRequired"],
+          "required": [
+            "kind"
+          ],
           "properties": {
-            "kind": {"const": "local-git"},
-            "remoteRequired": {"const": false}
-          },
-          "additionalProperties": false
+            "kind": {
+              "enum": [
+                "local-git"
+              ]
+            },
+            "remoteRequired": {
+              "type": "boolean"
+            }
+          }
         },
         "generatedArtifacts": {
           "type": "object",
-          "required": ["htmlAndMetadataAreNormative", "zipIsImmutableSnapshot", "notionIsAuthority"],
           "properties": {
-            "htmlAndMetadataAreNormative": {"const": true},
-            "zipIsImmutableSnapshot": {"const": true},
-            "notionIsAuthority": {"const": false}
-          },
-          "additionalProperties": false
+            "htmlAndMetadataAreNormative": {
+              "const": true
+            },
+            "zipIsImmutableSnapshot": {
+              "type": "boolean"
+            },
+            "notionIsAuthority": {
+              "const": false
+            }
+          }
         },
         "github": {
           "type": "object",
-          "required": ["phase", "visibility", "publishFrom", "includeFullLocalHistory", "requiresUserAcceptance"],
+          "required": [
+            "publishFrom",
+            "requiresUserAcceptance"
+          ],
           "properties": {
-            "phase": {"const": "future-optional"},
-            "visibility": {"const": "public-only"},
-            "publishFrom": {"const": "approved-public-whitelist-tree"},
-            "includeFullLocalHistory": {"const": false},
-            "requiresUserAcceptance": {"const": true}
-          },
-          "additionalProperties": false
+            "phase": {
+              "type": "string"
+            },
+            "visibility": {
+              "type": "string"
+            },
+            "publishFrom": {
+              "const": "approved-public-whitelist-tree"
+            },
+            "includeFullLocalHistory": {
+              "const": false
+            },
+            "requiresUserAcceptance": {
+              "const": true
+            }
+          }
         }
-      },
-      "additionalProperties": false
+      }
     },
     "audience": {
       "type": "object",
-      "required": ["primary", "assumedKnowledge", "language", "teachingStyle"],
+      "required": [
+        "primary",
+        "language"
+      ],
       "properties": {
-        "primary": {"const": "first-time-ai-and-codex-users"},
+        "primary": {
+          "type": "string"
+        },
         "assumedKnowledge": {
           "type": "array",
-          "prefixItems": [
-            {"const": "no-ai-foundation"},
-            {"const": "no-codex-foundation"},
-            {"const": "no-programming-foundation"},
-            {"const": "no-git-foundation"},
-            {"const": "no-command-line-foundation"}
-          ],
-          "items": false,
-          "minItems": 5,
-          "maxItems": 5
+          "items": {
+            "type": "string"
+          }
         },
-        "language": {"const": "zh-CN"},
-        "teachingStyle": {"const": "plain-language-step-by-step-safe"}
-      },
-      "additionalProperties": false
+        "language": {
+          "const": "zh-CN"
+        },
+        "teachingStyle": {
+          "type": "string"
+        }
+      }
     },
     "platforms": {
       "type": "object",
-      "required": ["included", "sharedContentKey", "excluded"],
+      "required": [
+        "included",
+        "excluded"
+      ],
       "properties": {
         "included": {
           "type": "array",
-          "prefixItems": [{"const": "windows"}, {"const": "macos"}],
-          "items": false,
-          "minItems": 2,
-          "maxItems": 2
+          "items": {
+            "enum": [
+              "windows",
+              "macos"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
         },
-        "sharedContentKey": {"const": "shared"},
+        "sharedContentKey": {
+          "type": "string"
+        },
         "excluded": {
           "type": "array",
-          "prefixItems": [{"const": "linux"}],
-          "items": false,
-          "minItems": 1,
-          "maxItems": 1
+          "items": {
+            "type": "string"
+          }
         }
-      },
-      "additionalProperties": false
+      }
     },
     "scope": {
       "type": "object",
-      "required": ["include", "exclude", "delivery"],
+      "required": [
+        "include",
+        "exclude",
+        "delivery"
+      ],
       "properties": {
         "include": {
           "type": "array",
-          "prefixItems": [
-            {"const": "codex-desktop-basics"},
-            {"const": "safe-general-workflows"},
-            {"const": "plugin-use-and-lifecycle"},
-            {"const": "skill-use-and-lifecycle"},
-            {"const": "industry-prompt-library"},
-            {"const": "troubleshooting-and-reference"}
-          ],
-          "items": false,
-          "minItems": 6,
-          "maxItems": 6
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
         },
         "exclude": {
           "type": "array",
-          "prefixItems": [
-            {"const": "software-development-curriculum"},
-            {"const": "cli"},
-            {"const": "ide"},
-            {"const": "api"},
-            {"const": "sdk"},
-            {"const": "git-curriculum"},
-            {"const": "linux"},
-            {"const": "online-progress-or-tracking"},
-            {"const": "skill-or-plugin-development-curriculum"}
-          ],
-          "items": false,
-          "minItems": 9,
-          "maxItems": 9
+          "items": {
+            "type": "string"
+          }
         },
         "delivery": {
           "type": "object",
-          "required": ["primary", "runtime", "networkRequired", "serverRequired"],
+          "required": [
+            "primary",
+            "networkRequired",
+            "serverRequired"
+          ],
           "properties": {
-            "primary": {"const": "offline-multi-file-semantic-html"},
-            "runtime": {"const": "double-click-index-html"},
-            "networkRequired": {"const": false},
-            "serverRequired": {"const": false}
-          },
-          "additionalProperties": false
+            "primary": {
+              "const": "offline-multi-file-semantic-html"
+            },
+            "runtime": {
+              "type": "string"
+            },
+            "networkRequired": {
+              "const": false
+            },
+            "serverRequired": {
+              "const": false
+            }
+          }
         }
-      },
-      "additionalProperties": false
-    },
-    "chapter": {
-      "type": "object",
-      "required": ["number", "title", "status"],
-      "properties": {
-        "number": {"type": "integer", "minimum": 1, "maximum": 11},
-        "title": {"$ref": "#/$defs/nonEmptyString"},
-        "status": {"const": "outline"}
-      },
-      "additionalProperties": false
+      }
     },
     "chapters": {
       "type": "array",
-      "prefixItems": [
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 1}, "title": {"const": "导读与使用说明"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 2}, "title": {"const": "认识 AI 与 Codex"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 3}, "title": {"const": "安装、账号与界面"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 4}, "title": {"const": "基础使用方法"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 5}, "title": {"const": "项目、文件与权限"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 6}, "title": {"const": "插件"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 7}, "title": {"const": "Skills"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 8}, "title": {"const": "实际使用与工作场景"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 9}, "title": {"const": "完整案例"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 10}, "title": {"const": "故障排查"}}}]},
-        {"allOf": [{"$ref": "#/$defs/chapter"}, {"type": "object", "properties": {"number": {"const": 11}, "title": {"const": "参考附录"}}}]}
-      ],
-      "items": false,
       "minItems": 11,
-      "maxItems": 11
-    },
-    "sectionKeyListPlugin": {
-      "type": "array",
-      "prefixItems": [
-        {"const": "overview"},
-        {"const": "requirements"},
-        {"const": "source-permissions-data"},
-        {"const": "install"},
-        {"const": "connect-configure-authorize"},
-        {"const": "basic-use"},
-        {"const": "tips"},
-        {"const": "complete-case"},
-        {"const": "troubleshooting"},
-        {"const": "updates-compatibility"},
-        {"const": "disable-uninstall-revoke"}
-      ],
-      "items": false,
-      "minItems": 11,
-      "maxItems": 11
-    },
-    "sectionKeyListSkill": {
-      "type": "array",
-      "prefixItems": [
-        {"const": "overview"},
-        {"const": "source-scope-platforms"},
-        {"const": "components-dependencies-safety"},
-        {"const": "install"},
-        {"const": "enable-configure"},
-        {"const": "invocation-triggers"},
-        {"const": "basic-use"},
-        {"const": "tips"},
-        {"const": "complete-case"},
-        {"const": "troubleshooting"},
-        {"const": "updates-compatibility"},
-        {"const": "disable-remove-residue"}
-      ],
-      "items": false,
-      "minItems": 12,
-      "maxItems": 12
-    },
-    "catalogKind": {
-      "type": "object",
-      "required": ["root", "basicsReader", "objectDirectoryPattern", "requiredSubdirectories", "readerSectionKeys"],
-      "properties": {
-        "root": {"enum": ["authoring/plugins", "authoring/skills"]},
-        "basicsReader": {"$ref": "#/$defs/nonEmptyString"},
-        "objectDirectoryPattern": {"const": "stable-ascii-key"},
-        "requiredSubdirectories": {
-          "type": "array",
-          "prefixItems": [{"const": "reader"}, {"const": "package"}, {"const": "maintainer"}],
-          "items": false,
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "readerSectionKeys": {"type": "array"}
-      },
-      "additionalProperties": false
+      "maxItems": 11,
+      "items": {
+        "$ref": "#/$defs/chapter"
+      }
     },
     "extensionCatalog": {
       "type": "object",
-      "required": ["directoryRules", "plugin", "skill"],
+      "required": [
+        "directoryRules",
+        "plugin",
+        "skill"
+      ],
       "properties": {
         "directoryRules": {
           "type": "object",
-          "required": ["oneObjectPerDirectory", "displayNameStoredInMetadata", "packageRedistribution", "maintainerPublished"],
           "properties": {
-            "oneObjectPerDirectory": {"const": true},
-            "displayNameStoredInMetadata": {"const": true},
-            "packageRedistribution": {"const": "owned-or-explicitly-permitted-only"},
-            "maintainerPublished": {"const": false}
-          },
-          "additionalProperties": false
+            "oneObjectPerDirectory": {
+              "const": true
+            },
+            "displayNameStoredInMetadata": {
+              "type": "boolean"
+            },
+            "packageRedistribution": {
+              "const": "owned-or-explicitly-permitted-only"
+            },
+            "maintainerPublished": {
+              "type": "boolean"
+            }
+          }
         },
         "plugin": {
-          "allOf": [
-            {"$ref": "#/$defs/catalogKind"},
-            {"type": "object", "properties": {"root": {"const": "authoring/plugins"}, "basicsReader": {"const": "authoring/plugins/_basics/reader"}, "readerSectionKeys": {"$ref": "#/$defs/sectionKeyListPlugin"}}}
-          ]
+          "$ref": "#/$defs/extensionKind"
         },
         "skill": {
-          "allOf": [
-            {"$ref": "#/$defs/catalogKind"},
-            {"type": "object", "properties": {"root": {"const": "authoring/skills"}, "basicsReader": {"const": "authoring/skills/_basics/reader"}, "readerSectionKeys": {"$ref": "#/$defs/sectionKeyListSkill"}}}
-          ]
+          "$ref": "#/$defs/extensionKind"
         }
-      },
-      "additionalProperties": false
-    },
-    "promptCollection": {
-      "type": "object",
-      "required": ["key", "title", "uniqueCardCount", "usesSharedFileCard"],
-      "properties": {
-        "key": {"enum": ["prompt-common", "prompt-ecommerce", "prompt-food", "prompt-media", "prompt-education"]},
-        "title": {"$ref": "#/$defs/nonEmptyString"},
-        "uniqueCardCount": {"type": "integer", "minimum": 5, "maximum": 6},
-        "usesSharedFileCard": {"type": "boolean"}
-      },
-      "additionalProperties": false
+      }
     },
     "promptLibrary": {
       "type": "object",
-      "required": ["navigation", "collections", "taskKeys", "uniqueCardCount", "placementCount", "sharedCard"],
+      "required": [
+        "navigation",
+        "collections",
+        "taskKeys",
+        "uniqueCardCount",
+        "placementCount"
+      ],
       "properties": {
-        "navigation": {"const": "independent-not-chapter-12"},
+        "navigation": {
+          "const": "independent-not-chapter-12"
+        },
         "collections": {
           "type": "array",
-          "prefixItems": [
-            {"allOf": [{"$ref": "#/$defs/promptCollection"}, {"type": "object", "properties": {"key": {"const": "prompt-common"}, "title": {"const": "跨行业通用"}, "uniqueCardCount": {"const": 6}, "usesSharedFileCard": {"const": false}}}]},
-            {"allOf": [{"$ref": "#/$defs/promptCollection"}, {"type": "object", "properties": {"key": {"const": "prompt-ecommerce"}, "title": {"const": "电商与零售"}, "uniqueCardCount": {"const": 5}, "usesSharedFileCard": {"const": true}}}]},
-            {"allOf": [{"$ref": "#/$defs/promptCollection"}, {"type": "object", "properties": {"key": {"const": "prompt-food"}, "title": {"const": "餐饮与本地生活"}, "uniqueCardCount": {"const": 5}, "usesSharedFileCard": {"const": true}}}]},
-            {"allOf": [{"$ref": "#/$defs/promptCollection"}, {"type": "object", "properties": {"key": {"const": "prompt-media"}, "title": {"const": "传媒与内容创作"}, "uniqueCardCount": {"const": 5}, "usesSharedFileCard": {"const": true}}}]},
-            {"allOf": [{"$ref": "#/$defs/promptCollection"}, {"type": "object", "properties": {"key": {"const": "prompt-education"}, "title": {"const": "教育与培训"}, "uniqueCardCount": {"const": 5}, "usesSharedFileCard": {"const": true}}}]}
-          ],
-          "items": false,
-          "minItems": 5,
-          "maxItems": 5
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "key",
+              "title",
+              "uniqueCardCount"
+            ],
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^prompt-[a-z-]+$"
+              },
+              "title": {
+                "type": "string"
+              },
+              "uniqueCardCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "usesSharedFileCard": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "string"
+              },
+              "draftedCards": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
         },
         "taskKeys": {
           "type": "array",
-          "prefixItems": [
-            {"const": "communication"},
-            {"const": "document-report"},
-            {"const": "file-organization"},
-            {"const": "table-data"},
-            {"const": "research-plan"},
-            {"const": "visual"}
-          ],
-          "items": false,
-          "minItems": 6,
-          "maxItems": 6
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
         },
-        "uniqueCardCount": {"const": 26},
-        "placementCount": {"const": 30},
+        "uniqueCardCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "placementCount": {
+          "type": "integer",
+          "minimum": 0
+        },
         "sharedCard": {
           "type": "object",
-          "required": ["id", "taskKey", "placementCollections", "placementCount"],
+          "required": [
+            "id",
+            "taskKey"
+          ],
           "properties": {
-            "id": {"const": "PRM-COM-0003"},
-            "taskKey": {"const": "file-organization"},
+            "id": {
+              "type": "string",
+              "pattern": "^PRM-[A-Z]+-[0-9]{4}$"
+            },
+            "taskKey": {
+              "type": "string"
+            },
             "placementCollections": {
               "type": "array",
-              "prefixItems": [
-                {"const": "prompt-common"},
-                {"const": "prompt-ecommerce"},
-                {"const": "prompt-food"},
-                {"const": "prompt-media"},
-                {"const": "prompt-education"}
-              ],
-              "items": false,
-              "minItems": 5,
-              "maxItems": 5
+              "items": {
+                "type": "string"
+              }
             },
-            "placementCount": {"const": 5}
-          },
-          "additionalProperties": false
+            "placementCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         }
-      },
-      "additionalProperties": false
+      }
     },
     "contentStatus": {
       "type": "object",
-      "required": ["pipeline", "transitionRule"],
+      "required": [
+        "pipeline",
+        "transitionRule"
+      ],
       "properties": {
         "pipeline": {
           "type": "array",
-          "prefixItems": [
-            {"const": "outline"},
-            {"const": "draft"},
-            {"const": "source-and-rights-review"},
-            {"const": "verification"},
-            {"const": "acceptance-ready"},
-            {"const": "stable"},
-            {"const": "retired"}
-          ],
-          "items": false,
-          "minItems": 7,
-          "maxItems": 7
+          "items": {
+            "$ref": "#/$defs/pipelineState"
+          },
+          "minItems": 1,
+          "uniqueItems": true
         },
-        "transitionRule": {"const": "advance-only-after-required-evidence-and-review"}
-      },
-      "additionalProperties": false
+        "transitionRule": {
+          "type": "string"
+        },
+        "singleMaintainerReviewSubstitute": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "sourceRights": {
       "type": "object",
-      "required": ["publicAllowed", "publicBlocked", "rules"],
+      "required": [
+        "publicAllowed",
+        "publicBlocked",
+        "rules"
+      ],
       "properties": {
         "publicAllowed": {
           "type": "array",
-          "prefixItems": [{"const": "owned"}, {"const": "cleared"}, {"const": "link-only"}],
-          "items": false,
-          "minItems": 3,
-          "maxItems": 3
+          "items": {
+            "enum": [
+              "owned",
+              "cleared",
+              "link-only"
+            ]
+          },
+          "uniqueItems": true
         },
         "publicBlocked": {
           "type": "array",
-          "prefixItems": [{"const": "unknown"}, {"const": "conflict"}, {"const": "pending"}],
-          "items": false,
-          "minItems": 3,
-          "maxItems": 3
+          "items": {
+            "enum": [
+              "unknown",
+              "conflict",
+              "pending"
+            ]
+          },
+          "uniqueItems": true
         },
         "rules": {
-          "type": "object",
-          "required": ["missingLicense", "thirdPartyRecordFields", "githubPrompts", "effectAssets", "readerGithubAccessRequired"],
-          "properties": {
-            "missingLicense": {"const": "no-redistribution-permission"},
-            "thirdPartyRecordFields": {
-              "type": "array",
-              "prefixItems": [
-                {"const": "author"},
-                {"const": "url"},
-                {"const": "license"},
-                {"const": "pinnedVersion"},
-                {"const": "reviewDate"},
-                {"const": "use"},
-                {"const": "reviewConclusion"}
-              ],
-              "items": false,
-              "minItems": 7,
-              "maxItems": 7
-            },
-            "githubPrompts": {"const": "method-discovery-only-independent-rewrite"},
-            "effectAssets": {"const": "owned-or-synthetic-fictional"},
-            "readerGithubAccessRequired": {"const": false}
-          },
-          "additionalProperties": false
+          "type": "object"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "verification": {
       "type": "object",
-      "required": ["states", "riskRevalidationDays", "conflictRule"],
+      "required": [
+        "states",
+        "riskRevalidationDays"
+      ],
       "properties": {
         "states": {
           "type": "array",
-          "prefixItems": [
-            {"const": "verified"},
-            {"const": "verified-with-limitations"},
-            {"const": "verification-failed"},
-            {"const": "unverified"},
-            {"const": "unsupported"},
-            {"const": "verification-expired"}
-          ],
-          "items": false,
-          "minItems": 6,
-          "maxItems": 6
+          "items": {
+            "enum": [
+              "verified",
+              "verified-with-limitations",
+              "verification-failed",
+              "unverified",
+              "unsupported",
+              "verification-expired"
+            ]
+          },
+          "uniqueItems": true
         },
         "riskRevalidationDays": {
           "type": "object",
-          "required": ["high", "medium", "low"],
+          "required": [
+            "high",
+            "medium",
+            "low"
+          ],
           "properties": {
-            "high": {"const": 30},
-            "medium": {"const": 90},
-            "low": {"const": 180}
-          },
-          "additionalProperties": false
+            "high": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "medium": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "low": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
         },
-        "conflictRule": {"const": "retain-official-and-test-evidence-and-block-full-verification"}
-      },
-      "additionalProperties": false
+        "conflictRule": {
+          "type": "string"
+        }
+      }
     },
     "notion": {
       "type": "object",
-      "required": ["direction", "authority", "v1Action", "fields", "publishSwitch"],
+      "required": [
+        "direction",
+        "authority",
+        "v1Action"
+      ],
       "properties": {
-        "direction": {"const": "git-to-notion-only"},
-        "authority": {"const": false},
-        "v1Action": {"const": "local-preview-only"},
+        "direction": {
+          "const": "git-to-notion-only"
+        },
+        "authority": {
+          "const": false
+        },
+        "v1Action": {
+          "enum": [
+            "local-preview-only",
+            "deferred",
+            "active"
+          ]
+        },
+        "deferredDate": {
+          "type": "string"
+        },
+        "deferredReason": {
+          "type": "string"
+        },
         "fields": {
           "type": "array",
-          "prefixItems": [
-            {"const": "moduleId"},
-            {"const": "title"},
-            {"const": "chapter"},
-            {"const": "order"},
-            {"const": "kind"},
-            {"const": "platforms"},
-            {"const": "risk"},
-            {"const": "verificationState"},
-            {"const": "verificationDate"},
-            {"const": "sourceRefs"},
-            {"const": "rights"},
-            {"const": "contentStatus"},
-            {"const": "version"},
-            {"const": "publicPath"}
-          ],
-          "items": false,
-          "minItems": 14,
-          "maxItems": 14
+          "items": {
+            "type": "string"
+          }
         },
-        "publishSwitch": {"const": "whole-version-atomic"}
-      },
-      "additionalProperties": false
+        "publishSwitch": {
+          "type": "string"
+        }
+      }
     },
     "publishing": {
       "type": "object",
-      "required": ["github"],
+      "required": [
+        "github"
+      ],
       "properties": {
         "github": {
           "type": "object",
-          "required": ["visibility", "afterAcceptance", "sourceTree"],
+          "required": [
+            "visibility",
+            "afterAcceptance"
+          ],
           "properties": {
-            "visibility": {"const": "public"},
-            "afterAcceptance": {"const": true},
-            "sourceTree": {"const": "approved-public-whitelist-tree"}
+            "visibility": {
+              "const": "public"
+            },
+            "afterAcceptance": {
+              "const": true
+            },
+            "sourceTree": {
+              "const": "approved-public-whitelist-tree"
+            }
+          }
+        }
+      }
+    },
+    "releaseGate": {
+      "type": "object",
+      "required": [
+        "currentDecision",
+        "requiredBeforeStable"
+      ],
+      "properties": {
+        "currentDecision": {
+          "type": "string"
+        },
+        "requiredBeforeStable": {
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "additionalProperties": false
+          "minItems": 1
+        },
+        "publicActionsBeforeAcceptance": {
+          "const": false
+        }
+      }
+    },
+    "currentSeedContent": {
+      "type": "object",
+      "required": [
+        "designation",
+        "final",
+        "countsAsCompletedCourseContent"
+      ],
+      "properties": {
+        "designation": {
+          "type": "string"
+        },
+        "final": {
+          "const": false
+        },
+        "countsAsCompletedCourseContent": {
+          "const": false
+        },
+        "reviewPolicy": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "pipelineState": {
+      "enum": [
+        "outline",
+        "draft",
+        "source-and-rights-review",
+        "verification",
+        "acceptance-ready",
+        "stable",
+        "retired"
+      ]
+    },
+    "chapter": {
+      "type": "object",
+      "required": [
+        "number",
+        "title",
+        "status"
+      ],
+      "properties": {
+        "number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 11
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "outline",
+            "draft",
+            "reviewed",
+            "platform-verified",
+            "stable"
+          ]
+        },
+        "file": {
+          "type": "string",
+          "pattern": "^ch[0-9]{2}\\.html$"
+        },
+        "summary": {
+          "type": "string"
         }
       },
       "additionalProperties": false
     },
-    "releaseGate": {
+    "extensionKind": {
       "type": "object",
-      "required": ["currentDecision", "requiredBeforeStable", "publicActionsBeforeAcceptance"],
+      "required": [
+        "root",
+        "requiredSubdirectories",
+        "readerSectionKeys"
+      ],
       "properties": {
-        "currentDecision": {"const": "framework-review-only"},
-        "requiredBeforeStable": {
-          "type": "array",
-          "prefixItems": [
-            {"const": "framework-user-approved"},
-            {"const": "all-required-content-acceptance-ready"},
-            {"const": "source-and-rights-clear"},
-            {"const": "required-platform-verification-complete"},
-            {"const": "offline-build-and-links-pass"},
-            {"const": "accessibility-and-safety-gates-pass"},
-            {"const": "release-artifacts-reproducible"}
-          ],
-          "items": false,
-          "minItems": 7,
-          "maxItems": 7
+        "root": {
+          "type": "string"
         },
-        "publicActionsBeforeAcceptance": {"const": false}
-      },
-      "additionalProperties": false
-    },
-    "currentSeedContent": {
-      "type": "object",
-      "required": ["designation", "final", "countsAsCompletedCourseContent", "reviewPolicy"],
-      "properties": {
-        "designation": {"const": "sample"},
-        "final": {"const": false},
-        "countsAsCompletedCourseContent": {"const": false},
-        "reviewPolicy": {"const": "replace-or-approve-item-by-item-later"}
-      },
-      "additionalProperties": false
+        "basicsReader": {
+          "type": "string"
+        },
+        "objectDirectoryPattern": {
+          "type": "string"
+        },
+        "requiredSubdirectories": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "reader",
+              "package",
+              "maintainer"
+            ]
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "readerSectionKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
     }
   }
 }

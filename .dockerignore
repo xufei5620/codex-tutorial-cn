@@ -1,0 +1,5 @@
+# 构建镜像时排除：版本库与内容源不属于站点
+.git
+.gitignore
+.dockerignore
+src

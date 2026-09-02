@@ -11,10 +11,10 @@
 ```bash
 git clone https://github.com/xufei5620/codex-tutorial-cn.git
 cd codex-tutorial-cn
-docker compose -f deploy/docker-compose.yml up -d
+docker compose -f deploy/docker-compose.yml up -d --build
 ```
 
-浏览器打开 `http://服务器IP:8080` 就能看到。以后更新内容：`git pull` 之后再执行一次同样的 `docker compose ... up -d --build`。
+浏览器打开 `http://服务器IP:8080` 就能看到。以后更新内容：`git pull` 之后再执行一次同样的命令（`--build` 让它重新打包最新文件）。镜像只包含站点文件：仓库根目录的 `.dockerignore` 已排除 `.git` 与内容源 `src/`。
 
 ## 方式二：Caddy（自动 HTTPS，适合有域名的情况）
 
@@ -22,7 +22,7 @@ docker compose -f deploy/docker-compose.yml up -d
 
 ```bash
 sudo mkdir -p /var/www/codex-tutorial
-sudo cp -r ./* /var/www/codex-tutorial/          # 在仓库目录里执行
+rsync -a --delete --exclude .git --exclude src ./ /var/www/codex-tutorial/   # 在仓库目录里执行；没有 rsync 就用 cp -r ./*
 sudo cp deploy/Caddyfile /etc/caddy/Caddyfile     # 先把里面的域名改成你的
 sudo systemctl reload caddy
 ```
@@ -33,7 +33,7 @@ Caddy 会自动申请并续期 HTTPS 证书，不需要你管。
 
 ```bash
 sudo mkdir -p /var/www/codex-tutorial
-sudo cp -r ./* /var/www/codex-tutorial/
+rsync -a --delete --exclude .git --exclude src ./ /var/www/codex-tutorial/   # 没有 rsync 就用 cp -r ./*
 sudo cp deploy/nginx.conf /etc/nginx/conf.d/codex-tutorial.conf   # 先改域名
 sudo nginx -t && sudo nginx -s reload
 ```
@@ -50,8 +50,8 @@ sudo nginx -t && sudo nginx -s reload
 
 ## 更新内容的流程
 
-内容改动只发生在仓库里；服务器上永远只是仓库的一份拷贝。所以每次更新都是同一套动作：改仓库 → 提交 → 在服务器上 `git pull`（或重新复制）→ 如果用 Docker 就重新 `up -d --build`。不要直接在服务器上改文件，否则下次同步会被覆盖。
+内容改动只发生在仓库里；服务器上永远只是仓库的一份拷贝。所以每次更新都是同一套动作：改仓库 → 提交 → 在服务器上 `git pull`（或重新复制）→ 如果用 Docker 就重新 `up -d --build`。改完内容记得先在本机运行 `python3 src/build.py` 与 `python3 src/check.py`，把生成结果一起提交。不要直接在服务器上改文件，否则下次同步会被覆盖。
 
 ## 关于目录里的维护者资料
 
-`templates/`、`specs/`、`schemas/`、`registry/` 和几份维护流程页面是给维护者看的，读者用不到。它们会一起部署上去（首页底部「维护者资料」里有链接），但 `robots.txt` 已声明不让搜索引擎收录。如果你不想公开它们，部署前删掉这几个目录即可，不影响读者页面。
+`templates/`、`specs/`、`schemas/`、`registry/` 和几份维护流程页面是给维护者看的，读者用不到。它们会一起部署上去（首页底部「维护者资料」里有链接），但 `robots.txt` 已声明不让搜索引擎收录；内容源 `src/` 与 `.git` 等点文件在 Nginx / Caddy 配置里已直接屏蔽。如果你不想公开它们，部署前删掉这几个目录即可，不影响读者页面。

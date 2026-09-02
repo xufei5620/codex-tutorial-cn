@@ -4,3 +4,5 @@ Disallow: /templates/
 Disallow: /specs/
 Disallow: /schemas/
 Disallow: /registry/
+Disallow: /src/
+Disallow: /deploy/
