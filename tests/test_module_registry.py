@@ -1089,6 +1089,73 @@ class ModuleRegistryTests(unittest.TestCase):
             self.assertIn("内容已由新的正式模块取代。", chapter)
             self.assertIn('href="ch01.html#s2"', chapter)
 
+    def test_build_projects_a_retired_prompt_without_requiring_visible_taxonomy(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "src/modules-v1.json").read_text(encoding="utf-8"))
+            registry["status"] = "review-in-progress"
+            unit = next(item for item in registry["units"] if item["id"] == "PRM-COM-0006")
+            unit["contentStatus"] = "retired"
+            unit["lastReviewedDate"] = registry["generatedDate"]
+            registry["retirementRecords"] = [
+                {
+                    "unitId": unit["id"],
+                    "retiredDate": registry["generatedDate"],
+                    "reason": "这张卡片已停止维护。",
+                    "replacementPath": None,
+                }
+            ]
+            (root / "src/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            result = run_build(root)
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertEqual(errors, [])
+            prompts = (root / "prompts.html").read_text(encoding="utf-8")
+            self.assertIn('data-unit-id="PRM-COM-0006" data-content-status="retired"', prompts)
+            self.assertIn("这张卡片已停止维护。", prompts)
+
+    def test_build_rejects_stable_course_without_active_lesson_coverage(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "src/modules-v1.json").read_text(encoding="utf-8"))
+            chapters = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
+            registry["status"] = "stable"
+            retired_units = [unit for unit in registry["units"] if unit["kind"] == "lesson-module"]
+            for unit in retired_units:
+                unit["contentStatus"] = "retired"
+                unit["lastReviewedDate"] = registry["generatedDate"]
+            registry["retirementRecords"] = [
+                {
+                    "unitId": unit["id"],
+                    "retiredDate": registry["generatedDate"],
+                    "reason": "测试退役覆盖门禁。",
+                    "replacementPath": None,
+                }
+                for unit in retired_units
+            ]
+            for chapter in chapters["chapters"].values():
+                chapter["status"] = "retired"
+            (root / "src/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            (root / "src/chapters.json").write_text(
+                json.dumps(chapters, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            result = run_build(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"active lesson coverage", result.stderr)
+
     def test_retirement_replacement_cannot_point_to_another_retired_unit(self):
         checker = load_check_module()
         with tempfile.TemporaryDirectory() as directory:

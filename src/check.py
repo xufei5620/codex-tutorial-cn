@@ -145,6 +145,9 @@ LOCKED_PROMPT_COLLECTIONS = [
     {"key": "prompt-media", "title": "传媒与内容创作", "uniqueCardCount": 5, "usesSharedFileCard": True},
     {"key": "prompt-education", "title": "教育与培训", "uniqueCardCount": 5, "usesSharedFileCard": True},
 ]
+LOCKED_ACTIVE_PROMPT_COUNTS = {
+    item["key"]: item["uniqueCardCount"] for item in LOCKED_PROMPT_COLLECTIONS
+}
 LOCKED_RISK_WINDOWS = {"high": 30, "medium": 90, "low": 180}
 LOCKED_STABLE_GATES = [
     "framework-user-approved",
@@ -1158,6 +1161,37 @@ def check_module_registry(
     for unit in unit_records:
         if unit["contentStatus"] == "retired" and unit["id"] not in retirements_by_id:
             errors.append(f"{unit['id']}: retirement tombstone missing")
+    if registry.get("status") in {"acceptance-ready", "stable"}:
+        active_states = {"acceptance-ready", "stable"}
+        for chapter_id, required_count in LOCKED_LESSON_COUNTS.items():
+            active_count = sum(
+                1
+                for unit in unit_records
+                if unit.get("kind") == "lesson-module"
+                and unit.get("chapterId") == chapter_id
+                and unit.get("contentStatus") in active_states
+            )
+            if active_count < required_count:
+                errors.append(
+                    f"{chapter_id}: active lesson coverage is below the locked minimum "
+                    f"({active_count} < {required_count})"
+                )
+        active_prompts = [
+            unit
+            for unit in unit_records
+            if unit.get("kind") == "prompt-card" and unit.get("contentStatus") in active_states
+        ]
+        if len(active_prompts) < 26:
+            errors.append(f"active prompt coverage is below the locked minimum ({len(active_prompts)} < 26)")
+        for collection_key, required_count in LOCKED_ACTIVE_PROMPT_COUNTS.items():
+            active_count = sum(
+                1 for unit in active_prompts if collection_key in unit.get("collectionKeys", [])
+            )
+            if active_count < required_count:
+                errors.append(
+                    f"{collection_key}: active prompt coverage is below the locked minimum "
+                    f"({active_count} < {required_count})"
+                )
 
     legacy = registry.get("legacyChapterPlaceholders", [])
     legacy_ids = [item.get("legacyId") for item in legacy if isinstance(item, dict)]
@@ -1466,7 +1500,7 @@ def check_module_registry(
                 "、".join(collection_titles.get(key, key) for key in collections),
                 task_titles.get(record.get("taskKey")),
             )
-            if visible_taxonomy.get(unit.get("id")) != expected_labels:
+            if record.get("contentStatus") != "retired" and visible_taxonomy.get(unit.get("id")) != expected_labels:
                 errors.append(f"{unit.get('id')}: visible prompt taxonomy differs from the module catalog")
             collection_positions[primary_collection] = collection_positions.get(primary_collection, 0) + 1
             parsed_units.append(

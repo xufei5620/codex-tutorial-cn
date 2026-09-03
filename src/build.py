@@ -64,6 +64,17 @@ LOCKED_STABLE_GATES = [
     'accessibility-and-safety-gates-pass',
     'release-artifacts-reproducible',
 ]
+LOCKED_LESSON_COUNTS = {
+    'ch01': 5, 'ch02': 5, 'ch03': 8, 'ch04': 6, 'ch05': 6, 'ch06': 6,
+    'ch07': 6, 'ch08': 8, 'ch09': 5, 'ch10': 5, 'ch11': 5,
+}
+LOCKED_ACTIVE_PROMPT_COUNTS = {
+    'prompt-common': 6,
+    'prompt-ecommerce': 5,
+    'prompt-food': 5,
+    'prompt-media': 5,
+    'prompt-education': 5,
+}
 
 css = open(os.path.join(CONTENT, 'style.css'), encoding='utf-8').read()
 ZIP_NAME = f"codex-tutorial-cn-v{cfg['site']['version']}-offline.zip"
@@ -574,6 +585,31 @@ def validate_source_inputs():
             'prompts entry status must equal the least-advanced registered prompt status '
             f'({EXTRAS["prompts"]["status"]} != {prompt_status})'
         )
+    if MODULES_CFG['status'] in {'acceptance-ready', 'stable'}:
+        active_states = {'acceptance-ready', 'stable'}
+        for chapter_id, required_count in LOCKED_LESSON_COUNTS.items():
+            active_count = sum(
+                1
+                for unit in MODULES_CFG['units']
+                if unit['kind'] == 'lesson-module'
+                and unit['chapterId'] == chapter_id
+                and unit['contentStatus'] in active_states
+            )
+            if active_count < required_count:
+                raise ValueError(
+                    f'{chapter_id} active lesson coverage is below the locked minimum '
+                    f'({active_count} < {required_count})'
+                )
+        active_prompts = [unit for unit in prompt_units if unit['contentStatus'] in active_states]
+        if len(active_prompts) < 26:
+            raise ValueError(f'active prompt coverage is below the locked minimum ({len(active_prompts)} < 26)')
+        for collection_key, required_count in LOCKED_ACTIVE_PROMPT_COUNTS.items():
+            active_count = sum(1 for unit in active_prompts if collection_key in unit['collectionKeys'])
+            if active_count < required_count:
+                raise ValueError(
+                    f'{collection_key} active prompt coverage is below the locked minimum '
+                    f'({active_count} < {required_count})'
+                )
 
     framework = load_json(os.path.join(MAINT, 'framework-v1.json'))
     if framework['releaseGate'].get('requiredBeforeStable') != LOCKED_STABLE_GATES:
