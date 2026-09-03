@@ -344,8 +344,11 @@ def check_site_tree(
         return True
 
     def validate_css_references(source_path: Path, relative: str, source: str, context: str) -> None:
-        if re.search(r"(?i)@import\b", normalize_css(source)):
+        normalized = normalize_css(source)
+        if re.search(r"(?i)@import\b", normalized):
             errors.append(f"{relative}: CSS @import is not allowed in {context}")
+        if contains_external_url(normalized):
+            errors.append(f"{relative}: external URL is not allowed in {context}")
         for reference in css_urls(source):
             if is_remote_url(reference):
                 errors.append(f"{relative}: remote {context} resource: {reference}")

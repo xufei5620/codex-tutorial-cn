@@ -346,6 +346,9 @@ class CheckBaselineTests(unittest.TestCase):
             "import without whitespace": "@import\"https://example.invalid/remote.css\";\n",
             "data import": "@import\"data:text/css,body%7Bcolor:red%7D\";\n",
             "url": ".x { background: url(//example.invalid/pixel.png); }\n",
+            "image-set string": (
+                '.x { background: image-set("https://example.invalid/pixel.png" 1x); }\n'
+            ),
         }
         for label, payload in cases.items():
             with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
