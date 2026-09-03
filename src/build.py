@@ -150,7 +150,8 @@ def doc_page(pid, mode):
 
 def home_body(mode, offline=False):
     L = lambda t, a=None: resolve_links('{{link:%s%s}}' % (t, '#' + a if a else ''), mode, 'home')
-    done = sum(1 for c in CH.values() if c['status'] != 'outline')
+    seeded = sum(1 for c in CH.values() if c['status'] != 'outline')
+    reviewed = sum(1 for c in CH.values() if c['status'] == 'reviewed')
     toc = []
     for p in PARTS:
         toc.append(f'    <section class="part">\n      <div class="part-head"><h2>{p["label"]}</h2><p>{p["desc"]}</p></div>\n      <ol class="toc">')
@@ -189,13 +190,13 @@ def home_body(mode, offline=False):
       <div class="hero-actions">
         <a class="btn" href="{L('ch01')}">从第 1 章开始</a>
         {('<span class="btn ghost" aria-disabled="true">当前已是离线版</span>' if offline else '<a class="btn ghost" href="downloads/' + ZIP_NAME + '" download>下载离线版（ZIP）</a>') if mode == 'multi' else ''}
-        <p class="progress">正文草稿已完成 {done} / {len(CH)} 章</p>
+        <p class="progress">{seeded} / {len(CH)} 章已有草稿种子；正式审校 {reviewed} / {len(CH)} 章</p>
       </div>
     </div>
   </header>
   <main id="content">
     <aside class="callout note" data-label="阅读须知">
-      <p>全部 11 章均已有可读正文，但都还是「<strong>草稿</strong>」：内容依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未在真实的 Windows / macOS 电脑上逐步实测</strong>。软件界面更新很快，若你看到的按钮名称与教程不同，以屏幕上实际显示为准，并欢迎反馈。每一章都会经过写作、复核、实测三步后才标记为完成。</p>
+      <p>全部 11 章均已有可读的「<strong>草稿种子</strong>」，但这些种子<strong>不算完成课程</strong>：内容依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未逐条复核或实测</strong>。软件界面更新很快，若你看到的按钮名称与教程不同，以屏幕上实际显示为准，并欢迎反馈。每一章都会经过来源与权利审查、编辑审校和平台验证后才进入正式版本。</p>
       <ul class="legend">
         <li>{badge('draft')} 正文可读，待复核与实测</li>
         <li>{badge('outline')} 只有规划，正文未写</li>
@@ -265,7 +266,7 @@ def write_manifest_and_sums(root, artifact):
         'schemaVersion': '1.0.0',
         'artifact': artifact,
         'version': cfg['site']['version'],
-        'status': 'draft-complete-unverified',
+        'status': 'draft-seed-unverified',
         'generatedDate': cfg['site']['date'],
         'entry': 'index.html',
         'files': records,
@@ -341,11 +342,12 @@ def build_site():
     reg = json.load(open(os.path.join(MAINT, 'framework-v1.json'), encoding='utf-8'))
     reg['contentVersion'] = cfg['site']['version']
     reg['artifactVersion'] = cfg['site']['version']
-    reg['status'] = 'draft-complete-unverified'
+    reg['status'] = 'draft-seed-unverified'
     reg['chapters'] = [{'number': CH[c]['num'], 'title': CH[c]['title'], 'status': CH[c]['status'], 'file': c + '.html'} for c in ORDER]
     reg['productNote'] = ('2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），'
                           '教程中的“Codex”指该应用左上角菜单中的 Codex 视图。')
     reg['generatedDate'] = cfg['site']['date']
+    reg['releaseGate']['currentDecision'] = 'course-beta-in-development'
     write_json(os.path.join(SITE, 'registry', 'framework-v1.json'), reg)
     # README
     write_text(os.path.join(SITE, 'README.md'), readme())
@@ -376,7 +378,7 @@ def build_site():
     online_records.sort(key=lambda record: record['path'])
     online_manifest = {
         'schemaVersion': '1.0.0', 'artifact': 'codex-tutorial-cn-online',
-        'version': cfg['site']['version'], 'status': 'draft-complete-unverified',
+        'version': cfg['site']['version'], 'status': 'draft-seed-unverified',
         'generatedDate': cfg['site']['date'], 'entry': 'index.html', 'files': online_records,
     }
     write_json(os.path.join(SITE, 'manifest.json'), online_manifest)
@@ -399,11 +401,11 @@ def readme():
 
 写给第一次接触 AI 与 Codex 的中文读者的离线教程。不需要编程、命令行或 Git 基础。
 
-**怎么读：** 在线版部署好后直接打开网址；或者下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。
+**怎么读：** 离线 HTML 是主要交付：下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。
 
-**怎么部署到自己的服务器：** 见 [deploy/DEPLOY.md](deploy/DEPLOY.md)——Docker 一条命令，或 Caddy / Nginx 复制文件即可，没有构建步骤。
+**可选在线预览：** 如需把同一批生成页面放到服务器，再看 [deploy/DEPLOY.md](deploy/DEPLOY.md)。在线部署不是课程完成或正式发布的必要条件。
 
-**当前版本：** {cfg['site']['version']}（{cfg['site']['date']}）。11 章全部有正文，均为「草稿」：依据官方文档撰写，尚未在真实电脑上逐步实测。
+**当前版本：** {cfg['site']['version']}（{cfg['site']['date']}）。11 章均有「草稿种子」，但不算完成课程；内容依据官方文档撰写，尚未逐条复核或实测。
 
 > 2026 年 7 月 9 日起，Codex 桌面应用已并入「ChatGPT 桌面应用」（macOS / Windows）。本教程所说的 Codex，指该应用左上角菜单里的 **Codex** 视图。
 

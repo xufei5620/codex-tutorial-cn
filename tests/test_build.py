@@ -126,6 +126,34 @@ class BuildBaselineTests(unittest.TestCase):
             }
             self.assertEqual(forbidden, set())
 
+    def test_public_copy_labels_every_current_lesson_as_an_unverified_draft_seed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            result = run_build(root)
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            index = (root / "index.html").read_text(encoding="utf-8")
+            readme = (root / "README.md").read_text(encoding="utf-8")
+            chapter_eleven = (root / "ch11.html").read_text(encoding="utf-8")
+            for public_copy in (index, readme):
+                self.assertIn("草稿种子", public_copy)
+                self.assertIn("不算完成课程", public_copy)
+                self.assertIn("尚未逐条复核或实测", public_copy)
+            self.assertNotIn("正文草稿已完成", index)
+            self.assertNotIn("11 章全部有正文", readme)
+            self.assertIn("可选在线预览", readme)
+            self.assertIn("教程当前是 0.2.1 版", chapter_eleven)
+
+            registry = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            config = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
+            self.assertEqual(registry["status"], "draft-seed-unverified")
+            self.assertEqual(registry["releaseGate"]["currentDecision"], "course-beta-in-development")
+            self.assertFalse(registry["currentSeedContent"]["final"])
+            self.assertFalse(registry["currentSeedContent"]["countsAsCompletedCourseContent"])
+            self.assertEqual(manifest["status"], "draft-seed-unverified")
+            self.assertEqual({chapter["status"] for chapter in config["chapters"].values()}, {"draft"})
+
     def test_offline_manifest_declares_only_files_that_are_inside_the_zip(self):
         archive = offline_archive(REPO)
         prefix = "codex-tutorial-cn/"

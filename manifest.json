@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "artifact": "codex-tutorial-cn-online",
   "version": "0.2.1",
-  "status": "draft-complete-unverified",
+  "status": "draft-seed-unverified",
   "generatedDate": "2026-09-02",
   "entry": "index.html",
   "files": [
@@ -13,8 +13,8 @@
     },
     {
       "path": "README.md",
-      "size": 3241,
-      "sha256": "78d1ecdd0fe21c448f1ea45ad405b40c874a294627290a88da4eaba23e2a04c2"
+      "size": 3246,
+      "sha256": "0a7ea43615f3671fcc136a0128335861804c78ec1586fa837b634c7368a9cf5c"
     },
     {
       "path": "assets/favicon.svg",
@@ -78,8 +78,8 @@
     },
     {
       "path": "ch11.html",
-      "size": 22803,
-      "sha256": "872e8cb9c464d949a5735f0ab2c8a4ec78b1acabebe6d31730c2fa861e71e97d"
+      "size": 22833,
+      "sha256": "63e2ede3d4141a914917a68fdfb3aa6440c535c877d65099589be9a1137a98dd"
     },
     {
       "path": "deploy/Caddyfile",
@@ -113,8 +113,8 @@
     },
     {
       "path": "index.html",
-      "size": 8112,
-      "sha256": "8d77f3205b776955f2e11a4ee44d6079db01fdd056ed6d9ae0de19f412c9e7ab"
+      "size": 8170,
+      "sha256": "0e663c7932a43f7e88144f99f3edd5b508ba82860e72f4165deac559875e96e6"
     },
     {
       "path": "maintenance-release.html",
@@ -133,8 +133,8 @@
     },
     {
       "path": "registry/framework-v1.json",
-      "size": 8687,
-      "sha256": "37e5c79db381c3c80325df69488bb007c3035f85ebc9c571a1bb134b2b91978f"
+      "size": 8688,
+      "sha256": "8087514591ff6a73693c2158bd18bb9bb45e233ac9cd52b5057422349d3da56a"
     },
     {
       "path": "robots.txt",
@@ -143,8 +143,8 @@
     },
     {
       "path": "schemas/framework-v1.schema.json",
-      "size": 14586,
-      "sha256": "e2618cc4569b8525e2646d92a704e637128c092b75ad1ea3dde7ab2e3613713c"
+      "size": 14582,
+      "sha256": "34164438e1cc721ee98348497f388ac2074b0ceb48280f905e05683827df780e"
     },
     {
       "path": "source-research.html",

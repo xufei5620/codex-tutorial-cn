@@ -40,7 +40,7 @@
     "status": {
       "enum": [
         "framework-review",
-        "draft-complete-unverified",
+        "draft-seed-unverified",
         "reviewed",
         "platform-verified",
         "stable"

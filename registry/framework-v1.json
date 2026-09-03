@@ -1,6 +1,6 @@
 {
   "frameworkVersion": "1.0.0",
-  "status": "draft-complete-unverified",
+  "status": "draft-seed-unverified",
   "authority": {
     "canonicalSource": {
       "kind": "local-git",
@@ -333,7 +333,7 @@
     }
   },
   "releaseGate": {
-    "currentDecision": "framework-review-only",
+    "currentDecision": "course-beta-in-development",
     "requiredBeforeStable": [
       "framework-user-approved",
       "all-required-content-acceptance-ready",

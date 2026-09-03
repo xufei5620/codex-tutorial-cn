@@ -2,11 +2,11 @@
 
 写给第一次接触 AI 与 Codex 的中文读者的离线教程。不需要编程、命令行或 Git 基础。
 
-**怎么读：** 在线版部署好后直接打开网址；或者下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。
+**怎么读：** 离线 HTML 是主要交付：下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。
 
-**怎么部署到自己的服务器：** 见 [deploy/DEPLOY.md](deploy/DEPLOY.md)——Docker 一条命令，或 Caddy / Nginx 复制文件即可，没有构建步骤。
+**可选在线预览：** 如需把同一批生成页面放到服务器，再看 [deploy/DEPLOY.md](deploy/DEPLOY.md)。在线部署不是课程完成或正式发布的必要条件。
 
-**当前版本：** 0.2.1（2026-09-02）。11 章全部有正文，均为「草稿」：依据官方文档撰写，尚未在真实电脑上逐步实测。
+**当前版本：** 0.2.1（2026-09-02）。11 章均有「草稿种子」，但不算完成课程；内容依据官方文档撰写，尚未逐条复核或实测。
 
 > 2026 年 7 月 9 日起，Codex 桌面应用已并入「ChatGPT 桌面应用」（macOS / Windows）。本教程所说的 Codex，指该应用左上角菜单里的 **Codex** 视图。
 
