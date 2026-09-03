@@ -306,6 +306,7 @@ class CheckBaselineTests(unittest.TestCase):
         cases = {
             "src": "<img src='definitely-missing.png'>",
             "srcset": "<source srcset='missing-one.png 1x, missing-two.png 2x'>",
+            "imagesrcset": "<link rel='preload' imagesrcset='missing-one.png 1x'>",
             "data": "<object data='missing-object.bin'></object>",
             "poster": "<video poster='missing-poster.png'></video>",
         }
@@ -348,6 +349,9 @@ class CheckBaselineTests(unittest.TestCase):
             "url": ".x { background: url(//example.invalid/pixel.png); }\n",
             "image-set string": (
                 '.x { background: image-set("https://example.invalid/pixel.png" 1x); }\n'
+            ),
+            "continued image-set string": (
+                '.x { background: image-set("htt\\\nps://example.invalid/pixel.png" 1x); }\n'
             ),
         }
         for label, payload in cases.items():
@@ -403,6 +407,25 @@ class CheckBaselineTests(unittest.TestCase):
                     self.assertTrue(any("@import" in error for error in errors), errors)
                 else:
                     self.assertTrue(any("broken local" in error for error in errors), errors)
+
+    def test_css_safety_check_rejects_unsupported_string_resource_loaders(self):
+        checker = load_check_module()
+        cases = {
+            "image-set": '.x { background: image-set("missing.png" 1x); }\n',
+            "image": '.x { background: image("missing.png"); }\n',
+        }
+        for label, payload in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "assets").mkdir()
+                (root / "assets/style.css").write_text(payload, encoding="utf-8", newline="\n")
+                (root / "index.html").write_text(
+                    "<!doctype html><html><body><p>safe</p></body></html>\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                errors, _, _ = checker.check_site_tree(root)
+                self.assertTrue(any("unsupported CSS resource loader" in error for error in errors), errors)
 
     def test_link_check_accepts_case_insensitive_external_schemes(self):
         checker = load_check_module()

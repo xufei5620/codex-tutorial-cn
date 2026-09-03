@@ -29,6 +29,7 @@ URL_ATTRIBUTES = {
     "data",
     "href",
     "icon",
+    "imagesrcset",
     "longdesc",
     "manifest",
     "poster",
@@ -38,6 +39,7 @@ URL_ATTRIBUTES = {
     "usemap",
     "xlink:href",
 }
+SRCSET_ATTRIBUTES = {"imagesrcset", "srcset"}
 EXTERNAL_SCHEMES = ("http://", "https://", "mailto:", "tel:")
 EMBEDDED_SCHEMES = ("data:",)
 UNSAFE_SCHEMES = ("javascript:", "vbscript:")
@@ -87,6 +89,7 @@ def srcset_urls(value: str) -> list[str]:
 
 
 def normalize_css(source: str) -> str:
+    source = re.sub(r"\\(?:\r\n|[\n\r\f])", "", source)
     source = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
 
     def decode_escape(match: re.Match) -> str:
@@ -168,9 +171,9 @@ class HTMLAuditParser(HTMLParser):
             value = html.unescape(raw_value or "").strip()
             if name == "id" and value:
                 self.ids.append(value)
-            if name in URL_ATTRIBUTES - {"srcset"}:
+            if name in URL_ATTRIBUTES - SRCSET_ATTRIBUTES:
                 self.references.append((tag, name, value))
-            elif name == "srcset":
+            elif name in SRCSET_ATTRIBUTES:
                 self.references.extend((tag, name, candidate) for candidate in srcset_urls(value))
             if name == "style":
                 self.errors.append("contains inline style attribute")
@@ -186,7 +189,7 @@ class HTMLAuditParser(HTMLParser):
                 if not direct_external_navigation:
                     self.errors.append(f"external URL is not allowed in {tag}[{name}]")
             if name in URL_ATTRIBUTES:
-                candidates = srcset_urls(value) if name == "srcset" else [value]
+                candidates = srcset_urls(value) if name in SRCSET_ATTRIBUTES else [value]
                 for candidate in candidates:
                     lower = candidate.lower()
                     if lower.startswith(EMBEDDED_SCHEMES) and (tag, name) not in DATA_URL_MEDIA:
@@ -347,6 +350,8 @@ def check_site_tree(
         normalized = normalize_css(source)
         if re.search(r"(?i)@import\b", normalized):
             errors.append(f"{relative}: CSS @import is not allowed in {context}")
+        if re.search(r"(?i)(?<![\w-])(?:-webkit-)?image(?:-set)?\s*\(", normalized):
+            errors.append(f"{relative}: unsupported CSS resource loader in {context}")
         if contains_external_url(normalized):
             errors.append(f"{relative}: external URL is not allowed in {context}")
         for reference in css_urls(source):
