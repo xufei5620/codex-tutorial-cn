@@ -208,6 +208,14 @@ class CheckBaselineTests(unittest.TestCase):
             "srcset": "<source srcset='local.png 1x, https://example.invalid/remote.png 2x'>",
             "event handler": "<button onclick='alert(1)'>click</button>",
             "style block": "<style>@import 'https://example.invalid/remote.css';</style>",
+            "remote base": "<base href='https://example.invalid/'>",
+            "SVG image": "<svg><image href='https://example.invalid/pixel.png'></image></svg>",
+            "iframe srcdoc": "<iframe srcdoc='&lt;script&gt;alert(1)&lt;/script&gt;'></iframe>",
+            "iframe data URL": "<iframe src='data:text/html,&lt;script&gt;alert(1)&lt;/script&gt;'></iframe>",
+            "meta refresh": (
+                "<meta http-equiv='refresh' content='0; url=https://example.invalid/redirect'>"
+            ),
+            "unclosed style": "<style>@import 'https://example.invalid/remote.css';",
         }
         for label, markup in cases.items():
             with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
@@ -219,6 +227,39 @@ class CheckBaselineTests(unittest.TestCase):
                 )
                 errors, _, _ = checker.check_site_tree(root)
                 self.assertTrue(errors, label)
+
+    def test_svg_asset_safety_check_rejects_remote_runtime_resources(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "assets").mkdir()
+            (root / "assets/remote.svg").write_text(
+                "<svg xmlns='http://www.w3.org/2000/svg'>"
+                "<image href='https://example.invalid/pixel.png'></image></svg>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            (root / "index.html").write_text(
+                "<!doctype html><html><body><img src='assets/remote.svg'></body></html>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _, _ = checker.check_site_tree(root)
+            self.assertTrue(any("remote" in error for error in errors), errors)
+
+    def test_html_safety_check_allows_an_embedded_image_data_url(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "index.html").write_text(
+                "<!doctype html><html><body>"
+                "<img alt='dot' src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yw='>"
+                "</body></html>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _, _ = checker.check_site_tree(root)
+            self.assertFalse(errors, errors)
 
     def test_link_check_rejects_missing_local_runtime_resources(self):
         checker = load_check_module()

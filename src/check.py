@@ -20,11 +20,20 @@ import zipfile
 ROOT = Path(__file__).resolve().parent.parent
 STATUS_ZH = {"draft": "草稿", "outline": "大纲", "reviewed": "已复核"}
 EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__"}
-RUNTIME_TAGS = {"link", "img", "script", "iframe", "source", "audio", "video", "track", "object", "embed"}
-RUNTIME_ATTRIBUTES = {"href", "src", "data", "poster", "srcset"}
+URL_ATTRIBUTES = {"href", "xlink:href", "src", "data", "poster", "srcset"}
 EXTERNAL_SCHEMES = ("http://", "https://", "mailto:", "tel:")
 EMBEDDED_SCHEMES = ("data:",)
 UNSAFE_SCHEMES = ("javascript:", "vbscript:")
+EXTERNAL_NAVIGATION = {("a", "href")}
+DATA_URL_MEDIA = {
+    ("audio", "src"),
+    ("image", "href"),
+    ("image", "xlink:href"),
+    ("img", "src"),
+    ("source", "src"),
+    ("track", "src"),
+    ("video", "src"),
+}
 MANAGED_ROOT_FILES = {
     "404.html",
     "README.md",
@@ -96,22 +105,37 @@ class HTMLAuditParser(HTMLParser):
             self.embedded_styles.append("".join(self._style_chunks))
             self._style_chunks = None
 
+    def close(self) -> None:
+        super().close()
+        if self._style_chunks is not None:
+            self.embedded_styles.append("".join(self._style_chunks))
+            self.errors.append("contains unclosed style element")
+            self._style_chunks = None
+
     def handle_data(self, data: str) -> None:
         if self._style_chunks is not None:
             self._style_chunks.append(data)
 
     def _audit_tag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
+        attributes = {
+            raw_name.lower(): html.unescape(raw_value or "").strip()
+            for raw_name, raw_value in attrs
+        }
         if tag == "script":
             self.errors.append("contains inline script element")
         elif tag == "style":
             self._style_chunks = []
+        elif tag == "base":
+            self.errors.append("contains base element")
+        if tag == "meta" and attributes.get("http-equiv", "").lower() == "refresh":
+            self.errors.append("contains meta refresh")
         for raw_name, raw_value in attrs:
             name = raw_name.lower()
             value = html.unescape(raw_value or "").strip()
             if name == "id" and value:
                 self.ids.append(value)
-            if name in {"href", "src", "data", "poster"}:
+            if name in {"href", "xlink:href", "src", "data", "poster"}:
                 self.references.append((tag, name, value))
             elif name == "srcset":
                 self.references.extend((tag, name, candidate) for candidate in srcset_urls(value))
@@ -119,13 +143,17 @@ class HTMLAuditParser(HTMLParser):
                 self.errors.append("contains inline style attribute")
             if name.startswith("on"):
                 self.errors.append(f"contains inline event handler: {name}")
-            if tag in RUNTIME_TAGS and name in RUNTIME_ATTRIBUTES:
-                if name == "srcset":
-                    remote = re.search(r"(?i)(?:https?:)?//", value) is not None
-                else:
-                    remote = is_remote_url(value)
-                if remote:
-                    self.errors.append(f"remote runtime resource in {tag}[{name}]")
+            if name == "srcdoc":
+                self.errors.append(f"contains srcdoc in {tag}")
+            if name in URL_ATTRIBUTES:
+                candidates = srcset_urls(value) if name == "srcset" else [value]
+                for candidate in candidates:
+                    lower = candidate.lower()
+                    external = is_remote_url(candidate) or lower.startswith(("mailto:", "tel:"))
+                    if external and (tag, name) not in EXTERNAL_NAVIGATION:
+                        self.errors.append(f"external resource is not allowed in {tag}[{name}]")
+                    if lower.startswith(EMBEDDED_SCHEMES) and (tag, name) not in DATA_URL_MEDIA:
+                        self.errors.append(f"data URL is not allowed in {tag}[{name}]")
 
 
 def configure_output() -> None:
@@ -178,6 +206,16 @@ def public_html_files(root: Path) -> list[Path]:
 def public_css_files(root: Path) -> list[Path]:
     files = []
     for path in root.rglob("*.css"):
+        relative = path.relative_to(root)
+        if any(part in EXCLUDED_PUBLIC_PARTS for part in relative.parts):
+            continue
+        files.append(path)
+    return sorted(files)
+
+
+def public_svg_files(root: Path) -> list[Path]:
+    files = []
+    for path in root.rglob("*.svg"):
         relative = path.relative_to(root)
         if any(part in EXCLUDED_PUBLIC_PARTS for part in relative.parts):
             continue
@@ -257,7 +295,12 @@ def check_site_tree(
         if not resolved.is_file():
             errors.append(f"{relative}: broken local reference in {context}: {reference}")
             return True
-        if check_fragment and fragment and resolved.suffix.lower() == ".html" and fragment not in audit_of(resolved).ids:
+        if (
+            check_fragment
+            and fragment
+            and resolved.suffix.lower() in {".html", ".svg"}
+            and fragment not in audit_of(resolved).ids
+        ):
             errors.append(f"{relative}: missing anchor in {context}: {reference}")
         return True
 
@@ -274,24 +317,29 @@ def check_site_tree(
                 check_fragment=False,
             )
 
-    link_total = 0
-    for path in pages:
-        source = path.read_text(encoding="utf-8")
-        relative = path.relative_to(root).as_posix()
-        audit = audit_of(path)
+    def validate_audit_resources(path: Path, relative: str, audit: HTMLAuditParser) -> int:
         errors.extend(f"{relative}: {message}" for message in audit.errors)
         for embedded_style in audit.embedded_styles:
             validate_css_references(path, relative, embedded_style, "embedded CSS")
+        checked_count = 0
         for tag, attribute, reference in audit.references:
             checked = validate_reference(
                 path,
                 relative,
                 reference,
                 f"{tag}[{attribute}]",
-                check_fragment=attribute == "href",
+                check_fragment=attribute in {"href", "xlink:href"},
             )
             if checked:
-                link_total += 1
+                checked_count += 1
+        return checked_count
+
+    link_total = 0
+    for path in pages:
+        source = path.read_text(encoding="utf-8")
+        relative = path.relative_to(root).as_posix()
+        audit = audit_of(path)
+        link_total += validate_audit_resources(path, relative, audit)
 
         ids = audit.ids
         duplicates = sorted({value for value in ids if ids.count(value) > 1})
@@ -317,6 +365,10 @@ def check_site_tree(
                     errors.append(f"{relative}: chapter badge missing")
                 elif badge.group(1) != wanted or badge.group(2) != STATUS_ZH.get(wanted, wanted):
                     errors.append(f"{relative}: chapter badge differs from chapters.json")
+
+    for path in public_svg_files(root):
+        relative = path.relative_to(root).as_posix()
+        link_total += validate_audit_resources(path, relative, audit_of(path))
 
     for path in public_css_files(root):
         relative = path.relative_to(root).as_posix()
