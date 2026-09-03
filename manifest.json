@@ -118,8 +118,8 @@
     },
     {
       "path": "maintenance-release.html",
-      "size": 8183,
-      "sha256": "9cf3b0f0182b7b991be1bc80f843edc2c77af366ab0aeb4588e24a1cb67442d5"
+      "size": 8268,
+      "sha256": "f03530ed36599f6470fe410887c101029b20a952419c1755cb5e41702a2a6e7c"
     },
     {
       "path": "notion-workflow.html",
@@ -148,13 +148,13 @@
     },
     {
       "path": "schemas/framework-v1.schema.json",
-      "size": 15601,
-      "sha256": "e3939aa8ad3350580048d3bffe5239f20c2069b2dc4ed942fb23af4e170f690e"
+      "size": 16203,
+      "sha256": "491ac9680445f01b7d3229e7dbdf25dae1277abb00069be87420872ddc81a537"
     },
     {
       "path": "schemas/modules-v1.schema.json",
-      "size": 22699,
-      "sha256": "338d67768725f6d1871c851e64c03bd5980f7e777bf3a5aa1fc3df0f96e8aa21"
+      "size": 25452,
+      "sha256": "2bfd574b6a8fdf4ed22a3bb357043cf93568aed0c018c0736e1c8ae23f9e4960"
     },
     {
       "path": "source-research.html",
@@ -178,8 +178,8 @@
     },
     {
       "path": "templates/module-template.html",
-      "size": 3740,
-      "sha256": "3622d5163b4df9165861fce5c090dda71699ca97e2f406b02cda3cda7d55bfea"
+      "size": 3826,
+      "sha256": "13b47733bc1c40b2ae58c18b2acd1237e935c090f11e20cea831617e0223c75c"
     },
     {
       "path": "templates/plugin-template.html",
@@ -188,8 +188,8 @@
     },
     {
       "path": "templates/prompt-card-template.html",
-      "size": 3295,
-      "sha256": "39b7c74cb21ebed01e35facea4a4a3309bf9d7185cd62cb5aadf59e4e51f6bf1"
+      "size": 3381,
+      "sha256": "52445ef72277c07ecfac50ac03b0a56ed19155262723be64fd1eec32c01cfa16"
     },
     {
       "path": "templates/skill-template.html",
@@ -203,8 +203,8 @@
     },
     {
       "path": "templates/verification-template.html",
-      "size": 2857,
-      "sha256": "794d78fcd94803bcb8ed0ff8a83708defabc416e6e74247280e4e0249dbbad18"
+      "size": 3474,
+      "sha256": "73aa1e8848f9b6727b5ebe75bde4585e0c95315c48ccfd44b3b52b73c4275f91"
     }
   ]
 }

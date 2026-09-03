@@ -31,6 +31,7 @@ def load_json(path):
 cfg = load_json(os.path.join(ROOT, 'chapters.json'))
 MODULES_CFG = load_json(os.path.join(ROOT, 'modules-v1.json'))
 UNIT_BY_ID = {unit['id']: unit for unit in MODULES_CFG['units']}
+RETIREMENT_BY_ID = {record['unitId']: record for record in MODULES_CFG.get('retirementRecords', [])}
 COLLECTION_TITLE = {item['key']: item['title'] for item in MODULES_CFG['collections']}
 TASK_TITLE = {item['key']: item['title'] for item in MODULES_CFG['taskTypes']}
 SITE_TITLE = cfg['site']['title']
@@ -54,6 +55,15 @@ FORMALLY_REVIEWED = {'editorial-reviewed', 'verification', 'acceptance-ready', '
 ARTIFACT_STATUSES = {
     'draft-seed-unverified', 'review-in-progress', 'acceptance-ready', 'stable', 'retired',
 }
+LOCKED_STABLE_GATES = [
+    'framework-user-approved',
+    'all-required-content-acceptance-ready',
+    'source-and-rights-clear',
+    'required-platform-verification-complete',
+    'offline-build-and-links-pass',
+    'accessibility-and-safety-gates-pass',
+    'release-artifacts-reproducible',
+]
 
 css = open(os.path.join(CONTENT, 'style.css'), encoding='utf-8').read()
 ZIP_NAME = f"codex-tutorial-cn-v{cfg['site']['version']}-offline.zip"
@@ -176,6 +186,37 @@ def apply_unit_metadata(source):
             )
             if taxonomy_count != 1:
                 raise ValueError(f'{unit_id}: prompt card taxonomy field is missing')
+        if unit['contentStatus'] == 'retired':
+            retirement = RETIREMENT_BY_ID.get(unit_id)
+            if retirement is None:
+                raise ValueError(f'{unit_id}: retired unit is missing its retirement tombstone')
+            if unit['kind'] != 'prompt-card':
+                body, heading_count = re.subn(
+                    r'</h2>',
+                    f' <span class="badge retired">{STATUS_LABEL["retired"]}</span></h2>',
+                    body,
+                    count=1,
+                )
+                if heading_count != 1:
+                    raise ValueError(f'{unit_id}: retired unit heading is missing')
+            heading = re.match(r'(.*?</h2>)', body, flags=re.S)
+            if heading is None:
+                raise ValueError(f'{unit_id}: retired unit heading is missing')
+            replacement = retirement['replacementPath']
+            if replacement:
+                page, anchor = replacement.split('#', 1)
+                target = page.removesuffix('.html')
+                replacement_html = (
+                    f'<a href="{{{{link:{target}#{anchor}}}}}">转到替代内容</a>'
+                )
+            else:
+                replacement_html = '当前没有替代内容'
+            notice = (
+                '<aside class="callout note retirement-notice" data-label="本单元已退役">'
+                f'<p>{html.escape(retirement["reason"])} {replacement_html}。</p>'
+                '</aside>'
+            )
+            body = heading.group(1) + notice
         opening = opening.replace(f'data-unit-id="{unit_id}"', f'data-unit-id="{unit_id}"{metadata}')
         return opening + body + closing
 
@@ -511,6 +552,8 @@ def validate_source_inputs():
         raise ValueError('modules-v1 contentVersion must match chapters.json site.version')
     if MODULES_CFG['generatedDate'] != cfg['site']['date']:
         raise ValueError('modules-v1 generatedDate must match chapters.json site.date')
+    if datetime.date.fromisoformat(MODULES_CFG['generatedDate']) > datetime.date.today():
+        raise ValueError('modules-v1 generatedDate must not be in the future')
     if MODULES_CFG['status'] not in ARTIFACT_STATUSES:
         raise ValueError(f'unsupported module catalog status: {MODULES_CFG["status"]}')
     if len(UNIT_BY_ID) != len(MODULES_CFG['units']):
@@ -533,6 +576,8 @@ def validate_source_inputs():
         )
 
     framework = load_json(os.path.join(MAINT, 'framework-v1.json'))
+    if framework['releaseGate'].get('requiredBeforeStable') != LOCKED_STABLE_GATES:
+        raise ValueError('releaseGate.requiredBeforeStable differs from the locked policy')
     expected_decisions = {
         'draft-seed-unverified': 'course-beta-in-development',
         'review-in-progress': 'course-beta-in-development',
@@ -549,7 +594,12 @@ def validate_source_inputs():
         )
     if MODULES_CFG['status'] == 'stable':
         seed = framework['currentSeedContent']
-        if not seed.get('final') or not seed.get('countsAsCompletedCourseContent'):
+        if (
+            not seed.get('final')
+            or not seed.get('countsAsCompletedCourseContent')
+            or seed.get('designation') != 'formal-course'
+            or seed.get('reviewPolicy') != 'accepted-item-by-item'
+        ):
             raise ValueError('stable release requires currentSeedContent to be marked final course content')
     return framework
 

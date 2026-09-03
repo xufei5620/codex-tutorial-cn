@@ -539,11 +539,15 @@
           ]
         },
         "requiredBeforeStable": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
+          "const": [
+            "framework-user-approved",
+            "all-required-content-acceptance-ready",
+            "source-and-rights-clear",
+            "required-platform-verification-complete",
+            "offline-build-and-links-pass",
+            "accessibility-and-safety-gates-pass",
+            "release-artifacts-reproducible"
+          ]
         },
         "publicActionsBeforeAcceptance": {
           "const": false
@@ -598,12 +602,24 @@
             }
           },
           "currentSeedContent": {
+            "required": [
+              "designation",
+              "final",
+              "countsAsCompletedCourseContent",
+              "reviewPolicy"
+            ],
             "properties": {
+              "designation": {
+                "const": "formal-course"
+              },
               "final": {
                 "const": true
               },
               "countsAsCompletedCourseContent": {
                 "const": true
+              },
+              "reviewPolicy": {
+                "const": "accepted-item-by-item"
               }
             }
           }

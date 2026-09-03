@@ -213,10 +213,24 @@
             "items": {
               "properties": {
                 "contentStatus": {
-                  "const": "stable"
+                  "enum": [
+                    "stable",
+                    "retired"
+                  ]
                 }
               }
-            }
+            },
+            "contains": {
+              "properties": {
+                "contentStatus": {
+                  "const": "stable"
+                }
+              },
+              "required": [
+                "contentStatus"
+              ]
+            },
+            "minContains": 1
           }
         }
       }
@@ -240,11 +254,26 @@
                 "contentStatus": {
                   "enum": [
                     "acceptance-ready",
-                    "stable"
+                    "stable",
+                    "retired"
                   ]
                 }
               }
-            }
+            },
+            "contains": {
+              "properties": {
+                "contentStatus": {
+                  "enum": [
+                    "acceptance-ready",
+                    "stable"
+                  ]
+                }
+              },
+              "required": [
+                "contentStatus"
+              ]
+            },
+            "minContains": 1
           }
         }
       }
@@ -587,11 +616,14 @@
       "required": [
         "unitId",
         "platform",
+        "systemVersion",
         "browser",
         "productVersion",
         "extensionVersion",
         "inputClass",
         "evidenceId",
+        "observedResult",
+        "limitations",
         "result",
         "checkedDate",
         "expiresDate",
@@ -615,6 +647,11 @@
             "macos"
           ]
         },
+        "systemVersion": {
+          "type": "string",
+          "minLength": 3,
+          "pattern": "\\S"
+        },
         "browser": {
           "oneOf": [
             {
@@ -629,7 +666,7 @@
         },
         "productVersion": {
           "type": "string",
-          "minLength": 1,
+          "minLength": 3,
           "pattern": "\\S"
         },
         "extensionVersion": {
@@ -646,12 +683,26 @@
         },
         "inputClass": {
           "type": "string",
-          "minLength": 1,
+          "minLength": 3,
           "pattern": "\\S"
         },
         "evidenceId": {
           "type": "string",
           "pattern": "^EVD-[A-Z0-9-]+$"
+        },
+        "observedResult": {
+          "type": "string",
+          "minLength": 10,
+          "pattern": "\\S"
+        },
+        "limitations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "pattern": "\\S"
+          }
         },
         "result": {
           "enum": [
@@ -678,6 +729,34 @@
           ]
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "result": {
+                "const": "verified"
+              }
+            },
+            "required": [
+              "result"
+            ]
+          },
+          "then": {
+            "properties": {
+              "limitations": {
+                "maxItems": 0
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "limitations": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "retirementRecord": {
@@ -1019,7 +1098,10 @@
           "if": {
             "properties": {
               "contentStatus": {
-                "const": "stable"
+                "enum": [
+                  "acceptance-ready",
+                  "stable"
+                ]
               }
             },
             "required": [
@@ -1037,6 +1119,42 @@
               "verificationDate": {
                 "type": "string",
                 "format": "date"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "allOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "lesson-module"
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              },
+              {
+                "properties": {
+                  "contentStatus": {
+                    "enum": [
+                      "acceptance-ready",
+                      "stable"
+                    ]
+                  }
+                },
+                "required": [
+                  "contentStatus"
+                ]
+              }
+            ]
+          },
+          "then": {
+            "properties": {
+              "sourceRefs": {
+                "minItems": 1
               }
             }
           }

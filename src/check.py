@@ -146,6 +146,15 @@ LOCKED_PROMPT_COLLECTIONS = [
     {"key": "prompt-education", "title": "教育与培训", "uniqueCardCount": 5, "usesSharedFileCard": True},
 ]
 LOCKED_RISK_WINDOWS = {"high": 30, "medium": 90, "low": 180}
+LOCKED_STABLE_GATES = [
+    "framework-user-approved",
+    "all-required-content-acceptance-ready",
+    "source-and-rights-clear",
+    "required-platform-verification-complete",
+    "offline-build-and-links-pass",
+    "accessibility-and-safety-gates-pass",
+    "release-artifacts-reproducible",
+]
 
 
 def is_remote_url(value: str) -> bool:
@@ -216,11 +225,12 @@ def private_path_label(value: str) -> str | None:
     checks = (
         (r"(?<![A-Za-z])[A-Za-z]:(?:[\\/]|Users(?:[\\/]|$))", "drive path"),
         (r"(?:^|[^\\])\\\\[^\\\s]+[\\/]", "UNC path"),
+        (r"(?<![:/])//[^/\s]+/", "forward-slash UNC path"),
         (r"(?i)file://", "file URL"),
         (r"(?i)(?:^|[\\/])\.(?:codex|superpowers)(?:[\\/]|$)", "private tool path"),
         (r"(?i)(?:^|[\\/])worktrees(?:[\\/]|$)", "private worktree path"),
         (r"(?i)/(?:Users|home)/[^/\s]+(?:/|$)", "private home path"),
-        (r"(?i)/(?:mnt/[A-Za-z]|root)(?:/|$)", "private host path"),
+        (r"(?i)/(?:mnt/[^/\s]+|root)(?:/|$)", "private host path"),
         (r"(?<![A-Za-z0-9_.-])\.\.(?:[\\/]|$)", "parent traversal"),
     )
     for pattern, label in checks:
@@ -232,7 +242,7 @@ def private_path_label(value: str) -> str | None:
 def decoded_text_variants(value: str) -> set[str]:
     variants = {value}
     frontier = {value}
-    for _ in range(4):
+    for _ in range(12):
         expanded = set()
         for item in frontier:
             expanded.update((html.unescape(item), unquote(item)))
@@ -326,7 +336,7 @@ def source_url_problem(value: str) -> str | None:
     except ValueError:
         return "contains an invalid port"
     host = parsed.hostname
-    for _ in range(3):
+    for _ in range(12):
         decoded = unquote(host)
         if decoded == host:
             break
@@ -392,7 +402,7 @@ def source_url_problem(value: str) -> str | None:
     }
 
     def sensitive_parameter_name(name: str) -> bool:
-        for _ in range(3):
+        for _ in range(12):
             decoded = unquote(name)
             if decoded == name:
                 break
@@ -400,11 +410,15 @@ def source_url_problem(value: str) -> str | None:
         return re.sub(r"[^a-z0-9]", "", name.lower()) in sensitive_names
 
     for location, payload in (("path", parsed.path), ("query", parsed.query), ("fragment", parsed.fragment)):
-        names = [name for name, _ in parse_qsl(payload.replace(";", "&"), keep_blank_values=True)]
-        names.extend(re.findall(r"(?:^|[?&#;/])([^=?&#;/]+)=", payload))
-        for name in names:
-            if sensitive_parameter_name(name):
-                return f"must not contain sensitive {location} parameter {name!r}"
+        for decoded_payload in decoded_text_variants(payload):
+            names = [
+                name
+                for name, _ in parse_qsl(decoded_payload.replace(";", "&"), keep_blank_values=True)
+            ]
+            names.extend(re.findall(r"(?:^|[?&#;/])([^=?&#;/]+)=", decoded_payload))
+            for name in names:
+                if sensitive_parameter_name(name):
+                    return f"must not contain sensitive {location} parameter {name!r}"
     return None
 
 
@@ -521,6 +535,9 @@ class ContentUnitParser(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
         attributes = {name.lower(): value or "" for name, value in attrs}
+        classes = attributes.get("class", "").split()
+        if self._sections and self._sections[-1] is not None and "retirement-notice" in classes:
+            self._sections[-1]["retirementNotice"] = True
         if tag != "section" and attributes.get("data-unit-id"):
             self.unexpected_unit_elements.append(f"{tag}[data-unit-id={attributes['data-unit-id']}]")
         if tag == "section":
@@ -528,7 +545,6 @@ class ContentUnitParser(HTMLParser):
                 self.summary_anchors.append(attributes.get("id"))
             unit_id = attributes.get("data-unit-id")
             anchor = attributes.get("id")
-            classes = attributes.get("class", "").split()
             if re.fullmatch(r"s[1-9][0-9]*", anchor or "") and not unit_id:
                 self.unregistered_numbered_sections.append(anchor)
             if "prompt-card" in classes and not unit_id:
@@ -544,6 +560,7 @@ class ContentUnitParser(HTMLParser):
                     "taskKey": attributes.get("data-task-key") or None,
                     "visibleStatus": None,
                     "visibleStatusLabel": [],
+                    "retirementNotice": False,
                 }
                 if unit_id
                 else None
@@ -911,37 +928,51 @@ def check_public_root_inventory(root: Path, managed_paths: set[str]) -> list[str
     return errors
 
 
-def check_repository_tree(root: Path) -> list[str]:
+def check_repository_tree(root: Path, chapter_config: dict) -> list[str]:
     errors = []
-    allowed_src_root_files = {"build.py", "chapters.json", "check.py", "modules-v1.json", "preview.html"}
-    for path in root.rglob("*"):
-        if not path.is_file() and not path.is_symlink():
+    allowed = managed_public_paths(root, chapter_config) | MANAGED_METADATA | expected_download_paths(chapter_config)
+    allowed.update({".dockerignore", ".gitattributes", ".gitignore", "requirements-dev.txt"})
+    allowed.update({"tests/test_build.py", "tests/test_check.py", "tests/test_module_registry.py"})
+    allowed.add(".github/workflows/quality.yml")
+    source_patterns = [
+        r"src/(?:build\.py|chapters\.json|check\.py|modules-v1\.json|preview\.html)",
+        r"src/content/(?:ch(?:0[1-9]|1[01])\.html|prompts\.html|style\.css)",
+        r"src/deploy/(?:Caddyfile|DEPLOY\.md|Dockerfile|docker-compose\.yml|nginx(?:\.docker)?\.conf)",
+        r"src/research/(?:notes|sources)\.md",
+        r"src/maintainer/(?:framework-v1\.json|maintenance-release\.html|notion-workflow\.html|source-research\.html)",
+        r"src/maintainer/(?:plans|specs)/[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+\.html",
+        r"src/maintainer/templates/(?:module|plugin|prompt-card|skill|source-review|verification)-template\.html",
+        r"src/maintainer/schemas/(?:framework|modules)-v1\.schema\.json",
+    ]
+    git_result = subprocess.run(
+        ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    fallback_worktree = git_result.returncode != 0 and (root / ".git").exists()
+    if git_result.returncode == 0:
+        relatives = [value for value in git_result.stdout.decode("utf-8").split("\0") if value]
+    else:
+        relatives = [
+            path.relative_to(root).as_posix()
+            for path in root.rglob("*")
+            if path.is_file() or path.is_symlink()
+        ]
+    for relative in sorted(set(relatives)):
+        relative_path = Path(relative)
+        if relative == ".git":
             continue
-        relative_path = path.relative_to(root)
-        if relative_path.parts[0] == "downloads" or any(
-            part in {".git", ".venv", "__pycache__"} for part in relative_path.parts
-        ):
+        if fallback_worktree and any(part in {".venv", "__pycache__"} for part in relative_path.parts):
             continue
-        relative = relative_path.as_posix()
+        path = root.joinpath(*relative_path.parts)
         if path.is_symlink():
             errors.append(f"repository file must not be a symbolic link: {relative}")
             continue
         if path.suffix.lower() in SENSITIVE_REPOSITORY_SUFFIXES or path.name.lower() == ".env":
             errors.append(f"sensitive repository file type is not allowed: {relative}")
-        if relative_path.parts[0] == "tests" and not re.fullmatch(r"(?:test_[A-Za-z0-9_]+|__init__)\.py", path.name):
-            errors.append(f"unexpected repository test artifact: {relative}")
-        if (
-            relative_path.parts[0] == "src"
-            and len(relative_path.parts) == 2
-            and path.name not in allowed_src_root_files
-        ):
-            errors.append(f"unexpected source-root artifact: {relative}")
-        if relative_path.parts[0] == ".github" and (
-            len(relative_path.parts) < 3
-            or relative_path.parts[1] != "workflows"
-            or path.suffix.lower() not in {".yml", ".yaml"}
-        ):
-            errors.append(f"unexpected GitHub metadata artifact: {relative}")
+        if relative not in allowed and not any(re.fullmatch(pattern, relative) for pattern in source_patterns):
+            errors.append(f"repository path is outside the explicit public-source whitelist: {relative}")
     return errors
 
 
@@ -1091,6 +1122,9 @@ def check_module_registry(
         errors.append(f"duplicate public paths: {duplicate_paths}")
 
     generated_date = date.fromisoformat(registry["generatedDate"])
+    runtime_date = as_of or date.today()
+    if generated_date > runtime_date:
+        errors.append("module catalog generatedDate is in the future")
     retirement_records = registry.get("retirementRecords", [])
     retirement_ids = [record["unitId"] for record in retirement_records]
     duplicate_retirements = repeated(retirement_ids)
@@ -1158,6 +1192,13 @@ def check_module_registry(
             problem = source_url_problem(source_ref["url"])
             if problem:
                 errors.append(f"{unit.get('id')}: source URL {problem}: {source_ref['url']}")
+        if unit.get("kind") == "prompt-card":
+            expected_anchor = str(unit.get("id", "")).lower()
+            if (
+                unit.get("sourceAnchor") != expected_anchor
+                or unit.get("publicPath") != f"prompts.html#{expected_anchor}"
+            ):
+                errors.append(f"{unit.get('id')}: prompt ID does not match its anchor/public path")
 
     slots = []
     for unit in unit_records:
@@ -1250,6 +1291,8 @@ def check_module_registry(
             errors.append("prompt shared-card collections do not close over the catalog taxonomy")
         if framework["verification"].get("riskRevalidationDays") != LOCKED_RISK_WINDOWS:
             errors.append("framework risk revalidation windows differ from the locked policy")
+        if framework.get("releaseGate", {}).get("requiredBeforeStable") != LOCKED_STABLE_GATES:
+            errors.append("stable release gates differ from the locked policy")
         expected_decisions = {
             "draft-seed-unverified": "course-beta-in-development",
             "review-in-progress": "course-beta-in-development",
@@ -1262,7 +1305,12 @@ def check_module_registry(
             errors.append("release gate decision is incompatible with the catalog status")
         if registry.get("status") == "stable":
             seed = framework.get("currentSeedContent", {})
-            if not seed.get("final") or not seed.get("countsAsCompletedCourseContent"):
+            if (
+                not seed.get("final")
+                or not seed.get("countsAsCompletedCourseContent")
+                or seed.get("designation") != "formal-course"
+                or seed.get("reviewPolicy") != "accepted-item-by-item"
+            ):
                 errors.append("stable catalog is not marked as final completed course content")
         manifest = json_loads_strict((root / "manifest.json").read_text(encoding="utf-8"))
         if registry.get("status") != manifest.get("status"):
@@ -1275,7 +1323,7 @@ def check_module_registry(
         errors.append(f"module catalog cross-registry check failed: {error}")
 
     if framework is not None:
-        evaluation_date = max(generated_date, as_of or date.today())
+        evaluation_date = max(generated_date, runtime_date)
         records = registry.get("verificationRecords", [])
         evidence_ids = [record["evidenceId"] for record in records]
         if repeated(evidence_ids):
@@ -1340,6 +1388,8 @@ def check_module_registry(
                         f"{unit_id}: verificationState does not match latest platform evidence "
                         f"({unit['verificationState']} != {aggregate_state})"
                     )
+                if unit["contentStatus"] in {"acceptance-ready", "stable"} and "unsupported" in latest_results:
+                    errors.append(f"{unit_id}: release-ready unit has an unsupported declared platform")
             if unit["verificationState"] in {"verified", "verified-with-limitations", "unsupported"}:
                 covered = set(latest_by_platform)
                 if covered != set(unit["platforms"]):
@@ -1475,6 +1525,15 @@ def check_module_registry(
                 or parsed.get("visibleStatusLabel") != STATUS_ZH.get(record.get("contentStatus"))
             ):
                 errors.append(f"{parsed.get('id')}: visible prompt status differs from the module catalog")
+        if record.get("contentStatus") == "retired":
+            if (
+                parsed.get("visibleStatus") != "retired"
+                or parsed.get("visibleStatusLabel") != STATUS_ZH["retired"]
+                or not parsed.get("retirementNotice")
+            ):
+                errors.append(f"{parsed.get('id')}: retired unit is missing its visible retirement tombstone")
+        elif parsed.get("retirementNotice"):
+            errors.append(f"{parsed.get('id')}: active unit contains a retirement tombstone")
     return errors, warnings
 
 
@@ -1702,7 +1761,7 @@ def main() -> int:
         print(f"[ERROR] chapter config cannot be read: {error}")
         return 1
     errors, warnings = [], []
-    errors.extend(check_repository_tree(ROOT))
+    errors.extend(check_repository_tree(ROOT, config))
     site_errors, page_count, link_count = check_site_tree(ROOT, config)
     errors.extend(site_errors)
     expected_manifest_paths = managed_public_paths(ROOT, config)
