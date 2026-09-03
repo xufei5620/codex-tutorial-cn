@@ -1030,7 +1030,12 @@ def repeated(values: list) -> list:
     return sorted({value for value in values if values.count(value) > 1}, key=repr)
 
 
-def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str]]:
+def check_module_registry(
+    root: Path,
+    strict: bool,
+    *,
+    as_of: date | None = None,
+) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
     registry_path = root / "registry/modules-v1.json"
     schema_path = root / "schemas/modules-v1.schema.json"
@@ -1093,6 +1098,7 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         errors.append(f"duplicate retirement tombstones: {duplicate_retirements}")
     retirements_by_id = {record["unitId"]: record for record in retirement_records}
     registered_paths = set(paths)
+    records_by_path = {unit["publicPath"]: unit for unit in unit_records}
     for record in retirement_records:
         unit_id = record["unitId"]
         unit = records_by_id.get(unit_id)
@@ -1106,6 +1112,8 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         replacement = record["replacementPath"]
         if replacement is not None and replacement not in registered_paths:
             errors.append(f"{unit_id}: retirement replacementPath is not a registered unit path")
+        elif replacement is not None and records_by_path[replacement]["contentStatus"] == "retired":
+            errors.append(f"{unit_id}: retirement replacementPath points to another retired unit")
         if replacement == unit["publicPath"]:
             errors.append(f"{unit_id}: retirement replacementPath points to the retired unit itself")
     for unit in unit_records:
@@ -1267,7 +1275,7 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         errors.append(f"module catalog cross-registry check failed: {error}")
 
     if framework is not None:
-        evaluation_date = max(generated_date, date.today())
+        evaluation_date = max(generated_date, as_of or date.today())
         records = registry.get("verificationRecords", [])
         evidence_ids = [record["evidenceId"] for record in records]
         if repeated(evidence_ids):

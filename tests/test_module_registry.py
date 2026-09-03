@@ -3,6 +3,7 @@ from html.parser import HTMLParser
 import hashlib
 import importlib.util
 import json
+from datetime import date
 import os
 from pathlib import Path
 import re
@@ -920,6 +921,39 @@ class ModuleRegistryTests(unittest.TestCase):
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertFalse([error for error in errors if "retirement" in error], errors)
 
+    def test_retirement_replacement_cannot_point_to_another_retired_unit(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            registry["status"] = "review-in-progress"
+            first, second = registry["units"][:2]
+            for unit in (first, second):
+                unit["contentStatus"] = "retired"
+                unit["lastReviewedDate"] = registry["generatedDate"]
+            registry["retirementRecords"] = [
+                {
+                    "unitId": first["id"],
+                    "retiredDate": registry["generatedDate"],
+                    "reason": "由下一个模块取代。",
+                    "replacementPath": second["publicPath"],
+                },
+                {
+                    "unitId": second["id"],
+                    "retiredDate": registry["generatedDate"],
+                    "reason": "由上一个模块取代。",
+                    "replacementPath": first["publicPath"],
+                },
+            ]
+            (root / "registry/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("another retired unit" in error for error in errors), errors)
+
     def test_latest_verification_record_controls_current_state_without_erasing_history(self):
         checker = load_check_module()
         with tempfile.TemporaryDirectory() as directory:
@@ -976,7 +1010,7 @@ class ModuleRegistryTests(unittest.TestCase):
                 'data-unit-id="CDX-M-0013" data-content-status="verification" data-verification-state="verified"',
             )
             (root / "ch03.html").write_text(chapter, encoding="utf-8", newline="\n")
-            errors, _ = checker.check_module_registry(root, strict=True)
+            errors, _ = checker.check_module_registry(root, strict=True, as_of=date(2026, 9, 3))
             self.assertFalse([error for error in errors if "verification" in error], errors)
 
     def test_verification_records_enforce_risk_windows_and_catalog_dates(self):
