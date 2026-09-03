@@ -1,2 +1,6 @@
 # build.py 额外生成的内部预览页，不属于站点
 src/preview.html
+
+# Python maintenance caches
+__pycache__/
+*.py[cod]
