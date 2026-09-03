@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>正式课程 V1 阶段 B：模块目录实施计划</title></head>
+<body>
+<main><article>
+<h1>正式课程 V1 阶段 B：模块目录实施计划</h1>
+<p><strong>对应任务：</strong>GitHub Issue #3。</p>
+<p><strong>基线：</strong>PR #2 合并候选 <code>bbe321d9c25602396c540280c31eef4daa0cfbcf</code>；本阶段使用独立分支 <code>codex/phase-b-module-registry</code>，不继续修改阶段 A。</p>
+
+<section>
+<h2>1. 目标与边界</h2>
+<p>把当前 65 个编号课程小节和 6 张提示词卡登记为 71 个可独立审校的内容单元。只建立身份、状态和证据字段，不把任何草稿提升为已审校或已验证。</p>
+<ul>
+  <li>11 个“本章小结”补稳定锚点，但作为章节派生内容，不计入模块目录。</li>
+  <li>不新增尚不存在的 20 张行业提示词卡，不建立数据库、API 或 Notion 双向同步。</li>
+  <li>不在本阶段改写课程观点、安装步骤或案例正文；发现的问题进入后续章节审校任务。</li>
+</ul>
+</section>
+
+<section>
+<h2>2. 已确认的数据决策</h2>
+<ul>
+  <li>课程模块使用永久 ID <code>CDX-M-0001</code> 至 <code>CDX-M-0065</code>，按当前阅读顺序一次性分配；以后标题、排序或章节变化不得重编号。</li>
+  <li>提示词卡保留 <code>PRM-COM-0001</code> 至 <code>PRM-COM-0006</code>。</li>
+  <li>旧章级 <code>CDX-M-0101</code> 等 11 个 ID 只登记为 <code>legacyChapterPlaceholders</code>，不得复用为小节身份。</li>
+  <li>正文保留现有 <code>#s1</code> 等公开锚点，并在对应 <code>section</code> 增加 <code>data-unit-id</code>；小结使用 <code>#summary</code>。</li>
+  <li>当前 71 个单元全部保持 <code>contentStatus=draft</code>、<code>verificationState=unverified</code>、<code>verificationDate=null</code>、<code>lastReviewedDate=null</code>、<code>rights=pending</code>。</li>
+  <li>多数模块平台为 Windows 与 macOS；<code>ch03#s3</code> 仅 Windows，<code>ch03#s4</code> 仅 macOS。</li>
+  <li>26 张唯一提示词卡 / 30 个展示位的正确口径为：6 张通用卡，加四个行业各 5 张专属卡并各复用 1 张共享卡。</li>
+</ul>
+</section>
+
+<section>
+<h2>3. 文件设计</h2>
+<ul>
+  <li><code>src/modules-v1.json</code>：唯一可编辑的 71 单元目录源。</li>
+  <li><code>src/maintainer/schemas/modules-v1.schema.json</code>：目录 Schema。</li>
+  <li><code>registry/modules-v1.json</code> 与 <code>schemas/modules-v1.schema.json</code>：构建生成并进入在线 manifest 与离线 ZIP。</li>
+  <li><code>tests/test_module_registry.py</code>：数量、身份、状态、路径、HTML 映射、隐私与生成闭环测试。</li>
+</ul>
+<p>单元最小字段为：<code>id</code>、<code>kind</code>、<code>title</code>、<code>chapter</code>、<code>collectionKeys</code>、<code>taskKey</code>、<code>order</code>、<code>sourcePath</code>、<code>sourceAnchor</code>、<code>publicPath</code>、<code>platforms</code>、<code>risk</code>、<code>contentStatus</code>、<code>verificationState</code>、<code>verificationDate</code>、<code>sourceRefs</code>、<code>rights</code>、<code>lastReviewedDate</code>。</p>
+</section>
+
+<section>
+<h2>4. 实施任务</h2>
+<ol>
+  <li><strong>先写失败测试。</strong>固定 65 + 6 = 71、ID 集合、旧 ID 不复用、双状态不混用、日期格式、相对公开路径和隐私路径拒绝规则。</li>
+  <li><strong>建立 Schema 与目录源。</strong>使用 <code>additionalProperties=false</code>；为 lesson-module 与 prompt-card 写条件约束；录入 65 个小节和 6 张现有卡，不创建未来占位卡。</li>
+  <li><strong>标记 HTML。</strong>给 65 个编号 section 与 6 张卡增加 <code>data-unit-id</code>，给 11 个小结补 <code>id="summary"</code>；保留旧公开深链。</li>
+  <li><strong>接入构建。</strong>确定性复制目录与 Schema，加入首页/README 维护入口、根 manifest、SHA256SUMS 和离线 ZIP。</li>
+  <li><strong>接入严格检查。</strong>用 Draft 2020-12 与 <code>FormatChecker</code> 校验；要求公开 HTML 与目录 ID、标题、路径、章节、集合精确一致；拒绝盘符、UNC、<code>..</code>、URL scheme、<code>.codex</code> 和内部工作树路径。</li>
+  <li><strong>统一维护说明。</strong>修正旧生命周期文字，说明 Notion 只是目录投影；修正提示词库 26/30 的数学口径；章级旧 ID 只保留迁移说明。</li>
+  <li><strong>生成与复验。</strong>Windows 与 Ubuntu 分别运行完整测试、严格检查、构建与字节比较；对新增 registry 做独立冷审。</li>
+</ol>
+</section>
+
+<section>
+<h2>5. 验收门槛</h2>
+<ul>
+  <li>71 个单元在源目录、公开目录和 HTML 中一一对应；无重复 ID、路径或容器顺序。</li>
+  <li>删除记录、增加未登记 section、标题漂移、非法状态/日期/路径、复用旧 ID均会使严格检查失败。</li>
+  <li>所有初始状态仍为 draft + unverified；没有把撰写日期冒充正式复核日期。</li>
+  <li>公开 registry 与 Schema 同时存在于在线 manifest 和离线 ZIP，且不含本机路径或内部备注。</li>
+  <li>Windows/Linux 构建一致，现有读者深链不失效，阶段 A 的全部 42 项测试继续通过。</li>
+</ul>
+</section>
+</article></main>
+</body>
+</html>
