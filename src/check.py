@@ -12,9 +12,12 @@ import os
 from pathlib import Path
 import re
 import shutil
+import socket
+import stat
 import subprocess
 import sys
 import tempfile
+import unicodedata
 from urllib.parse import parse_qsl, unquote, urlsplit
 import zipfile
 
@@ -77,8 +80,9 @@ MANAGED_ROOT_FILES = {
 }
 MANAGED_ROOT_DIRECTORIES = {"assets", "deploy", "registry", "schemas", "specs", "templates"}
 MANAGED_METADATA = {"manifest.json", "SHA256SUMS.txt"}
-PUBLIC_TEXT_SUFFIXES = {".conf", ".css", ".html", ".htm", ".json", ".md", ".sha256", ".svg", ".txt", ".xml", ".xhtml", ".yml", ".yaml"}
+PUBLIC_TEXT_SUFFIXES = {".cfg", ".conf", ".css", ".htm", ".html", ".ini", ".json", ".md", ".sha256", ".svg", ".toml", ".txt", ".xhtml", ".xml", ".yaml", ".yml"}
 PUBLIC_TEXT_NAMES = {"Caddyfile", "Dockerfile"}
+PUBLIC_BINARY_SUFFIXES = {".avif", ".gif", ".ico", ".jpeg", ".jpg", ".png", ".webp"}
 DEVELOPER_ROOT_ENTRIES = {
     ".dockerignore",
     ".git",
@@ -91,6 +95,7 @@ DEVELOPER_ROOT_ENTRIES = {
     "src",
     "tests",
 }
+SENSITIVE_REPOSITORY_SUFFIXES = {".env", ".key", ".kdbx", ".p12", ".pem", ".pfx", ".sqlite", ".sqlite3"}
 LOCKED_LESSON_COUNTS = {
     "ch01": 5,
     "ch02": 5,
@@ -125,6 +130,22 @@ LOCKED_PROMPT_TASKS = {
     "PRM-COM-0005": "research-plan",
     "PRM-COM-0006": "visual",
 }
+LOCKED_TASK_TITLES = {
+    "communication": "沟通协作",
+    "document-report": "文档报告",
+    "file-organization": "文件整理",
+    "table-data": "表格数据",
+    "research-plan": "调研计划",
+    "visual": "视觉创意",
+}
+LOCKED_PROMPT_COLLECTIONS = [
+    {"key": "prompt-common", "title": "跨行业通用", "uniqueCardCount": 6, "usesSharedFileCard": False},
+    {"key": "prompt-ecommerce", "title": "电商与零售", "uniqueCardCount": 5, "usesSharedFileCard": True},
+    {"key": "prompt-food", "title": "餐饮与本地生活", "uniqueCardCount": 5, "usesSharedFileCard": True},
+    {"key": "prompt-media", "title": "传媒与内容创作", "uniqueCardCount": 5, "usesSharedFileCard": True},
+    {"key": "prompt-education", "title": "教育与培训", "uniqueCardCount": 5, "usesSharedFileCard": True},
+]
+LOCKED_RISK_WINDOWS = {"high": 30, "medium": 90, "low": 180}
 
 
 def is_remote_url(value: str) -> bool:
@@ -166,6 +187,19 @@ def contains_external_url(value: str) -> bool:
     return re.search(r"(?i)https?://|(?:^|[\s\"'(=,;])//|(?:mailto|tel):", value) is not None
 
 
+def reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key: {key!r}")
+        result[key] = value
+    return result
+
+
+def json_loads_strict(source: str):
+    return json.loads(source, object_pairs_hook=reject_duplicate_json_keys)
+
+
 def walk_strings(value):
     if isinstance(value, str):
         yield value
@@ -180,12 +214,14 @@ def walk_strings(value):
 
 def private_path_label(value: str) -> str | None:
     checks = (
-        (r"(?<![A-Za-z])[A-Za-z]:[\\/]", "drive path"),
+        (r"(?<![A-Za-z])[A-Za-z]:(?:[\\/]|Users(?:[\\/]|$))", "drive path"),
         (r"(?:^|[^\\])\\\\[^\\\s]+[\\/]", "UNC path"),
         (r"(?i)file://", "file URL"),
         (r"(?i)(?:^|[\\/])\.(?:codex|superpowers)(?:[\\/]|$)", "private tool path"),
         (r"(?i)(?:^|[\\/])worktrees(?:[\\/]|$)", "private worktree path"),
-        (r"/(?:Users|home)/[^/\s]+/", "private home path"),
+        (r"(?i)/(?:Users|home)/[^/\s]+(?:/|$)", "private home path"),
+        (r"(?i)/(?:mnt/[A-Za-z]|root)(?:/|$)", "private host path"),
+        (r"(?<![A-Za-z0-9_.-])\.\.(?:[\\/]|$)", "parent traversal"),
     )
     for pattern, label in checks:
         if re.search(pattern, value):
@@ -193,24 +229,84 @@ def private_path_label(value: str) -> str | None:
     return None
 
 
+def decoded_text_variants(value: str) -> set[str]:
+    variants = {value}
+    frontier = {value}
+    for _ in range(4):
+        expanded = set()
+        for item in frontier:
+            expanded.update((html.unescape(item), unquote(item)))
+        expanded -= variants
+        if not expanded:
+            break
+        variants.update(expanded)
+        frontier = expanded
+    return variants
+
+
+def binary_file_problem(path: Path) -> str | None:
+    if path.stat().st_size > 20 * 1024 * 1024:
+        return "binary asset exceeds 20 MiB"
+    header = path.read_bytes()[:32]
+    suffix = path.suffix.lower()
+    signatures = {
+        ".png": header.startswith(b"\x89PNG\r\n\x1a\n"),
+        ".jpg": header.startswith(b"\xff\xd8\xff"),
+        ".jpeg": header.startswith(b"\xff\xd8\xff"),
+        ".gif": header.startswith((b"GIF87a", b"GIF89a")),
+        ".webp": header.startswith(b"RIFF") and header[8:12] == b"WEBP",
+        ".ico": header.startswith(b"\x00\x00\x01\x00"),
+        ".avif": len(header) >= 12 and header[4:8] == b"ftyp" and b"avif" in header[8:32],
+    }
+    if not signatures.get(suffix, False):
+        return "binary asset does not match its file extension"
+    return None
+
+
 def check_public_text_safety(root: Path, relative_paths: set[str]) -> list[str]:
     errors = []
     for relative in sorted(relative_paths):
         path = root.joinpath(*relative.split("/"))
-        if not path.is_file() or (path.suffix.lower() not in PUBLIC_TEXT_SUFFIXES and path.name not in PUBLIC_TEXT_NAMES):
+        if not path.is_file():
+            continue
+        if path.is_symlink():
+            errors.append(f"{relative}: public artifact must not be a symbolic link")
+            continue
+        if path.suffix.lower() in PUBLIC_BINARY_SUFFIXES:
+            if problem := binary_file_problem(path):
+                errors.append(f"{relative}: {problem}")
+            continue
+        if path.suffix.lower() not in PUBLIC_TEXT_SUFFIXES and path.name not in PUBLIC_TEXT_NAMES:
+            errors.append(f"{relative}: unsupported public file type")
             continue
         try:
             source = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             errors.append(f"{relative}: declared text artifact is not UTF-8")
             continue
-        values = [source, html.unescape(source)]
+        values = list(decoded_text_variants(source))
+        if path.suffix.lower() == ".css":
+            values.extend(decoded_text_variants(normalize_css(source)))
         if path.suffix.lower() == ".json":
             try:
-                values = list(walk_strings(json.loads(source)))
-            except json.JSONDecodeError:
-                pass
-        labels = sorted({label for value in values if (label := private_path_label(value))})
+                decoded_values = list(walk_strings(json_loads_strict(source)))
+                values = []
+                for value in decoded_values:
+                    values.extend(decoded_text_variants(value))
+            except (json.JSONDecodeError, ValueError) as error:
+                errors.append(f"{relative}: invalid JSON text: {error}")
+        labels = set()
+        html_like = path.suffix.lower() in {".htm", ".html", ".xhtml"}
+        for value in values:
+            label = private_path_label(value)
+            if label and not (html_like and label == "parent traversal"):
+                labels.add(label)
+        if html_like:
+            visible_text = re.sub(r"<[^>]+>", " ", source)
+            for value in decoded_text_variants(visible_text):
+                if label := private_path_label(value):
+                    labels.add(label)
+        labels = sorted(labels)
         for label in labels:
             errors.append(f"{relative}: private path detected ({label})")
     return errors
@@ -225,22 +321,90 @@ def source_url_problem(value: str) -> str | None:
         return "must use a public HTTPS host"
     if parsed.username is not None or parsed.password is not None:
         return "must not contain userinfo"
-    host = parsed.hostname.rstrip(".").lower()
+    try:
+        parsed.port
+    except ValueError:
+        return "contains an invalid port"
+    host = parsed.hostname
+    for _ in range(3):
+        decoded = unquote(host)
+        if decoded == host:
+            break
+        host = decoded
+    host = host.rstrip(".").lower()
+    if not host or any(character in host for character in "/\\%\x00\r\n\t"):
+        return "contains an invalid hostname"
+    try:
+        host = host.encode("idna").decode("ascii")
+    except UnicodeError:
+        return "contains an invalid hostname"
+    host = host.rstrip(".")
     if host == "localhost" or host.endswith((".localhost", ".local", ".internal")):
         return "must not use a local hostname"
+    if "." not in host and ":" not in host:
+        try:
+            packed = socket.inet_aton(host)
+        except OSError:
+            return "must use a fully qualified public hostname"
+        address = ipaddress.ip_address(packed)
+        if not address.is_global or address.is_multicast:
+            return "must not use a private or special IP address"
+    elif re.fullmatch(r"[0-9A-Fa-fxX.]+", host):
+        try:
+            address = ipaddress.ip_address(socket.inet_aton(host))
+        except OSError:
+            return "contains an invalid numeric hostname"
+        if not address.is_global or address.is_multicast:
+            return "must not use a private or special IP address"
     try:
         address = ipaddress.ip_address(host)
     except ValueError:
-        pass
+        if host.endswith((".invalid", ".test", ".example")):
+            return "must use a resolvable public hostname"
     else:
-        if address.is_private or address.is_loopback or address.is_link_local or address.is_reserved or address.is_unspecified:
+        if not address.is_global or address.is_multicast:
             return "must not use a private or special IP address"
-    sensitive_names = {"token", "key", "api_key", "apikey", "secret", "password", "auth", "signature", "credential"}
-    for name, _ in parse_qsl(parsed.query, keep_blank_values=True):
-        if name.lower() in sensitive_names:
-            return f"must not contain sensitive query parameter {name!r}"
-    if re.search(r"(?i)(?:token|secret|password|credential)=", parsed.fragment):
-        return "must not contain sensitive fragment data"
+    sensitive_names = {
+        "token",
+        "accesstoken",
+        "refreshtoken",
+        "idtoken",
+        "key",
+        "apikey",
+        "secret",
+        "clientsecret",
+        "password",
+        "passwd",
+        "auth",
+        "authorization",
+        "signature",
+        "sig",
+        "credential",
+        "credentials",
+        "xamzsignature",
+        "xamzcredential",
+        "xamzsecuritytoken",
+        "oauthtoken",
+        "authtoken",
+        "sessiontoken",
+        "sessionid",
+        "awsaccesskeyid",
+    }
+
+    def sensitive_parameter_name(name: str) -> bool:
+        for _ in range(3):
+            decoded = unquote(name)
+            if decoded == name:
+                break
+            name = decoded
+        return re.sub(r"[^a-z0-9]", "", name.lower()) in sensitive_names
+
+    for location, payload in (("path", parsed.path), ("query", parsed.query), ("fragment", parsed.fragment)):
+        names = [name for name, _ in parse_qsl(payload.replace(";", "&"), keep_blank_values=True)]
+        names.extend(re.findall(r"(?:^|[?&#;/])([^=?&#;/]+)=", payload))
+        for name in names:
+            if sensitive_parameter_name(name):
+                return f"must not contain sensitive {location} parameter {name!r}"
     return None
 
 
@@ -329,7 +493,7 @@ def normalize_unit_heading(value: str) -> str:
     value = " ".join(html.unescape(value).split())
     value = re.sub(r"^\d+\.\d+\s*", "", value)
     value = re.sub(r"^卡片：", "", value)
-    value = re.sub(r"（PRM-[A-Z]+-\d{4}）\s*草稿$", "", value)
+    value = re.sub(r"（PRM-[A-Z]+-\d{4}）\s*$", "", value)
     return value.strip()
 
 
@@ -340,12 +504,25 @@ class ContentUnitParser(HTMLParser):
         self.summary_anchors: list[str | None] = []
         self.unregistered_numbered_sections: list[str] = []
         self.unregistered_prompt_cards: list[str | None] = []
+        self.unexpected_unit_elements: list[str] = []
         self._sections: list[dict | None] = []
         self._capture_heading = False
+        self._heading_badge_depth = 0
+
+    def close(self) -> None:
+        super().close()
+        for section in self._sections:
+            if section is not None:
+                self.unexpected_unit_elements.append(
+                    f"unclosed section[data-unit-id={section['id']}]"
+                )
+        self._sections = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
         attributes = {name.lower(): value or "" for name, value in attrs}
+        if tag != "section" and attributes.get("data-unit-id"):
+            self.unexpected_unit_elements.append(f"{tag}[data-unit-id={attributes['data-unit-id']}]")
         if tag == "section":
             if "summary" in attributes.get("class", "").split():
                 self.summary_anchors.append(attributes.get("id"))
@@ -357,31 +534,54 @@ class ContentUnitParser(HTMLParser):
             if "prompt-card" in classes and not unit_id:
                 self.unregistered_prompt_cards.append(anchor)
             self._sections.append(
-                {"id": unit_id, "anchor": anchor, "heading": []}
+                {
+                    "id": unit_id,
+                    "anchor": anchor,
+                    "heading": [],
+                    "contentStatus": attributes.get("data-content-status"),
+                    "verificationState": attributes.get("data-verification-state"),
+                    "collectionKeys": attributes.get("data-collection-keys", "").split(),
+                    "taskKey": attributes.get("data-task-key") or None,
+                    "visibleStatus": None,
+                    "visibleStatusLabel": [],
+                }
                 if unit_id
                 else None
             )
         elif tag == "h2" and self._sections and self._sections[-1] is not None:
             self._capture_heading = True
+        elif self._capture_heading and self._sections and self._sections[-1] is not None:
+            classes = attributes.get("class", "").split()
+            if tag == "span" and "badge" in classes and self._heading_badge_depth == 0:
+                statuses = [value for value in classes if value != "badge"]
+                self._sections[-1]["visibleStatus"] = statuses[0] if len(statuses) == 1 else None
+                self._heading_badge_depth = 1
+            elif self._heading_badge_depth:
+                self._heading_badge_depth += 1
 
     def handle_endtag(self, tag: str) -> None:
         tag = tag.lower()
         if tag == "h2":
             self._capture_heading = False
+            self._heading_badge_depth = 0
+        elif self._capture_heading and self._heading_badge_depth:
+            self._heading_badge_depth -= 1
         elif tag == "section" and self._sections:
             section = self._sections.pop()
             if section is not None:
                 section["title"] = normalize_unit_heading("".join(section.pop("heading")))
+                section["visibleStatusLabel"] = " ".join(section["visibleStatusLabel"]).strip()
                 self.units.append(section)
 
     def handle_data(self, data: str) -> None:
         if self._capture_heading and self._sections and self._sections[-1] is not None:
-            self._sections[-1]["heading"].append(data)
+            field = "visibleStatusLabel" if self._heading_badge_depth else "heading"
+            self._sections[-1][field].append(data)
 
 
 def parse_content_units(
     path: Path,
-) -> tuple[list[dict], list[str | None], list[str], list[str | None]]:
+) -> tuple[list[dict], list[str | None], list[str], list[str | None], list[str]]:
     parser = ContentUnitParser()
     parser.feed(path.read_text(encoding="utf-8"))
     parser.close()
@@ -390,7 +590,27 @@ def parse_content_units(
         parser.summary_anchors,
         parser.unregistered_numbered_sections,
         parser.unregistered_prompt_cards,
+        parser.unexpected_unit_elements,
     )
+
+
+def prompt_taxonomy_labels(path: Path) -> dict[str, tuple[str, str]]:
+    source = path.read_text(encoding="utf-8")
+    result = {}
+    for match in re.finditer(
+        r'<section\b(?=[^>]*\bclass="[^"]*\bprompt-card\b)(?=[^>]*\bdata-unit-id="([^"]+)")[^>]*>(.*?)</section>',
+        source,
+        flags=re.S,
+    ):
+        unit_id, body = match.groups()
+        taxonomy = re.search(r"<dt>\s*行业\s*/\s*任务分类\s*</dt>\s*<dd>(.*?)</dd>", body, flags=re.S)
+        if not taxonomy:
+            continue
+        value = " ".join(html.unescape(re.sub(r"<[^>]+>", "", taxonomy.group(1))).split())
+        parts = [part.strip() for part in re.split(r"[；｜|]", value, maxsplit=1)]
+        if len(parts) == 2:
+            result[unit_id] = (parts[0], parts[1])
+    return result
 
 
 def configure_output() -> None:
@@ -415,6 +635,25 @@ def safe_relative(value: str) -> bool:
     )
 
 
+def portable_archive_path_key(value: str) -> str | None:
+    normalized = unicodedata.normalize("NFC", value.replace("\\", "/"))
+    if normalized != value or not safe_relative(normalized):
+        return None
+    portable_parts = []
+    reserved = {"con", "prn", "aux", "nul"}
+    reserved.update(f"com{number}" for number in range(1, 10))
+    reserved.update(f"lpt{number}" for number in range(1, 10))
+    for part in normalized.split("/"):
+        stripped = part.rstrip(" .")
+        if stripped != part:
+            return None
+        portable = stripped.casefold()
+        if not portable or portable.split(".", 1)[0] in reserved:
+            return None
+        portable_parts.append(portable)
+    return "/".join(portable_parts)
+
+
 def checksum_records(payload: str) -> dict[str, str]:
     records = {}
     for line in payload.splitlines():
@@ -436,7 +675,7 @@ def public_html_files(root: Path) -> list[Path]:
         if not path.is_file() or path.suffix.lower() not in {".html", ".htm", ".xhtml"}:
             continue
         relative = path.relative_to(root)
-        if any(part in EXCLUDED_PUBLIC_PARTS for part in relative.parts):
+        if relative.parts and relative.parts[0] in EXCLUDED_PUBLIC_PARTS:
             continue
         files.append(path)
     return sorted(files)
@@ -444,9 +683,11 @@ def public_html_files(root: Path) -> list[Path]:
 
 def public_css_files(root: Path) -> list[Path]:
     files = []
-    for path in root.rglob("*.css"):
+    for path in root.rglob("*"):
+        if not path.is_file() or path.suffix.lower() != ".css":
+            continue
         relative = path.relative_to(root)
-        if any(part in EXCLUDED_PUBLIC_PARTS for part in relative.parts):
+        if relative.parts and relative.parts[0] in EXCLUDED_PUBLIC_PARTS:
             continue
         files.append(path)
     return sorted(files)
@@ -454,9 +695,11 @@ def public_css_files(root: Path) -> list[Path]:
 
 def public_svg_files(root: Path) -> list[Path]:
     files = []
-    for path in root.rglob("*.svg"):
+    for path in root.rglob("*"):
+        if not path.is_file() or path.suffix.lower() != ".svg":
+            continue
         relative = path.relative_to(root)
-        if any(part in EXCLUDED_PUBLIC_PARTS for part in relative.parts):
+        if relative.parts and relative.parts[0] in EXCLUDED_PUBLIC_PARTS:
             continue
         files.append(path)
     return sorted(files)
@@ -494,7 +737,15 @@ def check_site_tree(
     ) -> bool:
         reference = html.unescape(reference).strip()
         lower = reference.lower()
-        if not reference or is_remote_url(reference) or lower.startswith(EXTERNAL_SCHEMES + EMBEDDED_SCHEMES):
+        if not reference:
+            return False
+        if is_remote_url(reference) or lower.startswith(("http://", "https://")):
+            if context == "a[href]":
+                problem = source_url_problem(reference)
+                if problem:
+                    errors.append(f"{relative}: external navigation URL {problem}: {reference}")
+            return False
+        if lower.startswith(("mailto:", "tel:") + EMBEDDED_SCHEMES):
             return False
         if lower.startswith(UNSAFE_SCHEMES):
             errors.append(f"{relative}: unsafe URL scheme in {context}: {reference}")
@@ -607,7 +858,7 @@ def check_site_tree(
                 chapter_id = f"ch{chapter_match.group(1)}"
                 wanted = chapter_config["chapters"][chapter_id]["status"]
                 badge = re.search(
-                    r'<p class="kicker">第 \d+ 章 <span class="badge (\w+)">([^<]+)</span>',
+                    r'<p class="kicker">第 \d+ 章 <span class="badge ([\w-]+)">([^<]+)</span>',
                     source,
                 )
                 if not badge:
@@ -660,6 +911,40 @@ def check_public_root_inventory(root: Path, managed_paths: set[str]) -> list[str
     return errors
 
 
+def check_repository_tree(root: Path) -> list[str]:
+    errors = []
+    allowed_src_root_files = {"build.py", "chapters.json", "check.py", "modules-v1.json", "preview.html"}
+    for path in root.rglob("*"):
+        if not path.is_file() and not path.is_symlink():
+            continue
+        relative_path = path.relative_to(root)
+        if relative_path.parts[0] == "downloads" or any(
+            part in {".git", ".venv", "__pycache__"} for part in relative_path.parts
+        ):
+            continue
+        relative = relative_path.as_posix()
+        if path.is_symlink():
+            errors.append(f"repository file must not be a symbolic link: {relative}")
+            continue
+        if path.suffix.lower() in SENSITIVE_REPOSITORY_SUFFIXES or path.name.lower() == ".env":
+            errors.append(f"sensitive repository file type is not allowed: {relative}")
+        if relative_path.parts[0] == "tests" and not re.fullmatch(r"(?:test_[A-Za-z0-9_]+|__init__)\.py", path.name):
+            errors.append(f"unexpected repository test artifact: {relative}")
+        if (
+            relative_path.parts[0] == "src"
+            and len(relative_path.parts) == 2
+            and path.name not in allowed_src_root_files
+        ):
+            errors.append(f"unexpected source-root artifact: {relative}")
+        if relative_path.parts[0] == ".github" and (
+            len(relative_path.parts) < 3
+            or relative_path.parts[1] != "workflows"
+            or path.suffix.lower() not in {".yml", ".yaml"}
+        ):
+            errors.append(f"unexpected GitHub metadata artifact: {relative}")
+    return errors
+
+
 def expected_download_paths(chapter_config: dict) -> set[str]:
     version = chapter_config["site"]["version"]
     archive_name = f"codex-tutorial-cn-v{version}-offline.zip"
@@ -687,7 +972,7 @@ def check_download_inventory(root: Path, chapter_config: dict) -> list[str]:
 def check_manifest(root: Path, expected_paths: set[str]) -> list[str]:
     errors = []
     try:
-        manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+        manifest = json_loads_strict((root / "manifest.json").read_text(encoding="utf-8"))
         sums = checksum_records((root / "SHA256SUMS.txt").read_text(encoding="utf-8"))
     except Exception as error:
         return [f"manifest/checksum cannot be read: {error}"]
@@ -732,8 +1017,9 @@ def check_registry(root: Path, strict: bool) -> tuple[list[str], list[str]]:
         (errors if strict else warnings).append(message)
         return errors, warnings
     try:
-        registry = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
-        schema = json.loads((root / "schemas/framework-v1.schema.json").read_text(encoding="utf-8"))
+        registry = json_loads_strict((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+        schema = json_loads_strict((root / "schemas/framework-v1.schema.json").read_text(encoding="utf-8"))
+        jsonschema.Draft202012Validator.check_schema(schema)
         jsonschema.Draft202012Validator(schema).validate(registry)
     except Exception as error:
         errors.append(f"registry schema validation failed: {getattr(error, 'message', error)}")
@@ -750,8 +1036,8 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
     schema_path = root / "schemas/modules-v1.schema.json"
     try:
         registry_text = registry_path.read_text(encoding="utf-8")
-        registry = json.loads(registry_text)
-        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        registry = json_loads_strict(registry_text)
+        schema = json_loads_strict(schema_path.read_text(encoding="utf-8"))
     except Exception as error:
         return [f"module registry/schema cannot be read: {error}"], warnings
     if not isinstance(registry, dict):
@@ -799,6 +1085,33 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
     if duplicate_paths:
         errors.append(f"duplicate public paths: {duplicate_paths}")
 
+    generated_date = date.fromisoformat(registry["generatedDate"])
+    retirement_records = registry.get("retirementRecords", [])
+    retirement_ids = [record["unitId"] for record in retirement_records]
+    duplicate_retirements = repeated(retirement_ids)
+    if duplicate_retirements:
+        errors.append(f"duplicate retirement tombstones: {duplicate_retirements}")
+    retirements_by_id = {record["unitId"]: record for record in retirement_records}
+    registered_paths = set(paths)
+    for record in retirement_records:
+        unit_id = record["unitId"]
+        unit = records_by_id.get(unit_id)
+        if unit is None:
+            errors.append(f"retirement tombstone references unknown unit: {unit_id}")
+            continue
+        if unit["contentStatus"] != "retired":
+            errors.append(f"{unit_id}: non-retired unit has a retirement tombstone")
+        if date.fromisoformat(record["retiredDate"]) > generated_date:
+            errors.append(f"{unit_id}: retirement date is later than the catalog date")
+        replacement = record["replacementPath"]
+        if replacement is not None and replacement not in registered_paths:
+            errors.append(f"{unit_id}: retirement replacementPath is not a registered unit path")
+        if replacement == unit["publicPath"]:
+            errors.append(f"{unit_id}: retirement replacementPath points to the retired unit itself")
+    for unit in unit_records:
+        if unit["contentStatus"] == "retired" and unit["id"] not in retirements_by_id:
+            errors.append(f"{unit['id']}: retirement tombstone missing")
+
     legacy = registry.get("legacyChapterPlaceholders", [])
     legacy_ids = [item.get("legacyId") for item in legacy if isinstance(item, dict)]
     if repeated(legacy_ids):
@@ -823,6 +1136,9 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         errors.append("duplicate prompt collection keys")
     if repeated(task_keys):
         errors.append("duplicate prompt task keys")
+    expected_task_types = [{"key": key, "title": title} for key, title in LOCKED_TASK_TITLES.items()]
+    if registry.get("taskTypes") != expected_task_types:
+        errors.append("module task titles differ from the locked v1 taxonomy")
     for unit in unit_records:
         for collection_key in unit.get("collectionKeys", []):
             if collection_key not in collection_keys:
@@ -875,18 +1191,33 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         record = records_by_id.get(prompt_id)
         if record is None or record.get("taskKey") != task_key:
             errors.append(f"{prompt_id}: taskKey differs from the locked v1 allocation")
+        elif (
+            record.get("sourceAnchor") != prompt_id.lower()
+            or record.get("publicPath") != f"prompts.html#{prompt_id.lower()}"
+        ):
+            errors.append(f"{prompt_id}: permanent prompt identity differs from the locked v1 allocation")
         elif record.get("risk") != "low" or record.get("platforms") != ["windows", "macos"]:
             errors.append(f"{prompt_id}: risk/platforms differ from the locked v1 allocation")
 
     framework = None
     try:
-        framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+        framework = json_loads_strict((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
         if registry.get("contentPipeline") != framework["contentStatus"]["pipeline"]:
             errors.append("module content pipeline differs from framework registry")
         if registry.get("verificationStates") != framework["verification"]["states"]:
             errors.append("module verification states differ from framework registry")
         if registry.get("status") != framework.get("status"):
             errors.append("module catalog status differs from framework registry")
+        pipeline_index = {status: index for index, status in enumerate(registry["contentPipeline"])}
+        framework_chapters = {f"ch{item['number']:02d}": item for item in framework["chapters"]}
+        for chapter_id in LOCKED_LESSON_COUNTS:
+            chapter_units = [unit for unit in unit_records if unit.get("chapterId") == chapter_id]
+            expected_status = min(
+                (unit["contentStatus"] for unit in chapter_units),
+                key=pipeline_index.__getitem__,
+            )
+            if framework_chapters.get(chapter_id, {}).get("status") != expected_status:
+                errors.append(f"{chapter_id}: chapter status differs from its least-advanced unit")
         expected_collections = [
             {"key": item["key"], "title": item["title"]}
             for item in framework["promptLibrary"]["collections"]
@@ -895,8 +1226,13 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
             errors.append("module collection taxonomy differs from framework registry")
         if [item.get("key") for item in registry.get("taskTypes", [])] != framework["promptLibrary"]["taskKeys"]:
             errors.append("module task taxonomy differs from framework registry")
-        unique_cards = sum(item["uniqueCardCount"] for item in framework["promptLibrary"]["collections"])
-        shared_card = framework["promptLibrary"]["sharedCard"]
+        prompt_library = framework["promptLibrary"]
+        if prompt_library["collections"] != LOCKED_PROMPT_COLLECTIONS:
+            errors.append("framework prompt collection plan differs from the locked v1 allocation")
+        if prompt_library.get("uniqueCardCount") != 26 or prompt_library.get("placementCount") != 30:
+            errors.append("framework prompt totals differ from the locked 26-card/30-placement plan")
+        unique_cards = sum(item["uniqueCardCount"] for item in prompt_library["collections"])
+        shared_card = prompt_library["sharedCard"]
         placement_count = unique_cards + shared_card["placementCount"] - 1
         if unique_cards != 26 or placement_count != 30:
             errors.append("prompt library totals differ from the locked 26-card/30-placement plan")
@@ -904,7 +1240,23 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
             errors.append("prompt shared-card identity differs from the locked plan")
         if shared_card.get("placementCollections") != collection_keys:
             errors.append("prompt shared-card collections do not close over the catalog taxonomy")
-        manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+        if framework["verification"].get("riskRevalidationDays") != LOCKED_RISK_WINDOWS:
+            errors.append("framework risk revalidation windows differ from the locked policy")
+        expected_decisions = {
+            "draft-seed-unverified": "course-beta-in-development",
+            "review-in-progress": "course-beta-in-development",
+            "acceptance-ready": "course-acceptance-pending",
+            "stable": "course-stable-approved",
+            "retired": "course-retired",
+        }
+        expected_decision = expected_decisions.get(registry.get("status"))
+        if framework.get("releaseGate", {}).get("currentDecision") != expected_decision:
+            errors.append("release gate decision is incompatible with the catalog status")
+        if registry.get("status") == "stable":
+            seed = framework.get("currentSeedContent", {})
+            if not seed.get("final") or not seed.get("countsAsCompletedCourseContent"):
+                errors.append("stable catalog is not marked as final completed course content")
+        manifest = json_loads_strict((root / "manifest.json").read_text(encoding="utf-8"))
         if registry.get("status") != manifest.get("status"):
             errors.append("module catalog status differs from artifact manifest")
         if registry.get("contentVersion") != manifest.get("version"):
@@ -915,7 +1267,7 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         errors.append(f"module catalog cross-registry check failed: {error}")
 
     if framework is not None:
-        generated_date = date.fromisoformat(registry["generatedDate"])
+        evaluation_date = max(generated_date, date.today())
         records = registry.get("verificationRecords", [])
         evidence_ids = [record["evidenceId"] for record in records]
         if repeated(evidence_ids):
@@ -936,32 +1288,73 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
                 errors.append(f"{unit_id}: verification date is later than the catalog date")
             if expires < checked:
                 errors.append(f"{unit_id}: verification expiry precedes its check date")
-            allowed_days = framework["verification"]["riskRevalidationDays"][unit["risk"]]
+            allowed_days = LOCKED_RISK_WINDOWS[unit["risk"]]
             if (expires - checked).days > allowed_days:
                 errors.append(f"{unit_id}: verification expiry exceeds the {allowed_days}-day risk window")
-            if expires < generated_date and unit["verificationState"] != "verification-expired":
-                errors.append(f"{unit_id}: expired evidence is not reflected in verificationState")
         for unit in unit_records:
             unit_id = unit["id"]
             unit_records_for_verification = records_by_unit.get(unit_id, [])
+            latest_by_platform = {}
+            for record in unit_records_for_verification:
+                platform = record["platform"]
+                previous = latest_by_platform.get(platform)
+                if previous is None or record["checkedDate"] > previous["checkedDate"]:
+                    latest_by_platform[platform] = record
+                elif record["checkedDate"] == previous["checkedDate"]:
+                    errors.append(f"{unit_id}: ambiguous latest verification records for {platform}")
+            latest_records = list(latest_by_platform.values())
             if unit["verificationState"] == "unverified":
                 if unit_records_for_verification:
                     errors.append(f"{unit_id}: unverified unit must not carry verification records")
             elif not unit_records_for_verification:
                 errors.append(f"{unit_id}: verification record missing for non-unverified state")
             else:
-                latest_check = max(record["checkedDate"] for record in unit_records_for_verification)
+                latest_check = max(record["checkedDate"] for record in latest_records)
                 if unit["verificationDate"] != latest_check:
                     errors.append(f"{unit_id}: verificationDate does not match the latest evidence")
-            if unit["contentStatus"] == "stable":
-                covered = {record["platform"] for record in unit_records_for_verification}
+                latest_results = {record["result"] for record in latest_records}
+                if any(
+                    record["result"] == "verification-expired"
+                    or date.fromisoformat(record["expiresDate"]) < evaluation_date
+                    for record in latest_records
+                ):
+                    aggregate_state = "verification-expired"
+                elif "verification-failed" in latest_results:
+                    aggregate_state = "verification-failed"
+                elif latest_results == {"unsupported"}:
+                    aggregate_state = "unsupported"
+                elif latest_results == {"verified"}:
+                    aggregate_state = "verified"
+                else:
+                    aggregate_state = "verified-with-limitations"
+                if unit["verificationState"] != aggregate_state:
+                    errors.append(
+                        f"{unit_id}: verificationState does not match latest platform evidence "
+                        f"({unit['verificationState']} != {aggregate_state})"
+                    )
+            if unit["verificationState"] in {"verified", "verified-with-limitations", "unsupported"}:
+                covered = set(latest_by_platform)
                 if covered != set(unit["platforms"]):
-                    errors.append(f"{unit_id}: stable unit lacks evidence for every declared platform")
+                    errors.append(f"{unit_id}: verification lacks evidence for every declared platform")
             if unit["lastReviewedDate"] and date.fromisoformat(unit["lastReviewedDate"]) > generated_date:
                 errors.append(f"{unit_id}: lastReviewedDate is later than the catalog date")
             for source_ref in unit["sourceRefs"]:
                 if date.fromisoformat(source_ref["reviewDate"]) > generated_date:
                     errors.append(f"{unit_id}: source reviewDate is later than the catalog date")
+                if unit["contentStatus"] in {
+                    "editorial-reviewed",
+                    "verification",
+                    "acceptance-ready",
+                    "stable",
+                } and source_ref["reviewConclusion"] not in {"approved", "approved-with-limitations"}:
+                    errors.append(f"{unit_id}: reviewed content retains an unresolved source reference")
+                if unit["contentStatus"] == "stable":
+                    if source_ref["license"].strip().lower() in {"unknown", "pending", "tbd"}:
+                        errors.append(f"{unit_id}: stable content retains an unresolved source license")
+                    if source_ref["pinnedVersion"].strip().lower() in {"head", "latest", "main", "master"}:
+                        errors.append(f"{unit_id}: stable content source is not pinned to a reviewable version")
+            if unit["rights"] in {"cleared", "link-only"} and not unit["sourceRefs"]:
+                errors.append(f"{unit_id}: {unit['rights']} rights require at least one source reference")
 
     parsed_units = []
     registered_content_pages: set[Path] = set()
@@ -972,11 +1365,13 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
             errors.append(f"module chapter page missing: {page.name}")
             continue
         registered_content_pages.add(page.resolve())
-        page_units, summaries, unregistered_sections, _ = parse_content_units(page)
+        page_units, summaries, unregistered_sections, _, unexpected_elements = parse_content_units(page)
         if summaries != ["summary"]:
             errors.append(f"{page.name}: expected exactly one #summary chapter summary")
         if unregistered_sections:
             errors.append(f"{page.name}: unregistered numbered sections: {unregistered_sections}")
+        if unexpected_elements:
+            errors.append(f"{page.name}: data-unit-id appears on non-section elements: {unexpected_elements}")
         for order, unit in enumerate(page_units, 1):
             parsed_units.append(
                 {
@@ -991,14 +1386,25 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
     prompt_page = root / "prompts.html"
     if prompt_page.is_file():
         registered_content_pages.add(prompt_page.resolve())
-        prompt_units, _, _, unregistered_cards = parse_content_units(prompt_page)
+        prompt_units, _, _, unregistered_cards, unexpected_elements = parse_content_units(prompt_page)
         if unregistered_cards:
             errors.append(f"prompts.html: unregistered prompt cards: {unregistered_cards}")
+        if unexpected_elements:
+            errors.append(f"prompts.html: data-unit-id appears on non-section elements: {unexpected_elements}")
+        visible_taxonomy = prompt_taxonomy_labels(prompt_page)
+        collection_titles = {item["key"]: item["title"] for item in registry["collections"]}
+        task_titles = {item["key"]: item["title"] for item in registry["taskTypes"]}
         collection_positions: dict[str, int] = {}
         for unit in prompt_units:
             record = records_by_id.get(unit.get("id"), {})
             collections = record.get("collectionKeys") or ["unregistered"]
             primary_collection = collections[0]
+            expected_labels = (
+                "、".join(collection_titles.get(key, key) for key in collections),
+                task_titles.get(record.get("taskKey")),
+            )
+            if visible_taxonomy.get(unit.get("id")) != expected_labels:
+                errors.append(f"{unit.get('id')}: visible prompt taxonomy differs from the module catalog")
             collection_positions[primary_collection] = collection_positions.get(primary_collection, 0) + 1
             parsed_units.append(
                 {
@@ -1015,8 +1421,8 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
     for page in public_html_files(root):
         if page.resolve() in registered_content_pages:
             continue
-        outside_units, _, _, _ = parse_content_units(page)
-        if outside_units:
+        outside_units, _, _, _, unexpected_elements = parse_content_units(page)
+        if outside_units or unexpected_elements:
             errors.append(
                 f"{page.relative_to(root).as_posix()}: data-unit-id appears outside registered content pages"
             )
@@ -1036,7 +1442,15 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         record = records_by_id.get(parsed.get("id"))
         if record is None:
             continue
-        for field in ("title", "kind", "chapterId", "order", "publicPath"):
+        for field in (
+            "title",
+            "kind",
+            "chapterId",
+            "order",
+            "publicPath",
+            "contentStatus",
+            "verificationState",
+        ):
             if record.get(field) != parsed.get(field):
                 errors.append(
                     f"{parsed.get('id')}: {field} differs between registry and HTML "
@@ -1044,6 +1458,15 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
                 )
         if record.get("sourceAnchor") != parsed.get("anchor"):
             errors.append(f"{parsed.get('id')}: sourceAnchor differs from HTML anchor")
+        if record.get("kind") == "prompt-card":
+            for field in ("collectionKeys", "taskKey"):
+                if record.get(field) != parsed.get(field):
+                    errors.append(f"{parsed.get('id')}: {field} differs between registry and HTML metadata")
+            if (
+                parsed.get("visibleStatus") != record.get("contentStatus")
+                or parsed.get("visibleStatusLabel") != STATUS_ZH.get(record.get("contentStatus"))
+            ):
+                errors.append(f"{parsed.get('id')}: visible prompt status differs from the module catalog")
     return errors, warnings
 
 
@@ -1059,36 +1482,106 @@ def check_offline_zip(root: Path, chapter_config: dict, strict: bool) -> list[st
     except Exception as error:
         errors.append(f"ZIP checksum cannot be read: {error}")
         checksum = {}
+    if set(checksum) != {archive.name}:
+        errors.append("ZIP checksum file must contain exactly the archive entry")
     if checksum.get(archive.name) != sha256(archive.read_bytes()):
         errors.append("ZIP external checksum mismatch")
 
     prefix = "codex-tutorial-cn/"
+    expected_payload_paths = {
+        relative
+        for relative in managed_public_paths(root, chapter_config)
+        if relative not in {"404.html", "README.md", "robots.txt"}
+        and not relative.startswith("deploy/")
+    }
     try:
         with zipfile.ZipFile(archive) as package:
-            names = package.namelist()
+            infos = package.infolist()
+            names = [info.filename for info in infos]
+            can_extract = True
+            if len(infos) > 512:
+                errors.append("ZIP contains too many members")
+                can_extract = False
             if len(names) != len(set(names)):
                 errors.append("ZIP contains duplicate paths")
-            for name in names:
-                if not name.startswith(prefix) or not safe_relative(name):
+                can_extract = False
+            portable_keys = []
+            expanded_size = 0
+            for info in infos:
+                name = info.filename
+                portable_key = portable_archive_path_key(name.rstrip("/"))
+                if portable_key is None:
                     errors.append(f"ZIP has unsafe path: {name}")
+                    can_extract = False
+                else:
+                    portable_keys.append(portable_key)
+                if not name.startswith(prefix) or not safe_relative(name.rstrip("/")):
+                    errors.append(f"ZIP has path outside the package root: {name}")
+                    can_extract = False
+                if info.is_dir():
+                    errors.append(f"ZIP contains an unexpected directory entry: {name}")
+                    can_extract = False
+                unix_mode = info.external_attr >> 16
+                file_type = stat.S_IFMT(unix_mode)
+                if info.create_system == 3 and file_type not in {0, stat.S_IFREG}:
+                    errors.append(f"ZIP contains a non-regular file: {name}")
+                    can_extract = False
+                if info.compress_type != zipfile.ZIP_STORED:
+                    errors.append(f"ZIP member is not stored reproducibly: {name}")
+                    can_extract = False
+                if info.flag_bits & 0x1:
+                    errors.append(f"ZIP contains an encrypted member: {name}")
+                    can_extract = False
+                if info.file_size > 20 * 1024 * 1024:
+                    errors.append(f"ZIP member exceeds the 20 MiB limit: {name}")
+                    can_extract = False
+                expanded_size += info.file_size
+            if len(portable_keys) != len(set(portable_keys)):
+                errors.append("ZIP contains paths that collide on supported filesystems")
+                can_extract = False
+            if expanded_size > 100 * 1024 * 1024:
+                errors.append("ZIP expanded payload exceeds the 100 MiB limit")
+                can_extract = False
             files = {
                 name[len(prefix):]
                 for name in names
                 if name.startswith(prefix) and not name.endswith("/")
             }
-            manifest = json.loads(package.read(prefix + "manifest.json").decode("utf-8"))
+            manifest = json_loads_strict(package.read(prefix + "manifest.json").decode("utf-8"))
             sums = checksum_records(package.read(prefix + "SHA256SUMS.txt").decode("utf-8"))
             payload_paths = files - {"manifest.json", "SHA256SUMS.txt"}
-            online_only = payload_paths & {"404.html", "robots.txt"}
-            if online_only:
-                errors.append(f"ZIP contains online-only files: {sorted(online_only)}")
-            records = manifest.get("files", [])
-            declared = {record.get("path") for record in records if isinstance(record, dict)}
+            if payload_paths != expected_payload_paths:
+                errors.append(
+                    "ZIP payload differs from the authoritative offline file set "
+                    f"(missing: {sorted(expected_payload_paths - payload_paths)}; "
+                    f"extra: {sorted(payload_paths - expected_payload_paths)})"
+                )
+            expected_identity = {
+                "schemaVersion": "1.0.0",
+                "artifact": "codex-tutorial-cn-offline",
+                "version": version,
+                "status": json_loads_strict((root / "registry/modules-v1.json").read_text(encoding="utf-8"))["status"],
+                "generatedDate": chapter_config["site"]["date"],
+                "entry": "index.html",
+            }
+            for field, expected in expected_identity.items():
+                if manifest.get(field) != expected:
+                    errors.append(f"offline manifest {field} differs from the release identity")
+            records = manifest.get("files")
+            if not isinstance(records, list):
+                errors.append("offline manifest files must be an array")
+                records = []
+            declared_list = [record.get("path") for record in records if isinstance(record, dict)]
+            if len(declared_list) != len(records):
+                errors.append("offline manifest contains a non-object file record")
+            if len(declared_list) != len(set(declared_list)):
+                errors.append("offline manifest contains duplicate paths")
+            declared = set(declared_list)
             if declared != payload_paths or set(sums) != payload_paths:
                 errors.append("manifest/checksum file set differs from ZIP payload")
             for record in records:
                 relative = record.get("path")
-                if relative not in payload_paths:
+                if not isinstance(relative, str) or not safe_relative(relative) or relative not in payload_paths:
                     continue
                 payload = package.read(prefix + relative)
                 digest = sha256(payload)
@@ -1098,7 +1591,19 @@ def check_offline_zip(root: Path, chapter_config: dict, strict: bool) -> list[st
                     or sums.get(relative) != digest
                 ):
                     errors.append(f"manifest/checksum mismatch: {relative}")
-            if not errors:
+            online_index = (root / "index.html").read_text(encoding="utf-8")
+            online_download = (
+                f'<a class="btn ghost" href="downloads/{archive.name}" download>'
+                '下载离线版（ZIP）</a>'
+            )
+            offline_marker = '<span class="btn ghost" aria-disabled="true">当前已是离线版</span>'
+            if online_index.count(online_download) != 1:
+                errors.append("online index does not contain the canonical offline download action")
+            else:
+                expected_index = online_index.replace(online_download, offline_marker, 1).encode("utf-8")
+                if package.read(prefix + "index.html") != expected_index:
+                    errors.append("offline index differs from the deterministic offline projection")
+            if can_extract:
                 with tempfile.TemporaryDirectory(prefix="codex-tutorial-check-") as directory:
                     package.extractall(directory)
                     package_root = Path(directory) / "codex-tutorial-cn"
@@ -1110,6 +1615,11 @@ def check_offline_zip(root: Path, chapter_config: dict, strict: bool) -> list[st
                     errors.extend(check_public_text_safety(package_root, payload_paths | MANAGED_METADATA))
                     module_errors, _ = check_module_registry(package_root, strict)
                     errors.extend(f"module catalog: {message}" for message in module_errors)
+                    for relative in sorted(payload_paths - {"index.html"}):
+                        online_path = root.joinpath(*relative.split("/"))
+                        offline_path = package_root.joinpath(*relative.split("/"))
+                        if not online_path.is_file() or online_path.read_bytes() != offline_path.read_bytes():
+                            errors.append(f"{relative}: offline file differs from online artifact")
     except Exception as error:
         errors.append(f"ZIP cannot be validated: {error}")
     return errors
@@ -1178,8 +1688,13 @@ def main() -> int:
     parser.add_argument("--verify-generated", action="store_true", help="rebuild in a temporary copy and compare bytes")
     arguments = parser.parse_args()
 
-    config = json.loads((ROOT / "src/chapters.json").read_text(encoding="utf-8"))
+    try:
+        config = json_loads_strict((ROOT / "src/chapters.json").read_text(encoding="utf-8"))
+    except Exception as error:
+        print(f"[ERROR] chapter config cannot be read: {error}")
+        return 1
     errors, warnings = [], []
+    errors.extend(check_repository_tree(ROOT))
     site_errors, page_count, link_count = check_site_tree(ROOT, config)
     errors.extend(site_errors)
     expected_manifest_paths = managed_public_paths(ROOT, config)

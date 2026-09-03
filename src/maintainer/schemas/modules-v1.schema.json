@@ -13,6 +13,7 @@
     "contentPipeline",
     "verificationStates",
     "verificationRecords",
+    "retirementRecords",
     "legacyChapterPlaceholders",
     "collections",
     "taskTypes",
@@ -71,6 +72,13 @@
       "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/verificationRecord"
+      }
+    },
+    "retirementRecords": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/retirementRecord"
       }
     },
     "legacyChapterPlaceholders": {
@@ -533,7 +541,8 @@
       "properties": {
         "author": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "url": {
           "type": "string",
@@ -542,11 +551,13 @@
         },
         "license": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "pinnedVersion": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "reviewDate": {
           "type": "string",
@@ -608,7 +619,8 @@
           "oneOf": [
             {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "pattern": "\\S"
             },
             {
               "type": "null"
@@ -617,13 +629,15 @@
         },
         "productVersion": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "extensionVersion": {
           "oneOf": [
             {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "pattern": "\\S"
             },
             {
               "type": "null"
@@ -632,7 +646,8 @@
         },
         "inputClass": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "evidenceId": {
           "type": "string",
@@ -660,6 +675,48 @@
             "maintainer",
             "independent-reviewer",
             "device-owner"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "retirementRecord": {
+      "type": "object",
+      "required": [
+        "unitId",
+        "retiredDate",
+        "reason",
+        "replacementPath"
+      ],
+      "properties": {
+        "unitId": {
+          "type": "string",
+          "oneOf": [
+            {
+              "pattern": "^CDX-M-[0-9]{4}$"
+            },
+            {
+              "pattern": "^PRM-[A-Z]{3}-[0-9]{4}$"
+            }
+          ]
+        },
+        "retiredDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "replacementPath": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/safePublicPath"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       },
@@ -974,8 +1031,7 @@
               "verificationState": {
                 "enum": [
                   "verified",
-                  "verified-with-limitations",
-                  "unsupported"
+                  "verified-with-limitations"
                 ]
               },
               "verificationDate": {

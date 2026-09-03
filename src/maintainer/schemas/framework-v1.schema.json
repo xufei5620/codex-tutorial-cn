@@ -531,7 +531,12 @@
       ],
       "properties": {
         "currentDecision": {
-          "type": "string"
+          "enum": [
+            "course-beta-in-development",
+            "course-acceptance-pending",
+            "course-stable-approved",
+            "course-retired"
+          ]
         },
         "requiredBeforeStable": {
           "type": "array",
@@ -557,10 +562,10 @@
           "type": "string"
         },
         "final": {
-          "const": false
+          "type": "boolean"
         },
         "countsAsCompletedCourseContent": {
-          "const": false
+          "type": "boolean"
         },
         "reviewPolicy": {
           "type": "string"
@@ -571,6 +576,41 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "stable"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseGate": {
+            "properties": {
+              "currentDecision": {
+                "const": "course-stable-approved"
+              }
+            }
+          },
+          "currentSeedContent": {
+            "properties": {
+              "final": {
+                "const": true
+              },
+              "countsAsCompletedCourseContent": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "pipelineState": {
       "enum": [

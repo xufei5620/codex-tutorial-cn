@@ -3,7 +3,7 @@
   site/     —— 离线多文件站点（仓库用，双击 index.html 即可阅读，无 JavaScript）
   preview.html —— 单页预览（claude.ai artifact 用，含极少量 JavaScript 做路由）
 """
-import json, re, os, shutil, hashlib, datetime, sys, tempfile, zipfile
+import html, json, re, os, shutil, hashlib, datetime, sys, tempfile, zipfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))          # 仓库里的 src/
 CONTENT = os.path.join(ROOT, 'content')
@@ -14,7 +14,25 @@ GENERATED = ['index.html', '404.html', 'robots.txt', 'prompts.html', 'README.md'
              'assets', 'downloads', 'deploy', 'templates', 'specs', 'schemas', 'registry',
              'maintenance-release.html', 'notion-workflow.html', 'source-research.html'] + [f'ch{i:02d}.html' for i in range(1, 100)]
 
-cfg = json.load(open(os.path.join(ROOT, 'chapters.json'), encoding='utf-8'))
+def reject_duplicate_json_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f'duplicate JSON key: {key!r}')
+        result[key] = value
+    return result
+
+
+def load_json(path):
+    with open(path, encoding='utf-8') as handle:
+        return json.load(handle, object_pairs_hook=reject_duplicate_json_keys)
+
+
+cfg = load_json(os.path.join(ROOT, 'chapters.json'))
+MODULES_CFG = load_json(os.path.join(ROOT, 'modules-v1.json'))
+UNIT_BY_ID = {unit['id']: unit for unit in MODULES_CFG['units']}
+COLLECTION_TITLE = {item['key']: item['title'] for item in MODULES_CFG['collections']}
+TASK_TITLE = {item['key']: item['title'] for item in MODULES_CFG['taskTypes']}
 SITE_TITLE = cfg['site']['title']
 TAGLINE = cfg['site']['tagline']
 CH = cfg['chapters']
@@ -31,6 +49,11 @@ STATUS_LABEL = {
     'stable': '稳定',
     'retired': '已退役',
 }
+PIPELINE_INDEX = {status: index for index, status in enumerate(STATUS_LABEL)}
+FORMALLY_REVIEWED = {'editorial-reviewed', 'verification', 'acceptance-ready', 'stable'}
+ARTIFACT_STATUSES = {
+    'draft-seed-unverified', 'review-in-progress', 'acceptance-ready', 'stable', 'retired',
+}
 
 css = open(os.path.join(CONTENT, 'style.css'), encoding='utf-8').read()
 ZIP_NAME = f"codex-tutorial-cn-v{cfg['site']['version']}-offline.zip"
@@ -39,9 +62,28 @@ NOT_FOUND = '''  <header class="hero"><div class="hero-in"><p class="eyebrow">40
   <main id="content"><p>如果你是从别处点链接过来的，请按第 11 章 11.5 的方式告诉维护者是哪个链接失效了。</p></main>'''
 
 TEXT_SUFFIXES = {
-    '.conf', '.css', '.html', '.json', '.md', '.sha256', '.svg', '.txt', '.xml', '.yml', '.yaml',
+    '.cfg', '.conf', '.css', '.html', '.ini', '.json', '.md', '.sha256', '.svg', '.toml', '.txt', '.xml', '.yml', '.yaml',
 }
 TEXT_NAMES = {'Caddyfile', 'Dockerfile'}
+BINARY_SUFFIXES = {'.avif', '.gif', '.ico', '.jpeg', '.jpg', '.png', '.webp'}
+
+
+def validate_binary_asset(path, suffix):
+    if os.path.getsize(path) > 20 * 1024 * 1024:
+        raise ValueError(f'public binary asset exceeds 20 MiB: {path}')
+    with open(path, 'rb') as handle:
+        header = handle.read(32)
+    signatures = {
+        '.png': header.startswith(b'\x89PNG\r\n\x1a\n'),
+        '.jpg': header.startswith(b'\xff\xd8\xff'),
+        '.jpeg': header.startswith(b'\xff\xd8\xff'),
+        '.gif': header.startswith((b'GIF87a', b'GIF89a')),
+        '.webp': header.startswith(b'RIFF') and header[8:12] == b'WEBP',
+        '.ico': header.startswith(b'\x00\x00\x01\x00'),
+        '.avif': len(header) >= 12 and header[4:8] == b'ftyp' and b'avif' in header[8:32],
+    }
+    if not signatures.get(suffix, False):
+        raise ValueError(f'public binary asset does not match its file type: {path}')
 
 
 def write_text(path, text):
@@ -56,19 +98,32 @@ def write_json(path, value):
 
 
 def copy_public_file(source, target):
+    if os.path.islink(source):
+        raise ValueError(f'public source must not be a symbolic link: {source}')
     suffix = os.path.splitext(source)[1].lower()
     if suffix in TEXT_SUFFIXES or os.path.basename(source) in TEXT_NAMES:
         with open(source, encoding='utf-8') as handle:
-            write_text(target, handle.read())
-    else:
+            payload = handle.read()
+        if suffix == '.json':
+            json.loads(payload, object_pairs_hook=reject_duplicate_json_keys)
+        write_text(target, payload)
+    elif suffix in BINARY_SUFFIXES:
+        validate_binary_asset(source, suffix)
         os.makedirs(os.path.dirname(target), exist_ok=True)
         shutil.copy2(source, target)
+    else:
+        raise ValueError(f'unsupported public file type: {source}')
 
 
 def copy_public_path(source, target):
+    if os.path.islink(source):
+        raise ValueError(f'public source must not be a symbolic link: {source}')
     if os.path.isdir(source):
         for directory, names, files in os.walk(source):
             names.sort()
+            for name in names:
+                if os.path.islink(os.path.join(directory, name)):
+                    raise ValueError(f'public source must not be a symbolic link: {os.path.join(directory, name)}')
             relative = os.path.relpath(directory, source)
             destination = target if relative == '.' else os.path.join(target, relative)
             os.makedirs(destination, exist_ok=True)
@@ -80,6 +135,102 @@ def copy_public_path(source, target):
 
 def read(name):
     return open(os.path.join(CONTENT, name + '.html'), encoding='utf-8').read()
+
+
+def apply_unit_metadata(source):
+    def annotate(match):
+        opening, unit_id, body, closing = match.groups()
+        unit = UNIT_BY_ID.get(unit_id)
+        if unit is None:
+            raise ValueError(f'HTML references unknown data-unit-id: {unit_id}')
+        opening = re.sub(
+            r'\sdata-(?:content-status|verification-state|collection-keys|task-key)=(?:"[^"]*"|\'[^\']*\')',
+            '',
+            opening,
+        )
+        metadata = (
+            f' data-content-status="{html.escape(unit["contentStatus"], quote=True)}"'
+            f' data-verification-state="{html.escape(unit["verificationState"], quote=True)}"'
+        )
+        if unit['kind'] == 'prompt-card':
+            collection_label = '、'.join(COLLECTION_TITLE[key] for key in unit['collectionKeys'])
+            task_label = TASK_TITLE[unit['taskKey']]
+            metadata += (
+                f' data-collection-keys="{html.escape(" ".join(unit["collectionKeys"]), quote=True)}"'
+                f' data-task-key="{html.escape(unit["taskKey"], quote=True)}"'
+            )
+            body, badge_count = re.subn(
+                r'<span class="badge [^"]+">[^<]+</span>',
+                f'<span class="badge {unit["contentStatus"]}">{STATUS_LABEL[unit["contentStatus"]]}</span>',
+                body,
+                count=1,
+            )
+            if badge_count != 1:
+                raise ValueError(f'{unit_id}: prompt card must contain exactly one heading status badge')
+            body, taxonomy_count = re.subn(
+                r'(<dt>\s*行业\s*/\s*任务分类\s*</dt>\s*<dd>).*?(</dd>)',
+                rf'\g<1>{html.escape(collection_label)}｜{html.escape(task_label)}\g<2>',
+                body,
+                count=1,
+                flags=re.S,
+            )
+            if taxonomy_count != 1:
+                raise ValueError(f'{unit_id}: prompt card taxonomy field is missing')
+        opening = opening.replace(f'data-unit-id="{unit_id}"', f'data-unit-id="{unit_id}"{metadata}')
+        return opening + body + closing
+
+    return re.sub(
+        r'(<section\b[^>]*\bdata-unit-id="([^"]+)"[^>]*>)(.*?)(</section>)',
+        annotate,
+        source,
+        flags=re.S,
+    )
+
+
+def apply_prompt_overview(source):
+    for unit in (item for item in MODULES_CFG['units'] if item['kind'] == 'prompt-card'):
+        unit_id = unit['id']
+        pattern = re.compile(
+            rf'(<tr><td>{re.escape(unit_id)}</td><td><a href="#{re.escape(unit["sourceAnchor"])}">)'
+            r'(.*?)(</a></td><td>)(.*?)(</td><td><span class="badge )[^\"]+(\">)'
+            r'(.*?)(</span></td></tr>)',
+            flags=re.S,
+        )
+
+        def replace_row(match):
+            return (
+                match.group(1)
+                + html.escape(unit['title'])
+                + match.group(3)
+                + html.escape(TASK_TITLE[unit['taskKey']])
+                + match.group(5)
+                + unit['contentStatus']
+                + match.group(6)
+                + STATUS_LABEL[unit['contentStatus']]
+                + match.group(8)
+            )
+
+        source, count = pattern.subn(replace_row, source, count=1)
+        if count != 1:
+            raise ValueError(f'{unit_id}: prompt overview row is missing')
+    return source
+
+
+def apply_page_metadata(page_id, source):
+    source = apply_unit_metadata(source)
+    if page_id in CH:
+        status = CH[page_id]['status']
+        source, count = re.subn(
+            r'(<p class="kicker">第 \d+ 章 )<span class="badge [^"]+">[^<]+</span>',
+            rf'\g<1><span class="badge {status}">{STATUS_LABEL[status]}</span>',
+            source,
+            count=1,
+        )
+        if count != 1:
+            raise ValueError(f'{page_id}: chapter status badge is missing')
+    elif page_id == 'prompts':
+        source = apply_prompt_overview(source)
+    return source
 
 # ---------- 链接与锚点 ----------
 def resolve_links(html, mode, page_id):
@@ -121,7 +272,12 @@ def sidebar(current, mode):
         cur = ' is-current' if eid == current else ''
         out.append(f'      <a class="side-entry{cur}" href="{L(eid)}">{e["title"]}</a>')
     out.append('    </nav>')
-    out.append('    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li><li><span class="dot outline"></span>大纲</li></ul></div>')
+    visible_statuses = sorted({chapter['status'] for chapter in CH.values()}, key=PIPELINE_INDEX.__getitem__)
+    legend = ''.join(
+        f'<li><span class="dot {status}"></span>{STATUS_LABEL[status]}</li>'
+        for status in visible_statuses
+    )
+    out.append(f'    <div class="side-foot"><ul class="legend">{legend}</ul></div>')
     return '\n'.join(out)
 
 def pager(cid, mode):
@@ -141,7 +297,7 @@ def pager(cid, mode):
     return prev_html + '\n' + next_html
 
 def doc_page(pid, mode):
-    body = read(pid)
+    body = apply_page_metadata(pid, read(pid))
     if mode == 'single':
         body = localize_anchors(body, pid)
     body = resolve_links(body, mode, pid)
@@ -162,7 +318,7 @@ def doc_page(pid, mode):
 def home_body(mode, offline=False):
     L = lambda t, a=None: resolve_links('{{link:%s%s}}' % (t, '#' + a if a else ''), mode, 'home')
     seeded = sum(1 for c in CH.values() if c['status'] != 'outline')
-    reviewed = sum(1 for c in CH.values() if c['status'] == 'reviewed')
+    reviewed = sum(1 for c in CH.values() if c['status'] in FORMALLY_REVIEWED)
     toc = []
     for p in PARTS:
         toc.append(f'    <section class="part">\n      <div class="part-head"><h2>{p["label"]}</h2><p>{p["desc"]}</p></div>\n      <ol class="toc">')
@@ -194,6 +350,21 @@ def home_body(mode, offline=False):
         <li><span class="dead" title="预览未收录，见仓库">来源复核模板 / 验证记录模板</span><span class="muted">复核与实测记录</span></li>
         <li><span class="dead" title="预览未收录，见仓库">框架登记表（JSON）</span><span class="muted">机器可读的进度与规则登记</span></li>
       </ul>'''
+    if MODULES_CFG['status'] == 'draft-seed-unverified':
+        progress_label = f'{seeded} / {len(CH)} 章已有草稿种子'
+        notice = ('全部 11 章均已有可读的「<strong>草稿种子</strong>」，但这些种子<strong>不算完成课程</strong>：'
+                  '内容依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未逐条复核或实测</strong>。')
+    elif MODULES_CFG['status'] == 'stable':
+        progress_label = f'{seeded} / {len(CH)} 章已有正式正文'
+        notice = '本版本已通过稳定版发布门槛；仍请结合每个单元标注的平台、复核日期与限制条件阅读。'
+    else:
+        progress_label = f'{seeded} / {len(CH)} 章已有正文'
+        notice = ('课程正在按内容单元逐条完成来源复核、编辑审校和平台验证；'
+                  '不同章节可能处于不同阶段，请以页面徽章和登记表为准。')
+    legend_html = ''.join(
+        f'<li>{badge(status)} 当前有章节处于此阶段</li>'
+        for status in sorted({chapter['status'] for chapter in CH.values()}, key=PIPELINE_INDEX.__getitem__)
+    )
     return f'''  <header class="hero">
     <div class="hero-in">
       <p class="eyebrow">零基础 · 在线 / 离线阅读 · Windows / macOS</p>
@@ -202,16 +373,15 @@ def home_body(mode, offline=False):
       <div class="hero-actions">
         <a class="btn" href="{L('ch01')}">从第 1 章开始</a>
         {('<span class="btn ghost" aria-disabled="true">当前已是离线版</span>' if offline else '<a class="btn ghost" href="downloads/' + ZIP_NAME + '" download>下载离线版（ZIP）</a>') if mode == 'multi' else ''}
-        <p class="progress">{seeded} / {len(CH)} 章已有草稿种子；正式审校 {reviewed} / {len(CH)} 章</p>
+        <p class="progress">{progress_label}；正式审校 {reviewed} / {len(CH)} 章</p>
       </div>
     </div>
   </header>
   <main id="content">
     <aside class="callout note" data-label="阅读须知">
-      <p>全部 11 章均已有可读的「<strong>草稿种子</strong>」，但这些种子<strong>不算完成课程</strong>：内容依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未逐条复核或实测</strong>。软件界面更新很快，若你看到的按钮名称与教程不同，以屏幕上实际显示为准，并欢迎反馈。每一章都会经过来源与权利审查、编辑审校和平台验证后才进入正式版本。</p>
+      <p>{notice} 软件界面更新很快，若你看到的按钮名称与教程不同，以屏幕上实际显示为准，并欢迎反馈。</p>
       <ul class="legend">
-        <li>{badge('draft')} 正文可读，待复核与实测</li>
-        <li>{badge('outline')} 只有规划，正文未写</li>
+        {legend_html}
       </ul>
     </aside>
 
@@ -278,7 +448,7 @@ def write_manifest_and_sums(root, artifact):
         'schemaVersion': '1.0.0',
         'artifact': artifact,
         'version': cfg['site']['version'],
-        'status': 'draft-seed-unverified',
+        'status': MODULES_CFG['status'],
         'generatedDate': cfg['site']['date'],
         'entry': 'index.html',
         'files': records,
@@ -327,7 +497,65 @@ def build_offline_zip(package_root, zip_path):
                 package.writestr(info, handle.read())
 
 
+def aggregate_content_status(units):
+    if not units:
+        raise ValueError('cannot aggregate an empty content unit set')
+    try:
+        return min((unit['contentStatus'] for unit in units), key=PIPELINE_INDEX.__getitem__)
+    except KeyError as error:
+        raise ValueError(f'unknown content status: {error.args[0]}') from None
+
+
+def validate_source_inputs():
+    if MODULES_CFG['contentVersion'] != cfg['site']['version']:
+        raise ValueError('modules-v1 contentVersion must match chapters.json site.version')
+    if MODULES_CFG['generatedDate'] != cfg['site']['date']:
+        raise ValueError('modules-v1 generatedDate must match chapters.json site.date')
+    if MODULES_CFG['status'] not in ARTIFACT_STATUSES:
+        raise ValueError(f'unsupported module catalog status: {MODULES_CFG["status"]}')
+    if len(UNIT_BY_ID) != len(MODULES_CFG['units']):
+        raise ValueError('modules-v1 contains duplicate unit IDs')
+
+    for chapter_id, chapter in CH.items():
+        chapter_units = [unit for unit in MODULES_CFG['units'] if unit['chapterId'] == chapter_id]
+        aggregate = aggregate_content_status(chapter_units)
+        if chapter['status'] != aggregate:
+            raise ValueError(
+                f'{chapter_id} status must equal the least-advanced registered unit status '
+                f'({chapter["status"]} != {aggregate})'
+            )
+    prompt_units = [unit for unit in MODULES_CFG['units'] if unit['kind'] == 'prompt-card']
+    prompt_status = aggregate_content_status(prompt_units)
+    if EXTRAS['prompts']['status'] != prompt_status:
+        raise ValueError(
+            'prompts entry status must equal the least-advanced registered prompt status '
+            f'({EXTRAS["prompts"]["status"]} != {prompt_status})'
+        )
+
+    framework = load_json(os.path.join(MAINT, 'framework-v1.json'))
+    expected_decisions = {
+        'draft-seed-unverified': 'course-beta-in-development',
+        'review-in-progress': 'course-beta-in-development',
+        'acceptance-ready': 'course-acceptance-pending',
+        'stable': 'course-stable-approved',
+        'retired': 'course-retired',
+    }
+    decision = framework['releaseGate']['currentDecision']
+    expected_decision = expected_decisions[MODULES_CFG['status']]
+    if decision != expected_decision:
+        raise ValueError(
+            'releaseGate.currentDecision must be explicitly advanced with the catalog status '
+            f'({decision} != {expected_decision})'
+        )
+    if MODULES_CFG['status'] == 'stable':
+        seed = framework['currentSeedContent']
+        if not seed.get('final') or not seed.get('countsAsCompletedCourseContent'):
+            raise ValueError('stable release requires currentSeedContent to be marked final course content')
+    return framework
+
+
 def build_site():
+    reg = validate_source_inputs()
     for name in GENERATED:
         p = os.path.join(SITE, name)
         if os.path.isdir(p): shutil.rmtree(p)
@@ -353,21 +581,14 @@ def build_site():
         copy_public_path(src, dst)
     # 登记表
     os.makedirs(os.path.join(SITE, 'registry'))
-    reg = json.load(open(os.path.join(MAINT, 'framework-v1.json'), encoding='utf-8'))
     reg['contentVersion'] = cfg['site']['version']
     reg['artifactVersion'] = cfg['site']['version']
-    reg['status'] = 'draft-seed-unverified'
+    reg['status'] = MODULES_CFG['status']
     reg['chapters'] = [{'number': CH[c]['num'], 'title': CH[c]['title'], 'status': CH[c]['status'], 'file': c + '.html'} for c in ORDER]
     reg['productNote'] = ('2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），'
                           '教程中的“Codex”指该应用左上角菜单中的 Codex 视图。')
     reg['generatedDate'] = cfg['site']['date']
-    reg['releaseGate']['currentDecision'] = 'course-beta-in-development'
     write_json(os.path.join(SITE, 'registry', 'framework-v1.json'), reg)
-    modules = json.load(open(os.path.join(ROOT, 'modules-v1.json'), encoding='utf-8'))
-    if modules['contentVersion'] != cfg['site']['version']:
-        raise ValueError('modules-v1 contentVersion must match chapters.json site.version')
-    if modules['generatedDate'] != cfg['site']['date']:
-        raise ValueError('modules-v1 generatedDate must match chapters.json site.date')
     copy_public_file(os.path.join(ROOT, 'modules-v1.json'), os.path.join(SITE, 'registry', 'modules-v1.json'))
     # README
     write_text(os.path.join(SITE, 'README.md'), readme())
@@ -398,7 +619,7 @@ def build_site():
     online_records.sort(key=lambda record: record['path'])
     online_manifest = {
         'schemaVersion': '1.0.0', 'artifact': 'codex-tutorial-cn-online',
-        'version': cfg['site']['version'], 'status': 'draft-seed-unverified',
+        'version': cfg['site']['version'], 'status': MODULES_CFG['status'],
         'generatedDate': cfg['site']['date'], 'entry': 'index.html', 'files': online_records,
     }
     write_json(os.path.join(SITE, 'manifest.json'), online_manifest)
@@ -417,6 +638,12 @@ def build_site():
 
 def readme():
     rows = '\n'.join(f"| {CH[c]['num']:02d} | [{CH[c]['title']}]({c}.html) | {STATUS_LABEL[CH[c]['status']]} |" for c in ORDER)
+    if MODULES_CFG['status'] == 'draft-seed-unverified':
+        release_note = '11 章均有「草稿种子」，但不算完成课程；内容依据官方文档撰写，尚未逐条复核或实测。'
+    elif MODULES_CFG['status'] == 'stable':
+        release_note = '本版本已通过稳定版发布门槛；具体平台与复核限制以内容单元目录为准。'
+    else:
+        release_note = '课程正在按内容单元逐条复核、审校与验证；各章进度见下表。'
     return f'''# {SITE_TITLE}
 
 写给第一次接触 AI 与 Codex 的中文读者的离线教程。不需要编程、命令行或 Git 基础。
@@ -425,7 +652,7 @@ def readme():
 
 **可选在线预览：** 如需把同一批生成页面放到服务器，再看 [deploy/DEPLOY.md](deploy/DEPLOY.md)。在线部署不是课程完成或正式发布的必要条件。
 
-**当前版本：** {cfg['site']['version']}（{cfg['site']['date']}）。11 章均有「草稿种子」，但不算完成课程；内容依据官方文档撰写，尚未逐条复核或实测。
+**当前版本：** {cfg['site']['version']}（{cfg['site']['date']}）。{release_note}
 
 > 2026 年 7 月 9 日起，Codex 桌面应用已并入「ChatGPT 桌面应用」（macOS / Windows）。本教程所说的 Codex，指该应用左上角菜单里的 **Codex** 视图。
 
