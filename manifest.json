@@ -13,13 +13,13 @@
     },
     {
       "path": "README.md",
-      "size": 3237,
-      "sha256": "9475b99da860a832fc55feffde824e4e37b9f54deed3afc6caf37aa27116f813"
+      "size": 3241,
+      "sha256": "78d1ecdd0fe21c448f1ea45ad405b40c874a294627290a88da4eaba23e2a04c2"
     },
     {
       "path": "assets/favicon.svg",
-      "size": 332,
-      "sha256": "0bb05ef07a4febb333368f5a71bb86580052c1c2c838bc8126b7e7db54f6e46e"
+      "size": 333,
+      "sha256": "c88c4f3dbd95d3894284d6cb23597686dd872a786711d9bc028009f89864fe7d"
     },
     {
       "path": "assets/style.css",
@@ -103,13 +103,13 @@
     },
     {
       "path": "deploy/nginx.conf",
-      "size": 1094,
-      "sha256": "31ee859fc721df27d3af2b7c8deb1dccbf70ef91c95c7aeecd7d09ff6643bf1e"
+      "size": 1122,
+      "sha256": "79d9d720572c66c5290a240a5f4e323ca138b63e1181fb0a231848003aca0e2c"
     },
     {
       "path": "deploy/nginx.docker.conf",
-      "size": 354,
-      "sha256": "c28b98aa9ca7fff12aafca4e99be6d83696594ccc63b6270dabc7a1176ec0362"
+      "size": 366,
+      "sha256": "ac9e4fed6825fca730c0ed80969145cf98b963247cbd807158a9aff19364fac2"
     },
     {
       "path": "index.html",
@@ -133,8 +133,13 @@
     },
     {
       "path": "registry/framework-v1.json",
-      "size": 8618,
-      "sha256": "9b8341305db60549ab50d4e8fea93096abea814a39de2689fa9777853a382c74"
+      "size": 8687,
+      "sha256": "37e5c79db381c3c80325df69488bb007c3035f85ebc9c571a1bb134b2b91978f"
+    },
+    {
+      "path": "requirements-dev.txt",
+      "size": 19,
+      "sha256": "44ff0dc2f1e40311b8239e83146749ab9d9cee2a650e699f5464755d552ee20d"
     },
     {
       "path": "robots.txt",
@@ -143,8 +148,8 @@
     },
     {
       "path": "schemas/framework-v1.schema.json",
-      "size": 14320,
-      "sha256": "0a20672303e26e51410acb1514bff857fdd06993f98523a4fc149b42c1dbe1d0"
+      "size": 14586,
+      "sha256": "e2618cc4569b8525e2646d92a704e637128c092b75ad1ea3dde7ab2e3613713c"
     },
     {
       "path": "source-research.html",
@@ -155,6 +160,16 @@
       "path": "specs/2026-09-01-framework-first-addendum.html",
       "size": 7663,
       "sha256": "662eca7d03de34a8081931b755205b5778675c63474bf7f1d51bf6cbb4f5cd98"
+    },
+    {
+      "path": "specs/2026-09-03-formal-course-v1-design.html",
+      "size": 7029,
+      "sha256": "c798194d890c33fee4095b7f9a3696f52cbbb90d59c4937de4e7cadae6c31385"
+    },
+    {
+      "path": "specs/2026-09-03-github-baseline-hardening-design.html",
+      "size": 7037,
+      "sha256": "e02c7557aac891f6f062c0dc77d86617d617401ff675fe97f3f5d84f6545d510"
     },
     {
       "path": "templates/module-template.html",
@@ -185,6 +200,26 @@
       "path": "templates/verification-template.html",
       "size": 2857,
       "sha256": "794d78fcd94803bcb8ed0ff8a83708defabc416e6e74247280e4e0249dbbad18"
+    },
+    {
+      "path": "tests/__pycache__/test_build.cpython-314.pyc",
+      "size": 10501,
+      "sha256": "9c79695f4d0194d46ef08e9490f1302fbd2041b1ba26001a2628eb075e5baa2d"
+    },
+    {
+      "path": "tests/__pycache__/test_check.cpython-314.pyc",
+      "size": 1845,
+      "sha256": "9baaccff5c171ac3ba7aa36524b83666e96f785b61559d4b0b240d8406419b28"
+    },
+    {
+      "path": "tests/test_build.py",
+      "size": 4808,
+      "sha256": "02b7990fb1b48e79ea6bf4366c237927032ba05bc7554465b0352fb7cd3336b3"
+    },
+    {
+      "path": "tests/test_check.py",
+      "size": 819,
+      "sha256": "15ee07ba0b125af081d533a7a8f51fe8a8f2098226c5c0bbc2d5cbb5b792be27"
     }
   ]
 }

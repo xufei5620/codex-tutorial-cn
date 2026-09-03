@@ -29,6 +29,43 @@ FAVICON = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect w
 NOT_FOUND = '''  <header class="hero"><div class="hero-in"><p class="eyebrow">404</p><h1>找不到这一页</h1><p class="lede">链接可能拼错了，或者这一页已经改了名字。</p><div class="hero-actions"><a class="btn" href="/">回到目录</a></div></div></header>
   <main id="content"><p>如果你是从别处点链接过来的，请按第 11 章 11.5 的方式告诉维护者是哪个链接失效了。</p></main>'''
 
+TEXT_SUFFIXES = {'.css', '.html', '.json', '.md', '.txt', '.xml', '.yml', '.yaml'}
+TEXT_NAMES = {'Caddyfile', 'Dockerfile'}
+
+
+def write_text(path, text):
+    normalized = str(text).replace('\r\n', '\n').replace('\r', '\n').rstrip('\n') + '\n'
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write(normalized)
+
+
+def write_json(path, value):
+    write_text(path, json.dumps(value, ensure_ascii=False, indent=2))
+
+
+def copy_public_file(source, target):
+    suffix = os.path.splitext(source)[1].lower()
+    if suffix in TEXT_SUFFIXES or os.path.basename(source) in TEXT_NAMES:
+        with open(source, encoding='utf-8') as handle:
+            write_text(target, handle.read())
+    else:
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copy2(source, target)
+
+
+def copy_public_path(source, target):
+    if os.path.isdir(source):
+        for directory, names, files in os.walk(source):
+            names.sort()
+            relative = os.path.relpath(directory, source)
+            destination = target if relative == '.' else os.path.join(target, relative)
+            os.makedirs(destination, exist_ok=True)
+            for name in sorted(files):
+                copy_public_file(os.path.join(directory, name), os.path.join(destination, name))
+    else:
+        copy_public_file(source, target)
+
 
 def read(name):
     return open(os.path.join(CONTENT, name + '.html'), encoding='utf-8').read()
@@ -214,38 +251,37 @@ def build_site():
         if os.path.isdir(p): shutil.rmtree(p)
         elif os.path.exists(p): os.remove(p)
     os.makedirs(os.path.join(SITE, 'assets'))
-    open(os.path.join(SITE, 'assets', 'style.css'), 'w', encoding='utf-8').write(css)
-    open(os.path.join(SITE, 'assets', 'favicon.svg'), 'w', encoding='utf-8').write(FAVICON)
-    open(os.path.join(SITE, 'index.html'), 'w', encoding='utf-8').write(
-        page_shell(SITE_TITLE, 'home', home_body('multi')))
-    open(os.path.join(SITE, '404.html'), 'w', encoding='utf-8').write(
-        page_shell(f'找不到页面｜{SITE_TITLE}', 'home', NOT_FOUND, css_href='/assets/style.css'))
-    open(os.path.join(SITE, 'robots.txt'), 'w', encoding='utf-8').write('User-agent: *\nAllow: /\nDisallow: /templates/\nDisallow: /specs/\nDisallow: /schemas/\nDisallow: /registry/\nDisallow: /src/\nDisallow: /deploy/\n')
-    shutil.copytree(os.path.join(ROOT, 'deploy'), os.path.join(SITE, 'deploy'))
+    write_text(os.path.join(SITE, 'assets', 'style.css'), css)
+    write_text(os.path.join(SITE, 'assets', 'favicon.svg'), FAVICON)
+    write_text(os.path.join(SITE, 'index.html'), page_shell(SITE_TITLE, 'home', home_body('multi')))
+    write_text(os.path.join(SITE, '404.html'), page_shell(f'找不到页面｜{SITE_TITLE}', 'home', NOT_FOUND, css_href='/assets/style.css'))
+    write_text(os.path.join(SITE, 'robots.txt'), 'User-agent: *\nAllow: /\nDisallow: /templates/\nDisallow: /specs/\nDisallow: /schemas/\nDisallow: /registry/\nDisallow: /src/\nDisallow: /deploy/\n')
+    copy_public_path(os.path.join(ROOT, 'deploy'), os.path.join(SITE, 'deploy'))
     for cid in ORDER:
         c = CH[cid]
-        open(os.path.join(SITE, cid + '.html'), 'w', encoding='utf-8').write(
-            page_shell(f'第 {c["num"]} 章 {c["title"]}｜{SITE_TITLE}', '', doc_page(cid, 'multi')))
+        write_text(os.path.join(SITE, cid + '.html'),
+                   page_shell(f'第 {c["num"]} 章 {c["title"]}｜{SITE_TITLE}', '', doc_page(cid, 'multi')))
     for eid, e in EXTRAS.items():
-        open(os.path.join(SITE, eid + '.html'), 'w', encoding='utf-8').write(
-            page_shell(f'{e["title"]}｜{SITE_TITLE}', '', doc_page(eid, 'multi')))
+        write_text(os.path.join(SITE, eid + '.html'),
+                   page_shell(f'{e["title"]}｜{SITE_TITLE}', '', doc_page(eid, 'multi')))
     # 维护者文件：从原仓库原样复制
     for name in ['maintenance-release.html', 'notion-workflow.html', 'source-research.html', 'templates', 'specs', 'schemas']:
         src = os.path.join(MAINT, name)
         dst = os.path.join(SITE, name)
-        (shutil.copytree if os.path.isdir(src) else shutil.copy2)(src, dst)
+        copy_public_path(src, dst)
     # 登记表
     os.makedirs(os.path.join(SITE, 'registry'))
     reg = json.load(open(os.path.join(MAINT, 'framework-v1.json'), encoding='utf-8'))
-    reg['version'] = cfg['site']['version']
+    reg['contentVersion'] = cfg['site']['version']
+    reg['artifactVersion'] = cfg['site']['version']
     reg['status'] = 'draft-complete-unverified'
     reg['chapters'] = [{'number': CH[c]['num'], 'title': CH[c]['title'], 'status': CH[c]['status'], 'file': c + '.html'} for c in ORDER]
     reg['productNote'] = ('2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），'
                           '教程中的“Codex”指该应用左上角菜单中的 Codex 视图。')
     reg['generatedDate'] = cfg['site']['date']
-    json.dump(reg, open(os.path.join(SITE, 'registry', 'framework-v1.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+    write_json(os.path.join(SITE, 'registry', 'framework-v1.json'), reg)
     # README
-    open(os.path.join(SITE, 'README.md'), 'w', encoding='utf-8').write(readme())
+    write_text(os.path.join(SITE, 'README.md'), readme())
     # manifest + SHA256SUMS
     files = []
     for dp, dns, fns in os.walk(SITE):
@@ -260,9 +296,8 @@ def build_site():
     files.sort(key=lambda f: f['path'])
     manifest = {'schemaVersion': '1.0.0', 'artifact': 'codex-tutorial-cn', 'version': cfg['site']['version'],
                 'status': 'draft-complete-unverified', 'generatedDate': cfg['site']['date'], 'entry': 'index.html', 'files': files}
-    json.dump(manifest, open(os.path.join(SITE, 'manifest.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
-    open(os.path.join(SITE, 'SHA256SUMS.txt'), 'w', encoding='utf-8').write(
-        ''.join(f"{f['sha256']}  {f['path']}\n" for f in files))
+    write_json(os.path.join(SITE, 'manifest.json'), manifest)
+    write_text(os.path.join(SITE, 'SHA256SUMS.txt'), ''.join(f"{f['sha256']}  {f['path']}\n" for f in files))
     # 离线版 ZIP（放进 downloads/，不计入清单，避免自包含）
     import zipfile
     dl = os.path.join(SITE, 'downloads'); os.makedirs(dl)
@@ -316,7 +351,7 @@ def readme():
 
 ## 维护约定
 
-**改内容的正确姿势：** 编辑 `src/content/` 里对应章节的 HTML 片段（章节标题、状态在 `src/chapters.json`），运行 `python3 src/build.py`（只需要 Python 3，无第三方依赖），根目录下的所有页面、README、清单、离线 ZIP 会一起重新生成；再运行 `python3 src/check.py` 检查链接、锚点、徽章与登记表；把生成结果一并提交。跨页链接写成 `{{link:ch04}}` 或 `{{link:prompts#prm-com-0001}}`，构建时自动换成正确地址。
+**改内容的正确姿势：** 编辑 `src/content/` 里对应章节的 HTML 片段（章节标题、状态在 `src/chapters.json`），运行 `python3 src/build.py`（只需要 Python 3，无第三方依赖），根目录下的所有页面、README、清单、离线 ZIP 会一起重新生成；再运行 `python3 src/check.py` 检查链接、锚点、徽章与登记表；把生成结果一并提交。跨页链接写成 `{{{{link:ch04}}}}` 或 `{{{{link:prompts#prm-com-0001}}}}`，构建时自动换成正确地址。
 
 每一章底部都有「维护者信息」：模块 ID、风险级别、来源与权利、验证状态、复核日期。新增或修改内容请使用 `templates/` 中的模板，并在第 11 章更新版本记录与验证状态表。来源清单见第 11 章 11.2。
 '''
@@ -354,7 +389,7 @@ def build_preview():
 {chr(10).join(routes)}
 {js}
 '''
-    open(os.path.join(ROOT, 'preview.html'), 'w', encoding='utf-8').write(html)  # 内部预览用，不属于站点
+    write_text(os.path.join(ROOT, 'preview.html'), html)  # 内部预览用，不属于站点
 
 if __name__ == '__main__':
     build_site()

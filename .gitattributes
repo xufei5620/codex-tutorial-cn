@@ -1,0 +1,15 @@
+* text=auto
+*.css text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.txt text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+Caddyfile text eol=lf
+Dockerfile text eol=lf
+*.zip binary
+*.png binary
+*.jpg binary

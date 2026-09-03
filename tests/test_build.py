@@ -73,6 +73,29 @@ class BuildBaselineTests(unittest.TestCase):
             self.assertEqual(second.returncode, 0, second.stderr.decode("utf-8", errors="replace"))
             self.assertEqual(managed_tree(root), first_tree)
 
+    def test_generated_registry_separates_framework_content_and_artifact_versions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            result = run_build(root)
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            registry = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+            config = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
+            self.assertEqual(registry["frameworkVersion"], "1.0.0")
+            self.assertEqual(registry["contentVersion"], config["site"]["version"])
+            self.assertEqual(registry["artifactVersion"], config["site"]["version"])
+            self.assertNotIn("version", registry)
+
+    def test_generated_readme_documents_the_real_double_brace_link_macro(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            result = run_build(root)
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            readme = (root / "README.md").read_text(encoding="utf-8")
+            self.assertIn("{{link:ch04}}", readme)
+            self.assertIn("{{link:prompts#prm-com-0001}}", readme)
+
     def test_offline_manifest_declares_only_files_that_are_inside_the_zip(self):
         config = json.loads((REPO / "src/chapters.json").read_text(encoding="utf-8"))
         version = config["site"]["version"]
