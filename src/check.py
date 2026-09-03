@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from urllib.parse import unquote, urlsplit
 import zipfile
 
 
@@ -22,6 +23,7 @@ EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads"
 RUNTIME_TAGS = {"link", "img", "script", "iframe", "source", "audio", "video", "track", "object", "embed"}
 RUNTIME_ATTRIBUTES = {"href", "src", "data", "poster", "srcset"}
 EXTERNAL_SCHEMES = ("http://", "https://", "mailto:", "tel:")
+EMBEDDED_SCHEMES = ("data:",)
 UNSAFE_SCHEMES = ("javascript:", "vbscript:")
 MANAGED_ROOT_FILES = {
     "404.html",
@@ -34,17 +36,53 @@ MANAGED_ROOT_FILES = {
 }
 MANAGED_ROOT_DIRECTORIES = {"assets", "deploy", "registry", "schemas", "specs", "templates"}
 MANAGED_METADATA = {"manifest.json", "SHA256SUMS.txt"}
+DEVELOPER_ROOT_ENTRIES = {
+    ".dockerignore",
+    ".git",
+    ".gitattributes",
+    ".github",
+    ".gitignore",
+    ".venv",
+    "__pycache__",
+    "requirements-dev.txt",
+    "src",
+    "tests",
+}
 
 
 def is_remote_url(value: str) -> bool:
     return value.strip().lower().startswith(("http://", "https://", "//"))
 
 
+def srcset_urls(value: str) -> list[str]:
+    return [candidate.strip().split()[0] for candidate in value.split(",") if candidate.strip()]
+
+
+def css_urls(source: str) -> list[str]:
+    source = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
+    values = []
+    for match in re.finditer(
+        r"url\(\s*(?:([\"'])(.*?)\1|([^\"')\s]+))\s*\)",
+        source,
+        flags=re.I | re.S,
+    ):
+        values.append(match.group(2) or match.group(3))
+    for match in re.finditer(
+        r"@import\s+(?!url\s*\()(?:([\"'])(.*?)\1|([^\s;]+))",
+        source,
+        flags=re.I | re.S,
+    ):
+        values.append(match.group(2) or match.group(3))
+    return values
+
+
 class HTMLAuditParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.ids: list[str] = []
-        self.hrefs: list[str] = []
+        self.references: list[tuple[str, str, str]] = []
+        self.embedded_styles: list[str] = []
+        self._style_chunks: list[str] | None = None
         self.errors: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -53,23 +91,34 @@ class HTMLAuditParser(HTMLParser):
     def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         self._audit_tag(tag, attrs)
 
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() == "style" and self._style_chunks is not None:
+            self.embedded_styles.append("".join(self._style_chunks))
+            self._style_chunks = None
+
+    def handle_data(self, data: str) -> None:
+        if self._style_chunks is not None:
+            self._style_chunks.append(data)
+
     def _audit_tag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
         if tag == "script":
-            self.errors.append("contains script")
+            self.errors.append("contains inline script element")
+        elif tag == "style":
+            self._style_chunks = []
         for raw_name, raw_value in attrs:
             name = raw_name.lower()
             value = html.unescape(raw_value or "").strip()
             if name == "id" and value:
                 self.ids.append(value)
-            if name == "href":
-                self.hrefs.append(value)
+            if name in {"href", "src", "data", "poster"}:
+                self.references.append((tag, name, value))
+            elif name == "srcset":
+                self.references.extend((tag, name, candidate) for candidate in srcset_urls(value))
             if name == "style":
                 self.errors.append("contains inline style attribute")
             if name.startswith("on"):
                 self.errors.append(f"contains inline event handler: {name}")
-            if value.lower().startswith(UNSAFE_SCHEMES):
-                self.errors.append(f"contains unsafe URL scheme in {tag}[{name}]")
             if tag in RUNTIME_TAGS and name in RUNTIME_ATTRIBUTES:
                 if name == "srcset":
                     remote = re.search(r"(?i)(?:https?:)?//", value) is not None
@@ -158,42 +207,91 @@ def check_site_tree(
             parser_cache[path] = parse_html(path)
         return parser_cache[path]
 
+    def validate_reference(
+        source_path: Path,
+        relative: str,
+        reference: str,
+        context: str,
+        *,
+        check_fragment: bool,
+    ) -> bool:
+        reference = html.unescape(reference).strip()
+        lower = reference.lower()
+        if not reference or is_remote_url(reference) or lower.startswith(EXTERNAL_SCHEMES + EMBEDDED_SCHEMES):
+            return False
+        if lower.startswith(UNSAFE_SCHEMES):
+            errors.append(f"{relative}: unsafe URL scheme in {context}: {reference}")
+            return False
+        try:
+            parsed = urlsplit(reference)
+        except ValueError as error:
+            errors.append(f"{relative}: invalid URL in {context}: {reference} ({error})")
+            return False
+        if parsed.scheme:
+            errors.append(f"{relative}: unsupported URL scheme in {context}: {reference}")
+            return False
+        link_path = unquote(parsed.path)
+        fragment = unquote(parsed.fragment)
+        if not link_path:
+            if not check_fragment or not fragment:
+                return True
+            target = source_path
+        elif link_path.startswith("/"):
+            if not allow_root_relative:
+                errors.append(f"{relative}: root-relative reference is not portable offline in {context}: {reference}")
+                return True
+            if link_path == "/":
+                target = root / "index.html"
+            else:
+                target = root / link_path.lstrip("/")
+        else:
+            target = source_path.parent / link_path
+        try:
+            resolved = target.resolve()
+            resolved.relative_to(root.resolve())
+        except ValueError:
+            errors.append(f"{relative}: local reference escapes public root in {context}: {reference}")
+            return True
+        if resolved.is_dir():
+            resolved = resolved / "index.html"
+        if not resolved.is_file():
+            errors.append(f"{relative}: broken local reference in {context}: {reference}")
+            return True
+        if check_fragment and fragment and resolved.suffix.lower() == ".html" and fragment not in audit_of(resolved).ids:
+            errors.append(f"{relative}: missing anchor in {context}: {reference}")
+        return True
+
+    def validate_css_references(source_path: Path, relative: str, source: str, context: str) -> None:
+        for reference in css_urls(source):
+            if is_remote_url(reference):
+                errors.append(f"{relative}: remote {context} resource: {reference}")
+                continue
+            validate_reference(
+                source_path,
+                relative,
+                reference,
+                f"{context} resource",
+                check_fragment=False,
+            )
+
     link_total = 0
     for path in pages:
         source = path.read_text(encoding="utf-8")
         relative = path.relative_to(root).as_posix()
         audit = audit_of(path)
         errors.extend(f"{relative}: {message}" for message in audit.errors)
-        for href in audit.hrefs:
-            if not href or href.startswith(EXTERNAL_SCHEMES):
-                continue
-            link_total += 1
-            link_path, _, fragment = href.partition("#")
-            if not link_path:
-                target = path
-            elif link_path.startswith("/"):
-                if not allow_root_relative:
-                    errors.append(f"{relative}: root-relative link is not portable offline: {href}")
-                    continue
-                if link_path == "/":
-                    target = root / "index.html"
-                else:
-                    target = root / link_path.lstrip("/")
-            else:
-                target = path.parent / link_path
-            try:
-                resolved = target.resolve()
-                resolved.relative_to(root.resolve())
-            except ValueError:
-                errors.append(f"{relative}: local link escapes public root: {href}")
-                continue
-            if resolved.is_dir():
-                resolved = resolved / "index.html"
-            if not resolved.exists():
-                errors.append(f"{relative}: broken local link: {href}")
-                continue
-            if fragment and resolved.suffix.lower() == ".html" and fragment not in audit_of(resolved).ids:
-                errors.append(f"{relative}: missing anchor: {href}")
+        for embedded_style in audit.embedded_styles:
+            validate_css_references(path, relative, embedded_style, "embedded CSS")
+        for tag, attribute, reference in audit.references:
+            checked = validate_reference(
+                path,
+                relative,
+                reference,
+                f"{tag}[{attribute}]",
+                check_fragment=attribute == "href",
+            )
+            if checked:
+                link_total += 1
 
         ids = audit.ids
         duplicates = sorted({value for value in ids if ids.count(value) > 1})
@@ -223,11 +321,7 @@ def check_site_tree(
     for path in public_css_files(root):
         relative = path.relative_to(root).as_posix()
         source = path.read_text(encoding="utf-8")
-        source_without_comments = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
-        if re.search(r"(?i)@import\s+(?:url\(\s*)?[\"']?\s*(?:https?:)?//", source_without_comments):
-            errors.append(f"{relative}: remote CSS import")
-        if re.search(r"(?i)url\(\s*[\"']?\s*(?:https?:)?//", source_without_comments):
-            errors.append(f"{relative}: remote CSS url")
+        validate_css_references(path, relative, source, "CSS")
     return errors, len(pages), link_total
 
 
@@ -250,6 +344,43 @@ def managed_public_paths(root: Path, chapter_config: dict) -> set[str]:
             if path.is_file()
         )
     return paths
+
+
+def check_public_root_inventory(root: Path, managed_paths: set[str]) -> list[str]:
+    allowed = {relative.split("/", 1)[0] for relative in managed_paths}
+    allowed.update(MANAGED_METADATA)
+    allowed.add("downloads")
+    errors = []
+    for path in sorted(root.iterdir(), key=lambda item: item.name):
+        if path.name in allowed or path.name in DEVELOPER_ROOT_ENTRIES:
+            continue
+        kind = "directory" if path.is_dir() else "file"
+        errors.append(f"unknown publishable root entry ({kind}): {path.name}")
+    return errors
+
+
+def expected_download_paths(chapter_config: dict) -> set[str]:
+    version = chapter_config["site"]["version"]
+    archive_name = f"codex-tutorial-cn-v{version}-offline.zip"
+    return {f"downloads/{archive_name}", f"downloads/{archive_name}.sha256"}
+
+
+def check_download_inventory(root: Path, chapter_config: dict) -> list[str]:
+    expected = expected_download_paths(chapter_config)
+    downloads = root / "downloads"
+    actual = set()
+    if downloads.is_dir():
+        actual.update(
+            path.relative_to(root).as_posix()
+            for path in downloads.rglob("*")
+            if path.is_file()
+        )
+    errors = []
+    for relative in sorted(actual - expected):
+        errors.append(f"unexpected download artifact: {relative}")
+    for relative in sorted(expected - actual):
+        errors.append(f"expected download artifact missing: {relative}")
+    return errors
 
 
 def check_manifest(root: Path, expected_paths: set[str]) -> list[str]:
@@ -375,9 +506,7 @@ def check_offline_zip(root: Path, chapter_config: dict) -> list[str]:
 def generated_paths(root: Path, chapter_config: dict) -> set[str]:
     paths = managed_public_paths(root, chapter_config)
     paths.update(MANAGED_METADATA)
-    version = chapter_config["site"]["version"]
-    archive_name = f"codex-tutorial-cn-v{version}-offline.zip"
-    paths.update({f"downloads/{archive_name}", f"downloads/{archive_name}.sha256"})
+    paths.update(expected_download_paths(chapter_config))
     downloads = root / "downloads"
     if downloads.is_dir():
         paths.update(
@@ -442,6 +571,8 @@ def main() -> int:
     site_errors, page_count, link_count = check_site_tree(ROOT, config)
     errors.extend(site_errors)
     expected_manifest_paths = managed_public_paths(ROOT, config)
+    errors.extend(check_public_root_inventory(ROOT, expected_manifest_paths))
+    errors.extend(check_download_inventory(ROOT, config))
     errors.extend(f"manifest: {message}" for message in check_manifest(ROOT, expected_manifest_paths))
     registry_errors, registry_warnings = check_registry(ROOT, arguments.strict)
     errors.extend(registry_errors)

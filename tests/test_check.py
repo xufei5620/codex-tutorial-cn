@@ -105,6 +105,45 @@ class CheckBaselineTests(unittest.TestCase):
             self.assertIn(b"manifest", result.stdout.lower())
             self.assertIn(b"unlisted-private-note.txt", result.stdout)
 
+    def test_check_rejects_an_unknown_publishable_root_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            (root / "unlisted-public.txt").write_text(
+                "would be copied by the deployment image\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            result = run_check(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"unknown publishable root entry", result.stdout.lower())
+            self.assertIn(b"unlisted-public.txt", result.stdout)
+
+    def test_check_rejects_an_unknown_publishable_root_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            (root / "unlisted-public-dir").mkdir()
+            (root / "unlisted-public-dir/note.txt").write_text(
+                "would be copied by the deployment image\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            result = run_check(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"unknown publishable root entry", result.stdout.lower())
+            self.assertIn(b"unlisted-public-dir", result.stdout)
+
+    def test_check_rejects_an_unknown_download_file_without_generated_verification(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            (root / "downloads/unlisted-public.zip").write_bytes(b"not a release")
+            result = run_check(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"unexpected download artifact", result.stdout.lower())
+            self.assertIn(b"unlisted-public.zip", result.stdout)
+
     def test_check_rejects_a_tampered_offline_zip(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"
@@ -168,6 +207,7 @@ class CheckBaselineTests(unittest.TestCase):
             "unquoted": "<img src=https://example.invalid/pixel.png>",
             "srcset": "<source srcset='local.png 1x, https://example.invalid/remote.png 2x'>",
             "event handler": "<button onclick='alert(1)'>click</button>",
+            "style block": "<style>@import 'https://example.invalid/remote.css';</style>",
         }
         for label, markup in cases.items():
             with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
@@ -179,6 +219,44 @@ class CheckBaselineTests(unittest.TestCase):
                 )
                 errors, _, _ = checker.check_site_tree(root)
                 self.assertTrue(errors, label)
+
+    def test_link_check_rejects_missing_local_runtime_resources(self):
+        checker = load_check_module()
+        cases = {
+            "src": "<img src='definitely-missing.png'>",
+            "srcset": "<source srcset='missing-one.png 1x, missing-two.png 2x'>",
+            "data": "<object data='missing-object.bin'></object>",
+            "poster": "<video poster='missing-poster.png'></video>",
+        }
+        for label, markup in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "index.html").write_text(
+                    f"<!doctype html><html><body>{markup}</body></html>\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                errors, _, _ = checker.check_site_tree(root)
+                self.assertTrue(any("broken local" in error for error in errors), errors)
+
+    def test_offline_link_check_rejects_root_relative_runtime_resources(self):
+        checker = load_check_module()
+        cases = {
+            "src": "<img src='/assets/favicon.svg'>",
+            "srcset": "<source srcset='/assets/favicon.svg 1x'>",
+        }
+        for label, markup in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "assets").mkdir()
+                (root / "assets/favicon.svg").write_text("<svg></svg>\n", encoding="utf-8", newline="\n")
+                (root / "index.html").write_text(
+                    f"<!doctype html><html><body>{markup}</body></html>\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                errors, _, _ = checker.check_site_tree(root, allow_root_relative=False)
+                self.assertTrue(any("root-relative" in error for error in errors), errors)
 
     def test_css_safety_check_rejects_remote_imports_and_urls(self):
         checker = load_check_module()
@@ -209,8 +287,40 @@ class CheckBaselineTests(unittest.TestCase):
                 encoding="utf-8",
                 newline="\n",
             )
+            (root / "assets/favicon.svg").write_text("<svg></svg>\n", encoding="utf-8", newline="\n")
             (root / "index.html").write_text(
                 "<!doctype html><html><body><p>safe</p></body></html>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _, _ = checker.check_site_tree(root)
+            self.assertFalse(errors, errors)
+
+    def test_css_safety_check_rejects_missing_local_urls_and_imports(self):
+        checker = load_check_module()
+        cases = {
+            "url": '.x { background: url("missing.png"); }\n',
+            "import": '@import "missing.css";\n',
+        }
+        for label, payload in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "assets").mkdir()
+                (root / "assets/style.css").write_text(payload, encoding="utf-8", newline="\n")
+                (root / "index.html").write_text(
+                    "<!doctype html><html><body><p>safe</p></body></html>\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                errors, _, _ = checker.check_site_tree(root)
+                self.assertTrue(any("broken local" in error for error in errors), errors)
+
+    def test_link_check_accepts_case_insensitive_external_schemes(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "index.html").write_text(
+                "<!doctype html><html><body><a href='HTTPS://example.invalid/docs'>docs</a></body></html>\n",
                 encoding="utf-8",
                 newline="\n",
             )
