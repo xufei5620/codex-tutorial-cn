@@ -3,7 +3,7 @@
   site/     —— 离线多文件站点（仓库用，双击 index.html 即可阅读，无 JavaScript）
   preview.html —— 单页预览（claude.ai artifact 用，含极少量 JavaScript 做路由）
 """
-import json, re, os, shutil, hashlib, datetime, sys
+import json, re, os, shutil, hashlib, datetime, sys, tempfile, zipfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))          # 仓库里的 src/
 CONTENT = os.path.join(ROOT, 'content')
@@ -148,7 +148,7 @@ def doc_page(pid, mode):
   </main>
 </div>'''
 
-def home_body(mode):
+def home_body(mode, offline=False):
     L = lambda t, a=None: resolve_links('{{link:%s%s}}' % (t, '#' + a if a else ''), mode, 'home')
     done = sum(1 for c in CH.values() if c['status'] != 'outline')
     toc = []
@@ -188,7 +188,7 @@ def home_body(mode):
       <p class="lede">写给第一次接触 AI 与 Codex 的读者：不需要编程、命令行或 Git 基础。在线阅读，或下载离线版——解压后双击打开即可，无需联网、无需账号。</p>
       <div class="hero-actions">
         <a class="btn" href="{L('ch01')}">从第 1 章开始</a>
-        {('<a class="btn ghost" href="downloads/' + ZIP_NAME + '" download>下载离线版（ZIP）</a>') if mode == 'multi' else ''}
+        {('<span class="btn ghost" aria-disabled="true">当前已是离线版</span>' if offline else '<a class="btn ghost" href="downloads/' + ZIP_NAME + '" download>下载离线版（ZIP）</a>') if mode == 'multi' else ''}
         <p class="progress">正文草稿已完成 {done} / {len(CH)} 章</p>
       </div>
     </div>
@@ -215,7 +215,7 @@ def home_body(mode):
     </details>
 
     <footer>
-      <p>本教程为纯静态 HTML：无 JavaScript、无远程资源、无跟踪。在线版与离线版内容完全相同，离线版解压后双击 <code>index.html</code> 即可阅读。版本 {cfg['site']['version']}（{cfg['site']['date']}），更新记录见<a href="{L('ch11', 's3')}">第 11 章</a>。</p>
+      <p>本教程为纯静态 HTML：无 JavaScript、无远程资源、无跟踪。在线版与离线版的课程正文和示例一致；离线版解压后双击 <code>index.html</code> 即可阅读。版本 {cfg['site']['version']}（{cfg['site']['date']}），更新记录见<a href="{L('ch11', 's3')}">第 11 章</a>。</p>
     </footer>
   </main>'''
 
@@ -244,6 +244,73 @@ def page_shell(title, body_class, inner, css_href='assets/style.css', desc=DESCR
 </body>
 </html>
 '''
+
+def collect_file_records(root):
+    records = []
+    for directory, names, files in os.walk(root):
+        names.sort()
+        for name in sorted(files):
+            if name in ('manifest.json', 'SHA256SUMS.txt'):
+                continue
+            path = os.path.join(directory, name)
+            relative = os.path.relpath(path, root).replace(os.sep, '/')
+            payload = open(path, 'rb').read()
+            records.append({'path': relative, 'size': len(payload), 'sha256': hashlib.sha256(payload).hexdigest()})
+    return records
+
+
+def write_manifest_and_sums(root, artifact):
+    records = collect_file_records(root)
+    manifest = {
+        'schemaVersion': '1.0.0',
+        'artifact': artifact,
+        'version': cfg['site']['version'],
+        'status': 'draft-complete-unverified',
+        'generatedDate': cfg['site']['date'],
+        'entry': 'index.html',
+        'files': records,
+    }
+    write_json(os.path.join(root, 'manifest.json'), manifest)
+    write_text(os.path.join(root, 'SHA256SUMS.txt'), ''.join(
+        f"{record['sha256']}  {record['path']}\n" for record in records
+    ))
+    return records
+
+
+def build_offline_stage(stage_root):
+    package_root = os.path.join(stage_root, 'codex-tutorial-cn')
+    os.makedirs(package_root)
+    excluded_directories = {'.git', 'src', 'downloads', 'deploy'}
+    excluded_files = {'.dockerignore', '.gitattributes', '.gitignore', 'README.md',
+                      'index.html', 'manifest.json', 'SHA256SUMS.txt'}
+    for name in sorted(os.listdir(SITE)):
+        if name in excluded_directories or name in excluded_files or name.startswith('.'):
+            continue
+        copy_public_path(os.path.join(SITE, name), os.path.join(package_root, name))
+    write_text(os.path.join(package_root, 'index.html'),
+               page_shell(SITE_TITLE, 'home', home_body('multi', offline=True)))
+    write_manifest_and_sums(package_root, 'codex-tutorial-cn-offline')
+    return package_root
+
+
+def build_offline_zip(package_root, zip_path):
+    year, month, day = (int(value) for value in cfg['site']['date'].split('-'))
+    zip_time = (year, month, day, 0, 0, 0)
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as package:
+        entries = []
+        for directory, names, files in os.walk(package_root):
+            names.sort()
+            for name in sorted(files):
+                entries.append(os.path.join(directory, name))
+        for path in sorted(entries, key=lambda item: os.path.relpath(item, os.path.dirname(package_root)).replace(os.sep, '/')):
+            archive_name = os.path.relpath(path, os.path.dirname(package_root)).replace(os.sep, '/')
+            info = zipfile.ZipInfo(archive_name, date_time=zip_time)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 3
+            info.external_attr = 0o644 << 16
+            with open(path, 'rb') as handle:
+                package.writestr(info, handle.read())
+
 
 def build_site():
     for name in GENERATED:
@@ -282,42 +349,36 @@ def build_site():
     write_json(os.path.join(SITE, 'registry', 'framework-v1.json'), reg)
     # README
     write_text(os.path.join(SITE, 'README.md'), readme())
-    # manifest + SHA256SUMS
-    files = []
-    for dp, dns, fns in os.walk(SITE):
-        dns[:] = [d for d in dns if d not in ('.git', 'src', 'downloads')]
-        for fn in fns:
-            if fn in ('manifest.json', 'SHA256SUMS.txt') or fn.startswith('.'):
+    # 在线站点 manifest + SHA256SUMS；downloads 单独校验，避免自包含。
+    online_records = []
+    for directory, names, files in os.walk(SITE):
+        names[:] = sorted(name for name in names if name not in ('.git', 'src', 'downloads'))
+        for name in sorted(files):
+            if name in ('manifest.json', 'SHA256SUMS.txt') or name.startswith('.'):
                 continue
-            p = os.path.join(dp, fn)
-            rel = os.path.relpath(p, SITE).replace(os.sep, '/')
-            data = open(p, 'rb').read()
-            files.append({'path': rel, 'size': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
-    files.sort(key=lambda f: f['path'])
-    manifest = {'schemaVersion': '1.0.0', 'artifact': 'codex-tutorial-cn', 'version': cfg['site']['version'],
-                'status': 'draft-complete-unverified', 'generatedDate': cfg['site']['date'], 'entry': 'index.html', 'files': files}
-    write_json(os.path.join(SITE, 'manifest.json'), manifest)
-    write_text(os.path.join(SITE, 'SHA256SUMS.txt'), ''.join(f"{f['sha256']}  {f['path']}\n" for f in files))
-    # 离线版 ZIP（放进 downloads/，不计入清单，避免自包含）
-    import zipfile
-    dl = os.path.join(SITE, 'downloads'); os.makedirs(dl)
-    zpath = os.path.join(dl, ZIP_NAME)
-    # 可重现打包：时间戳固定为站点日期、条目按名称排序、权限固定，同样的源文件必然得到逐字节相同的 ZIP
-    y, m, d = (int(x) for x in cfg['site']['date'].split('-'))
-    zip_time = (y, m, d, 0, 0, 0)
-    with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
-        for dp, dns, fns in os.walk(SITE):
-            dns[:] = sorted(d for d in dns if d not in ('.git', 'src', 'downloads', 'deploy'))
-            for fn in sorted(fns):
-                if fn.startswith('.'): continue
-                p = os.path.join(dp, fn)
-                arcname = os.path.join('codex-tutorial-cn', os.path.relpath(p, SITE)).replace(os.sep, '/')
-                zi = zipfile.ZipInfo(arcname, date_time=zip_time)
-                zi.compress_type = zipfile.ZIP_DEFLATED
-                zi.create_system = 3
-                zi.external_attr = 0o644 << 16
-                with open(p, 'rb') as f:
-                    z.writestr(zi, f.read())
+            path = os.path.join(directory, name)
+            relative = os.path.relpath(path, SITE).replace(os.sep, '/')
+            payload = open(path, 'rb').read()
+            online_records.append({'path': relative, 'size': len(payload), 'sha256': hashlib.sha256(payload).hexdigest()})
+    online_records.sort(key=lambda record: record['path'])
+    online_manifest = {
+        'schemaVersion': '1.0.0', 'artifact': 'codex-tutorial-cn-online',
+        'version': cfg['site']['version'], 'status': 'draft-complete-unverified',
+        'generatedDate': cfg['site']['date'], 'entry': 'index.html', 'files': online_records,
+    }
+    write_json(os.path.join(SITE, 'manifest.json'), online_manifest)
+    write_text(os.path.join(SITE, 'SHA256SUMS.txt'), ''.join(
+        f"{record['sha256']}  {record['path']}\n" for record in online_records
+    ))
+
+    downloads = os.path.join(SITE, 'downloads')
+    os.makedirs(downloads)
+    zip_path = os.path.join(downloads, ZIP_NAME)
+    with tempfile.TemporaryDirectory(prefix='codex-tutorial-offline-') as stage_root:
+        package_root = build_offline_stage(stage_root)
+        build_offline_zip(package_root, zip_path)
+    zip_digest = hashlib.sha256(open(zip_path, 'rb').read()).hexdigest()
+    write_text(zip_path + '.sha256', f'{zip_digest}  {os.path.basename(zip_path)}')
 
 def readme():
     rows = '\n'.join(f"| {CH[c]['num']:02d} | [{CH[c]['title']}]({c}.html) | {STATUS_LABEL[CH[c]['status']]} |" for c in ORDER)

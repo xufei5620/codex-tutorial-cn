@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "artifact": "codex-tutorial-cn",
+  "artifact": "codex-tutorial-cn-online",
   "version": "0.2.1",
   "status": "draft-complete-unverified",
   "generatedDate": "2026-09-02",
@@ -113,8 +113,8 @@
     },
     {
       "path": "index.html",
-      "size": 8100,
-      "sha256": "8c3aed5949aeb5dc172a05572ff3c67374158ed562702fdb5f085c987a2633d5"
+      "size": 8112,
+      "sha256": "8d77f3205b776955f2e11a4ee44d6079db01fdd056ed6d9ae0de19f412c9e7ab"
     },
     {
       "path": "maintenance-release.html",
@@ -203,8 +203,8 @@
     },
     {
       "path": "tests/__pycache__/test_build.cpython-314.pyc",
-      "size": 10501,
-      "sha256": "9c79695f4d0194d46ef08e9490f1302fbd2041b1ba26001a2628eb075e5baa2d"
+      "size": 16151,
+      "sha256": "f57bdb7d26d2ed7d5ce15c66892c0f8d731f30b10b1ee5ee4c7d063ee2f9ff2d"
     },
     {
       "path": "tests/__pycache__/test_check.cpython-314.pyc",
@@ -213,8 +213,8 @@
     },
     {
       "path": "tests/test_build.py",
-      "size": 4808,
-      "sha256": "02b7990fb1b48e79ea6bf4366c237927032ba05bc7554465b0352fb7cd3336b3"
+      "size": 7613,
+      "sha256": "db73789950c601f1ff96d786d51c8acb30d5845d65c93092075bb5ccdd5ec030"
     },
     {
       "path": "tests/test_check.py",
