@@ -138,6 +138,16 @@ class CheckBaselineTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn(relative.replace("/", "\\").encode(), result.stdout.replace(b"/", b"\\"))
 
+    def test_repository_safety_ignores_runtime_bytecode_without_git_metadata(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            cache = root / "src/__pycache__/check.cpython-314.pyc"
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_bytes(b"runtime cache")
+            result = run_check(root)
+            self.assertEqual(result.returncode, 0, result.stdout.decode("utf-8", errors="replace"))
+
     def test_check_rejects_an_unknown_publishable_root_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"

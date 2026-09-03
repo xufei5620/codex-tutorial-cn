@@ -944,14 +944,17 @@ def check_repository_tree(root: Path, chapter_config: dict) -> list[str]:
         r"src/maintainer/templates/(?:module|plugin|prompt-card|skill|source-review|verification)-template\.html",
         r"src/maintainer/schemas/(?:framework|modules)-v1\.schema\.json",
     ]
-    git_result = subprocess.run(
-        ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        check=False,
-    )
-    fallback_worktree = git_result.returncode != 0 and (root / ".git").exists()
-    if git_result.returncode == 0:
+    has_git_metadata = (root / ".git").exists()
+    git_result = None
+    if has_git_metadata:
+        git_result = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    fallback_worktree = git_result is not None and git_result.returncode != 0
+    if git_result is not None and git_result.returncode == 0:
         relatives = [value for value in git_result.stdout.decode("utf-8").split("\0") if value]
     else:
         relatives = [
@@ -961,11 +964,13 @@ def check_repository_tree(root: Path, chapter_config: dict) -> list[str]:
         ]
     for relative in sorted(set(relatives)):
         relative_path = Path(relative)
+        path = root.joinpath(*relative_path.parts)
         if relative == ".git":
+            continue
+        if (git_result is None or git_result.returncode != 0) and "__pycache__" in relative_path.parts and path.suffix.lower() == ".pyc":
             continue
         if fallback_worktree and any(part in {".venv", "__pycache__"} for part in relative_path.parts):
             continue
-        path = root.joinpath(*relative_path.parts)
         if path.is_symlink():
             errors.append(f"repository file must not be a symbolic link: {relative}")
             continue
