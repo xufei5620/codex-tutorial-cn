@@ -120,11 +120,19 @@ class CheckBaselineTests(unittest.TestCase):
             self.assertIn(b"unlisted-public.txt", result.stdout)
 
     def test_repository_safety_rejects_unexpected_private_artifacts(self):
-        for relative in ("src/private.env", "tests/private.txt"):
+        for relative in (
+            "src/private.env",
+            "tests/private.txt",
+            "src/maintainer/private-note.txt",
+            "src/content/untracked-secret.exe",
+            ".venv/secret.env",
+            "src/__pycache__/secret.env",
+        ):
             with self.subTest(relative=relative), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory) / "repo"
                 copy_repo(root)
                 target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text("placeholder secret material\n", encoding="utf-8", newline="\n")
                 result = run_check(root)
                 self.assertNotEqual(result.returncode, 0)

@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from urllib.parse import quote
 import zipfile
 
 import jsonschema
@@ -312,6 +313,22 @@ class ModuleRegistryTests(unittest.TestCase):
                 self.assertTrue(list(validator.iter_errors(changed)))
         catalog["status"] = "review-in-progress"
         unit = catalog["units"][0]
+        unit["contentStatus"] = "acceptance-ready"
+        unit["lastReviewedDate"] = "2026-09-03"
+        unit["rights"] = "owned"
+        unit["sourceRefs"] = [
+            {
+                "author": "Example Author",
+                "url": "https://example.com/reference",
+                "license": "link-only",
+                "pinnedVersion": "accessed-2026-09-03",
+                "reviewDate": "2026-09-03",
+                "use": "fact-reference",
+                "reviewConclusion": "approved",
+            }
+        ]
+        self.assertTrue(list(validator.iter_errors(catalog)))
+
         unit["contentStatus"] = "stable"
         unit["lastReviewedDate"] = "2026-09-03"
         self.assertTrue(list(validator.iter_errors(catalog)))
@@ -319,11 +336,74 @@ class ModuleRegistryTests(unittest.TestCase):
         unit["verificationState"] = "verified"
         unit["verificationDate"] = "2026-09-03"
         unit["rights"] = "owned"
+        unit["sourceRefs"] = [
+            {
+                "author": "Example Author",
+                "url": "https://example.com/reference",
+                "license": "link-only",
+                "pinnedVersion": "accessed-2026-09-03",
+                "reviewDate": "2026-09-03",
+                "use": "fact-reference",
+                "reviewConclusion": "approved",
+            }
+        ]
         errors = list(validator.iter_errors(catalog))
         self.assertEqual(errors, [], [error.message for error in errors])
 
+        unit["sourceRefs"] = []
+        self.assertTrue(list(validator.iter_errors(catalog)))
+        unit["sourceRefs"] = [
+            {
+                "author": "Example Author",
+                "url": "https://example.com/reference",
+                "license": "link-only",
+                "pinnedVersion": "accessed-2026-09-03",
+                "reviewDate": "2026-09-03",
+                "use": "fact-reference",
+                "reviewConclusion": "approved",
+            }
+        ]
         unit["verificationState"] = "unsupported"
         self.assertTrue(list(validator.iter_errors(catalog)))
+
+    def test_stable_catalog_schema_can_preserve_retired_permanent_ids(self):
+        catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
+        schema = json.loads(self.schema_path.read_text(encoding="utf-8"))
+        catalog["status"] = "stable"
+        source_ref = {
+            "author": "Example Author",
+            "url": "https://example.com/reference",
+            "license": "link-only",
+            "pinnedVersion": "accessed-2026-09-03",
+            "reviewDate": "2026-09-03",
+            "use": "fact-reference",
+            "reviewConclusion": "approved",
+        }
+        for unit in catalog["units"]:
+            unit.update(
+                {
+                    "contentStatus": "stable",
+                    "verificationState": "verified",
+                    "verificationDate": "2026-09-03",
+                    "rights": "owned",
+                    "lastReviewedDate": "2026-09-03",
+                }
+            )
+            if unit["kind"] == "lesson-module":
+                unit["sourceRefs"] = [source_ref]
+        retired = catalog["units"][0]
+        retired["contentStatus"] = "retired"
+        catalog["retirementRecords"] = [
+            {
+                "unitId": retired["id"],
+                "retiredDate": "2026-09-03",
+                "reason": "由后续模块取代。",
+                "replacementPath": catalog["units"][1]["publicPath"],
+            }
+        ]
+        validator = jsonschema.Draft202012Validator(schema, format_checker=jsonschema.FormatChecker())
+        errors = list(validator.iter_errors(catalog))
+        self.assertEqual(errors, [], [error.message for error in errors])
 
     def test_lesson_units_match_every_numbered_source_section(self):
         catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
@@ -496,10 +576,13 @@ class ModuleRegistryTests(unittest.TestCase):
             self.assertIn(field, prompt_template)
         for field in (
             "browser",
+            "systemVersion",
             "productVersion",
             "extensionVersion",
             "inputClass",
             "evidenceId",
+            "observedResult",
+            "limitations",
             "result",
             "checkedDate",
             "expiresDate",
@@ -562,13 +645,20 @@ class ModuleRegistryTests(unittest.TestCase):
 
     def test_public_text_safety_rejects_private_paths_outside_the_catalog(self):
         checker = load_check_module()
+        deeply_encoded_path = "K:/private-authoring/note"
+        for _ in range(6):
+            deeply_encoded_path = quote(deeply_encoded_path, safe="")
         for leaked_path in (
             "K:/private/worktree/note",
             "C:\\Users\\alice\\secret.txt",
             "/mnt/k/private-authoring/note",
             "/root/.ssh/id_rsa",
+            "/mnt/private-authoring/alice/secret.txt",
+            "//server/share/secret.txt",
+            "C:Users\\alice\\secret.txt",
             "../private/note",
             "%4b%3a%2fprivate-authoring%2fnote",
+            deeply_encoded_path,
         ):
             with self.subTest(leaked_path=leaked_path), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
@@ -651,6 +741,9 @@ class ModuleRegistryTests(unittest.TestCase):
 
     def test_strict_checker_rejects_sensitive_or_local_source_urls(self):
         checker = load_check_module()
+        deeply_encoded_parameter = "access_token"
+        for _ in range(6):
+            deeply_encoded_parameter = quote(deeply_encoded_parameter, safe="")
         urls = [
             "https://token@example.com/source",
             "https://localhost/source",
@@ -677,6 +770,10 @@ class ModuleRegistryTests(unittest.TestCase):
             "https://example.com/source?auth[token]=secret",
             "https://example.com/source;token=secret",
             "https://example.com/source#/route?access_token=secret",
+            f"https://example.com/source?{deeply_encoded_parameter}=secret",
+            "https://example.com/source?access_token%3Dsecret",
+            "https://example.com/source?X-Amz-Signature%3Dsecret",
+            "https://example.com/proxy?target=https%3A%2F%2Fapi.example.com%2F%3Faccess_token%3Dsecret",
         ]
         for url in urls:
             with self.subTest(url=url), tempfile.TemporaryDirectory() as directory:
@@ -819,6 +916,33 @@ class ModuleRegistryTests(unittest.TestCase):
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertEqual(errors, [])
 
+    def test_future_prompt_id_must_match_its_anchor_and_public_path(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            future = dict(registry["units"][-1])
+            future.update(
+                {
+                    "id": "PRM-ECM-0001",
+                    "title": "未来电商卡片",
+                    "collectionKeys": ["prompt-ecommerce"],
+                    "taskKey": "communication",
+                    "order": 1,
+                    "sourceAnchor": "prm-foo-0001",
+                    "publicPath": "prompts.html#prm-foo-0001",
+                }
+            )
+            registry["units"].append(future)
+            (root / "registry/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("prompt ID" in error for error in errors), errors)
+
     def test_prompt_status_and_taxonomy_are_generated_from_the_catalog(self):
         checker = load_check_module()
         with tempfile.TemporaryDirectory() as directory:
@@ -918,8 +1042,52 @@ class ModuleRegistryTests(unittest.TestCase):
                 encoding="utf-8",
                 newline="\n",
             )
+            chapter = (root / "ch01.html").read_text(encoding="utf-8")
+            chapter = chapter.replace(
+                'data-unit-id="CDX-M-0001" data-content-status="draft" data-verification-state="unverified"',
+                'data-unit-id="CDX-M-0001" data-content-status="retired" data-verification-state="unverified"',
+                1,
+            )
+            chapter = chapter.replace(
+                "</h2>",
+                ' <span class="badge retired">已退役</span></h2>'
+                '<aside class="callout note retirement-notice" data-label="本单元已退役">'
+                '<p>内容已由新的正式模块取代。</p></aside>',
+                1,
+            )
+            (root / "ch01.html").write_text(chapter, encoding="utf-8", newline="\n")
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertFalse([error for error in errors if "retirement" in error], errors)
+
+    def test_build_projects_a_retired_unit_as_a_visible_tombstone(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "src/modules-v1.json").read_text(encoding="utf-8"))
+            registry["status"] = "review-in-progress"
+            unit = registry["units"][0]
+            unit["contentStatus"] = "retired"
+            unit["lastReviewedDate"] = registry["generatedDate"]
+            registry["retirementRecords"] = [
+                {
+                    "unitId": unit["id"],
+                    "retiredDate": registry["generatedDate"],
+                    "reason": "内容已由新的正式模块取代。",
+                    "replacementPath": registry["units"][1]["publicPath"],
+                }
+            ]
+            (root / "src/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            result = run_build(root)
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            chapter = (root / "ch01.html").read_text(encoding="utf-8")
+            self.assertIn('<span class="badge retired">已退役</span>', chapter)
+            self.assertIn('class="callout note retirement-notice"', chapter)
+            self.assertIn("内容已由新的正式模块取代。", chapter)
+            self.assertIn('href="ch01.html#s2"', chapter)
 
     def test_retirement_replacement_cannot_point_to_another_retired_unit(self):
         checker = load_check_module()
@@ -976,16 +1144,19 @@ class ModuleRegistryTests(unittest.TestCase):
             base = {
                 "unitId": unit["id"],
                 "platform": "windows",
+                "systemVersion": "test-system",
                 "browser": None,
                 "productVersion": "test-version",
                 "extensionVersion": None,
                 "inputClass": "synthetic-install-check",
+                "observedResult": "The expected screen was observed.",
                 "verifiedBy": "device-owner",
             }
             registry["verificationRecords"] = [
                 {
                     **base,
                     "evidenceId": "EVD-CDX-M-0013-WINDOWS-001",
+                    "limitations": ["This historical evidence has expired."],
                     "result": "verification-expired",
                     "checkedDate": "2026-07-01",
                     "expiresDate": "2026-07-31",
@@ -993,6 +1164,7 @@ class ModuleRegistryTests(unittest.TestCase):
                 {
                     **base,
                     "evidenceId": "EVD-CDX-M-0013-WINDOWS-002",
+                    "limitations": [],
                     "result": "verified",
                     "checkedDate": "2026-09-03",
                     "expiresDate": "2026-10-03",
@@ -1036,11 +1208,14 @@ class ModuleRegistryTests(unittest.TestCase):
                 {
                     "unitId": "CDX-M-0013",
                     "platform": "windows",
+                    "systemVersion": "test-system",
                     "browser": None,
                     "productVersion": "test-version",
                     "extensionVersion": None,
                     "inputClass": "synthetic-install-check",
                     "evidenceId": "EVD-CDX-M-0013-WINDOWS-001",
+                    "observedResult": "The expected screen was observed.",
+                    "limitations": [],
                     "result": "verified",
                     "checkedDate": "2026-09-01",
                     "expiresDate": "2026-10-02",
@@ -1068,7 +1243,7 @@ class ModuleRegistryTests(unittest.TestCase):
             unit = registry["units"][0]
             unit.update(
                 {
-                    "contentStatus": "stable",
+                    "contentStatus": "verification",
                     "verificationState": "verified",
                     "verificationDate": "2026-09-02",
                     "rights": "owned",
@@ -1079,11 +1254,14 @@ class ModuleRegistryTests(unittest.TestCase):
                 {
                     "unitId": unit["id"],
                     "platform": platform,
+                    "systemVersion": "test-system",
                     "browser": None,
                     "productVersion": "test-version",
                     "extensionVersion": None,
                     "inputClass": "synthetic-check",
                     "evidenceId": f"EVD-{unit['id']}-{platform.upper()}-001",
+                    "observedResult": "The expected screen was not observed.",
+                    "limitations": ["The verification attempt failed."],
                     "result": "verification-failed",
                     "checkedDate": "2026-09-02",
                     "expiresDate": "2027-02-28",
@@ -1099,6 +1277,83 @@ class ModuleRegistryTests(unittest.TestCase):
                 path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertTrue(any("does not match latest platform evidence" in error for error in errors), errors)
+
+    def test_stable_unit_cannot_treat_an_unsupported_declared_platform_as_a_limitation(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            registry["status"] = framework["status"] = manifest["status"] = "review-in-progress"
+            unit = registry["units"][0]
+            unit.update(
+                {
+                    "contentStatus": "stable",
+                    "verificationState": "verified-with-limitations",
+                    "verificationDate": "2026-09-03",
+                    "rights": "owned",
+                    "lastReviewedDate": "2026-09-03",
+                    "sourceRefs": [
+                        {
+                            "author": "Example Author",
+                            "url": "https://example.com/reference",
+                            "license": "link-only",
+                            "pinnedVersion": "accessed-2026-09-03",
+                            "reviewDate": "2026-09-03",
+                            "use": "fact-reference",
+                            "reviewConclusion": "approved",
+                        }
+                    ],
+                }
+            )
+            results = {"windows": "verified", "macos": "unsupported"}
+            registry["verificationRecords"] = [
+                {
+                    "unitId": unit["id"],
+                    "platform": platform,
+                    "systemVersion": "test-system",
+                    "browser": None,
+                    "productVersion": "test-version",
+                    "extensionVersion": None,
+                    "inputClass": "synthetic-check",
+                    "evidenceId": f"EVD-{unit['id']}-{platform.upper()}-001",
+                    "observedResult": "The declared platform result was recorded.",
+                    "limitations": [] if result == "verified" else ["This platform is unsupported."],
+                    "result": result,
+                    "checkedDate": "2026-09-03",
+                    "expiresDate": "2027-03-02",
+                    "verifiedBy": "device-owner",
+                }
+                for platform, result in results.items()
+            ]
+            for path, value in (
+                (root / "registry/modules-v1.json", registry),
+                (root / "registry/framework-v1.json", framework),
+                (root / "manifest.json", manifest),
+            ):
+                path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True, as_of=date(2026, 9, 3))
+            self.assertTrue(any("unsupported declared platform" in error for error in errors), errors)
+
+    def test_catalog_date_cannot_be_in_the_future(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            registry["generatedDate"] = framework["generatedDate"] = manifest["generatedDate"] = "2099-01-01"
+            for path, value in (
+                (root / "registry/modules-v1.json", registry),
+                (root / "registry/framework-v1.json", framework),
+                (root / "manifest.json", manifest),
+            ):
+                path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True, as_of=date(2026, 9, 3))
+            self.assertTrue(any("future" in error for error in errors), errors)
 
     def test_offline_check_runs_module_semantics_inside_the_archive(self):
         checker = load_check_module()
@@ -1179,6 +1434,21 @@ class ModuleRegistryTests(unittest.TestCase):
             )
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertTrue(any("collection taxonomy differs" in error for error in errors), errors)
+
+    def test_stable_release_gate_policy_cannot_be_redefined(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+            framework["releaseGate"]["requiredBeforeStable"] = ["skip-all-real-gates"]
+            (root / "registry/framework-v1.json").write_text(
+                json.dumps(framework, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("stable release gates" in error for error in errors), errors)
 
     def test_strict_checker_rejects_an_unregistered_numbered_lesson_section(self):
         checker = load_check_module()
