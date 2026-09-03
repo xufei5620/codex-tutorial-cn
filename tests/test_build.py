@@ -13,12 +13,15 @@ import zipfile
 REPO = Path(__file__).resolve().parents[1]
 TEXT_SUFFIXES = {
     ".conf",
+    ".cfg",
     ".css",
     ".html",
     ".json",
+    ".ini",
     ".md",
     ".sha256",
     ".svg",
+    ".toml",
     ".txt",
     ".xml",
     ".yml",
@@ -106,6 +109,19 @@ class BuildBaselineTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
             self.assertNotIn(b"\r\n", (root / "deploy/nginx.conf").read_bytes())
             self.assertNotIn(b"\r\n", (root / "templates/line-ending-fixture.svg").read_bytes())
+
+    def test_build_rejects_unknown_public_file_types(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            (root / "src/maintainer/templates/leak.env").write_text(
+                "TOKEN=must-not-publish\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            result = run_build(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"unsupported public file type", result.stderr.lower())
 
     def test_two_consecutive_builds_have_the_same_managed_tree(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -300,6 +316,45 @@ class BuildBaselineTests(unittest.TestCase):
         diff_step = workflow.find("run: git diff --exit-code")
         self.assertGreaterEqual(build_step, 0)
         self.assertGreater(diff_step, build_step)
+
+    def test_editorially_reviewed_chapter_builds_and_counts_as_formally_reviewed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            chapters = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
+            chapters["chapters"]["ch01"]["status"] = "editorial-reviewed"
+            (root / "src/chapters.json").write_text(
+                json.dumps(chapters, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            modules = json.loads((root / "src/modules-v1.json").read_text(encoding="utf-8"))
+            modules["status"] = "review-in-progress"
+            for unit in modules["units"]:
+                if unit["chapterId"] == "ch01":
+                    unit["contentStatus"] = "editorial-reviewed"
+                    unit["rights"] = "owned"
+                    unit["lastReviewedDate"] = chapters["site"]["date"]
+            (root / "src/modules-v1.json").write_text(
+                json.dumps(modules, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            result = run_build(root)
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            index = (root / "index.html").read_text(encoding="utf-8")
+            chapter = (root / "ch01.html").read_text(encoding="utf-8")
+            self.assertIn("正式审校 1 / 11 章", index)
+            self.assertIn('<span class="badge editorial-reviewed">已编辑审校</span>', chapter)
+            check = subprocess.run(
+                [sys.executable, "src/check.py", "--strict", "--verify-generated"],
+                cwd=root,
+                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONUTF8": "1"},
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(check.returncode, 0, check.stdout.decode("utf-8", errors="replace"))
 
 
 if __name__ == "__main__":

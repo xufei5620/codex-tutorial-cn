@@ -74,6 +74,43 @@ def run_build(root: Path) -> subprocess.CompletedProcess:
     )
 
 
+def replace_offline_payload(root: Path, relative: str, replacement_payload: bytes) -> dict:
+    config = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
+    archive = next((root / "downloads").glob("*-offline.zip"))
+    prefix = "codex-tutorial-cn/"
+    with zipfile.ZipFile(archive) as package:
+        infos = package.infolist()
+        payloads = {info.filename: package.read(info.filename) for info in infos}
+    target = prefix + relative
+    payloads[target] = replacement_payload
+    manifest_name = prefix + "manifest.json"
+    manifest = json.loads(payloads[manifest_name].decode("utf-8"))
+    digest = hashlib.sha256(replacement_payload).hexdigest()
+    record = next(item for item in manifest["files"] if item["path"] == relative)
+    record.update({"size": len(replacement_payload), "sha256": digest})
+    payloads[manifest_name] = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    sums_name = prefix + "SHA256SUMS.txt"
+    sums = {}
+    for line in payloads[sums_name].decode("utf-8").splitlines():
+        checksum, path = line.split("  ", 1)
+        sums[path] = checksum
+    sums[relative] = digest
+    payloads[sums_name] = "".join(
+        f"{checksum}  {path}\n" for path, checksum in sums.items()
+    ).encode("utf-8")
+    replacement = archive.with_name("replacement.zip")
+    with zipfile.ZipFile(replacement, "w", zipfile.ZIP_STORED) as package:
+        for info in infos:
+            package.writestr(info, payloads[info.filename])
+    replacement.replace(archive)
+    archive.with_name(archive.name + ".sha256").write_text(
+        f"{hashlib.sha256(archive.read_bytes()).hexdigest()}  {archive.name}\n",
+        encoding="ascii",
+        newline="\n",
+    )
+    return config
+
+
 def load_check_module():
     spec = importlib.util.spec_from_file_location("course_check_modules", REPO / "src/check.py")
     module = importlib.util.module_from_spec(spec)
@@ -284,6 +321,9 @@ class ModuleRegistryTests(unittest.TestCase):
         errors = list(validator.iter_errors(catalog))
         self.assertEqual(errors, [], [error.message for error in errors])
 
+        unit["verificationState"] = "unsupported"
+        self.assertTrue(list(validator.iter_errors(catalog)))
+
     def test_lesson_units_match_every_numbered_source_section(self):
         catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
         records = {unit["id"]: unit for unit in catalog["units"] if unit["kind"] == "lesson-module"}
@@ -359,6 +399,22 @@ class ModuleRegistryTests(unittest.TestCase):
             for item in catalog["legacyChapterPlaceholders"]
         ]
         self.assertEqual(actual_legacy, expected_legacy)
+        prompts = [unit for unit in catalog["units"] if unit["kind"] == "prompt-card"]
+        self.assertEqual(
+            [
+                (unit["id"], unit["sourceAnchor"], unit["publicPath"], unit["taskKey"])
+                for unit in prompts
+            ],
+            [
+                (
+                    prompt_id,
+                    prompt_id.lower(),
+                    f"prompts.html#{prompt_id.lower()}",
+                    task_key,
+                )
+                for prompt_id, task_key in zip(PROMPT_IDS, [item["key"] for item in catalog["taskTypes"]])
+            ],
+        )
 
     def test_chapter_maintenance_blocks_label_old_ids_as_legacy(self):
         for number, chapter in enumerate(LESSON_COUNTS, 1):
@@ -391,8 +447,14 @@ class ModuleRegistryTests(unittest.TestCase):
         ]
         self.assertEqual(catalog["collections"], expected_collections)
         self.assertEqual(
-            [item["key"] for item in catalog["taskTypes"]],
-            framework["promptLibrary"]["taskKeys"],
+            catalog["taskTypes"],
+            [
+                {"key": key, "title": title}
+                for key, title in zip(
+                    framework["promptLibrary"]["taskKeys"],
+                    ["沟通协作", "文档报告", "文件整理", "表格数据", "调研计划", "视觉创意"],
+                )
+            ],
         )
 
     def test_maintenance_docs_use_the_eight_state_pipeline_and_module_catalog_truth(self):
@@ -428,6 +490,22 @@ class ModuleRegistryTests(unittest.TestCase):
             self.assertIn(title, prompt_template)
         for title in ("沟通协作", "文档报告", "文件整理", "表格数据", "调研计划", "视觉创意"):
             self.assertIn(title, prompt_template)
+        for field in ("author", "url", "license", "pinnedVersion", "reviewDate", "use", "reviewConclusion"):
+            self.assertIn(field, module_template)
+            self.assertIn(field, prompt_template)
+        for field in (
+            "browser",
+            "productVersion",
+            "extensionVersion",
+            "inputClass",
+            "evidenceId",
+            "result",
+            "checkedDate",
+            "expiresDate",
+            "verifiedBy",
+        ):
+            self.assertIn(field, module_template)
+            self.assertIn(field, prompt_template)
 
     def test_catalog_contains_no_private_or_unsafe_path(self):
         payload = self.catalog_path.read_text(encoding="utf-8")
@@ -483,17 +561,25 @@ class ModuleRegistryTests(unittest.TestCase):
 
     def test_public_text_safety_rejects_private_paths_outside_the_catalog(self):
         checker = load_check_module()
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            (root / "specs").mkdir()
-            leak = root / "specs/leak.html"
-            leak.write_text(
-                "<!doctype html><html><body><p>K:/private/worktree/note</p></body></html>\n",
-                encoding="utf-8",
-                newline="\n",
-            )
-            errors = checker.check_public_text_safety(root, {"specs/leak.html"})
-            self.assertTrue(any("private path" in error for error in errors), errors)
+        for leaked_path in (
+            "K:/private/worktree/note",
+            "C:\\Users\\alice\\secret.txt",
+            "/mnt/k/private-authoring/note",
+            "/root/.ssh/id_rsa",
+            "../private/note",
+            "%4b%3a%2fprivate-authoring%2fnote",
+        ):
+            with self.subTest(leaked_path=leaked_path), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "specs").mkdir()
+                leak = root / "specs/leak.html"
+                leak.write_text(
+                    f"<!doctype html><html><body><p>{leaked_path}</p></body></html>\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                errors = checker.check_public_text_safety(root, {"specs/leak.html"})
+                self.assertTrue(any("private path" in error for error in errors), errors)
 
     def test_strict_checker_accepts_the_complete_catalog(self):
         checker = load_check_module()
@@ -570,6 +656,26 @@ class ModuleRegistryTests(unittest.TestCase):
             "https://127.0.0.1/source",
             "https://10.0.0.1/source",
             "https://example.com/source?token=secret",
+            "https://example.com/source?access_token=secret",
+            "https://example.com/source?client_secret=secret",
+            "https://example.com/source?X-Amz-Signature=secret",
+            "https://example.com/source?sig=secret",
+            "https://example.com/source#api_key=secret",
+            "https://127.1/source",
+            "https://2130706433/source",
+            "https://0x7f000001/source",
+            "https://0177.0.0.1/source",
+            "https://%6cocalhost/source",
+            "https://100.64.0.1/source",
+            "https://intranet/source",
+            "https://example.invalid/source",
+            "https://localhost。/source",
+            "https://224.0.0.1/source",
+            "https://[ff02::1]/source",
+            "https://example.com/source?oauth_token=secret",
+            "https://example.com/source?auth[token]=secret",
+            "https://example.com/source;token=secret",
+            "https://example.com/source#/route?access_token=secret",
         ]
         for url in urls:
             with self.subTest(url=url), tempfile.TemporaryDirectory() as directory:
@@ -631,19 +737,48 @@ class ModuleRegistryTests(unittest.TestCase):
             self.assertEqual(warnings, [])
             self.assertTrue(errors)
 
-    def test_strict_checker_rejects_data_unit_ids_on_other_public_pages(self):
+    def test_catalog_rejects_duplicate_json_keys_even_when_the_last_value_is_safe(self):
         checker = load_check_module()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"
             copy_repo(root)
-            (root / "templates/ghost.html").write_text(
-                '<!doctype html><html><body><section id="ghost" data-unit-id="AUDIT-GHOST-0001">'
-                "<h2>幽灵单元</h2></section></body></html>\n",
-                encoding="utf-8",
-                newline="\n",
+            payload = (root / "registry/modules-v1.json").read_text(encoding="utf-8")
+            payload = payload.replace(
+                '"title": "这套教程写给谁"',
+                '"title": "C:\\\\Users\\\\alice\\\\secret.txt", "title": "这套教程写给谁"',
+                1,
             )
+            (root / "registry/modules-v1.json").write_text(payload, encoding="utf-8", newline="\n")
             errors, _ = checker.check_module_registry(root, strict=True)
-            self.assertTrue(any("outside registered content pages" in error for error in errors), errors)
+            self.assertTrue(any("duplicate JSON key" in error for error in errors), errors)
+
+    def test_strict_checker_rejects_data_unit_ids_on_other_public_pages(self):
+        checker = load_check_module()
+        cases = {
+            "section": ("templates/ghost.html", '<section id="ghost" data-unit-id="AUDIT-GHOST-0001"></section>'),
+            "any element": ("templates/ghost.html", '<div data-unit-id="AUDIT-GHOST-0001"></div>'),
+            "nested excluded name": (
+                "specs/src/ghost.html",
+                '<section id="ghost" data-unit-id="AUDIT-GHOST-0001"></section>',
+            ),
+            "unclosed section": (
+                "templates/ghost.html",
+                '<section id="ghost" data-unit-id="AUDIT-GHOST-0001">',
+            ),
+        }
+        for label, (relative, markup) in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / "repo"
+                copy_repo(root)
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(
+                    f"<!doctype html><html><body>{markup}</body></html>\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                errors, _ = checker.check_module_registry(root, strict=True)
+                self.assertTrue(any("outside registered content pages" in error for error in errors), errors)
 
     def test_prompt_order_is_scoped_to_its_collection(self):
         checker = load_check_module()
@@ -672,11 +807,40 @@ class ModuleRegistryTests(unittest.TestCase):
             source = (root / "prompts.html").read_text(encoding="utf-8")
             source = source.replace(
                 '<section class="summary">',
-                '<section class="prompt-card" id="prm-ecm-0001" data-unit-id="PRM-ECM-0001">'
+                '<section class="prompt-card" id="prm-ecm-0001" data-unit-id="PRM-ECM-0001" '
+                'data-content-status="draft" data-verification-state="unverified" '
+                'data-collection-keys="prompt-ecommerce" data-task-key="communication">'
                 '<h2>卡片：未来电商卡片（PRM-ECM-0001） <span class="badge draft">草稿</span></h2>'
+                '<dl><dt>行业 / 任务分类</dt><dd>电商与零售；沟通协作</dd></dl>'
                 "</section>\n<section class=\"summary\">",
             )
             (root / "prompts.html").write_text(source, encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertEqual(errors, [])
+
+    def test_prompt_status_and_taxonomy_are_generated_from_the_catalog(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            catalog = json.loads((root / "src/modules-v1.json").read_text(encoding="utf-8"))
+            catalog["status"] = "review-in-progress"
+            unit = next(item for item in catalog["units"] if item["id"] == "PRM-COM-0001")
+            unit["contentStatus"] = "editorial-reviewed"
+            unit["rights"] = "owned"
+            unit["lastReviewedDate"] = catalog["generatedDate"]
+            (root / "src/modules-v1.json").write_text(
+                json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            result = run_build(root)
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            prompts = (root / "prompts.html").read_text(encoding="utf-8")
+            self.assertIn('data-content-status="editorial-reviewed"', prompts)
+            self.assertIn('data-collection-keys="prompt-common"', prompts)
+            self.assertIn('data-task-key="communication"', prompts)
+            self.assertIn('<span class="badge editorial-reviewed">已编辑审校</span>', prompts)
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertEqual(errors, [])
 
@@ -694,6 +858,126 @@ class ModuleRegistryTests(unittest.TestCase):
             )
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertTrue(any("legacy chapter mapping differs" in error for error in errors), errors)
+
+    def test_strict_checker_rejects_visible_prompt_taxonomy_drift(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            source = (root / "prompts.html").read_text(encoding="utf-8")
+            changed = source.replace("跨行业通用｜沟通协作", "电商与零售｜视觉创意", 1)
+            self.assertNotEqual(changed, source)
+            source = changed
+            (root / "prompts.html").write_text(source, encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("visible prompt taxonomy differs" in error for error in errors), errors)
+
+    def test_retired_units_require_tombstone_records(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            registry["status"] = framework["status"] = manifest["status"] = "retired"
+            for unit in registry["units"]:
+                unit["contentStatus"] = "retired"
+                unit["lastReviewedDate"] = "2026-09-03"
+            registry["retirementRecords"] = []
+            for path, value in (
+                (root / "registry/modules-v1.json", registry),
+                (root / "registry/framework-v1.json", framework),
+                (root / "manifest.json", manifest),
+            ):
+                path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("retirement tombstone missing" in error for error in errors), errors)
+
+    def test_valid_retirement_tombstone_is_accepted(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            unit = registry["units"][0]
+            unit["contentStatus"] = "retired"
+            unit["lastReviewedDate"] = registry["generatedDate"]
+            registry["status"] = "review-in-progress"
+            registry["retirementRecords"] = [
+                {
+                    "unitId": unit["id"],
+                    "retiredDate": registry["generatedDate"],
+                    "reason": "内容已由新的正式模块取代。",
+                    "replacementPath": "ch01.html#s2",
+                }
+            ]
+            (root / "registry/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertFalse([error for error in errors if "retirement" in error], errors)
+
+    def test_latest_verification_record_controls_current_state_without_erasing_history(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            registry["status"] = framework["status"] = manifest["status"] = "review-in-progress"
+            unit = next(item for item in registry["units"] if item["id"] == "CDX-M-0013")
+            unit.update(
+                {
+                    "contentStatus": "verification",
+                    "verificationState": "verified",
+                    "verificationDate": "2026-09-03",
+                    "rights": "owned",
+                    "lastReviewedDate": "2026-09-03",
+                }
+            )
+            base = {
+                "unitId": unit["id"],
+                "platform": "windows",
+                "browser": None,
+                "productVersion": "test-version",
+                "extensionVersion": None,
+                "inputClass": "synthetic-install-check",
+                "verifiedBy": "device-owner",
+            }
+            registry["verificationRecords"] = [
+                {
+                    **base,
+                    "evidenceId": "EVD-CDX-M-0013-WINDOWS-001",
+                    "result": "verification-expired",
+                    "checkedDate": "2026-07-01",
+                    "expiresDate": "2026-07-31",
+                },
+                {
+                    **base,
+                    "evidenceId": "EVD-CDX-M-0013-WINDOWS-002",
+                    "result": "verified",
+                    "checkedDate": "2026-09-03",
+                    "expiresDate": "2026-10-03",
+                },
+            ]
+            for path, value in (
+                (root / "registry/modules-v1.json", registry),
+                (root / "registry/framework-v1.json", framework),
+                (root / "manifest.json", manifest),
+            ):
+                path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+            chapter = (root / "ch03.html").read_text(encoding="utf-8")
+            chapter = chapter.replace(
+                'data-unit-id="CDX-M-0013" data-content-status="draft" data-verification-state="unverified"',
+                'data-unit-id="CDX-M-0013" data-content-status="verification" data-verification-state="verified"',
+            )
+            (root / "ch03.html").write_text(chapter, encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertFalse([error for error in errors if "verification" in error], errors)
 
     def test_verification_records_enforce_risk_windows_and_catalog_dates(self):
         checker = load_check_module()
@@ -738,47 +1022,114 @@ class ModuleRegistryTests(unittest.TestCase):
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertTrue(any("risk window" in error for error in errors), errors)
 
+    def test_unit_verification_state_must_match_latest_platform_evidence(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            registry["status"] = framework["status"] = manifest["status"] = "review-in-progress"
+            unit = registry["units"][0]
+            unit.update(
+                {
+                    "contentStatus": "stable",
+                    "verificationState": "verified",
+                    "verificationDate": "2026-09-02",
+                    "rights": "owned",
+                    "lastReviewedDate": "2026-09-02",
+                }
+            )
+            registry["verificationRecords"] = [
+                {
+                    "unitId": unit["id"],
+                    "platform": platform,
+                    "browser": None,
+                    "productVersion": "test-version",
+                    "extensionVersion": None,
+                    "inputClass": "synthetic-check",
+                    "evidenceId": f"EVD-{unit['id']}-{platform.upper()}-001",
+                    "result": "verification-failed",
+                    "checkedDate": "2026-09-02",
+                    "expiresDate": "2027-02-28",
+                    "verifiedBy": "device-owner",
+                }
+                for platform in unit["platforms"]
+            ]
+            for path, value in (
+                (root / "registry/modules-v1.json", registry),
+                (root / "registry/framework-v1.json", framework),
+                (root / "manifest.json", manifest),
+            ):
+                path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("does not match latest platform evidence" in error for error in errors), errors)
+
     def test_offline_check_runs_module_semantics_inside_the_archive(self):
         checker = load_check_module()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"
             copy_repo(root)
-            config = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
+            config = replace_offline_payload(root, "registry/modules-v1.json", b"{}\n")
+            errors = checker.check_offline_zip(root, config, strict=True)
+            self.assertTrue(any("module catalog" in error for error in errors), errors)
+
+    def test_offline_catalog_and_schemas_must_match_the_online_artifacts(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            catalog = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            catalog["catalogVersion"] = "9.9.9"
+            config = replace_offline_payload(
+                root,
+                "registry/modules-v1.json",
+                (json.dumps(catalog, ensure_ascii=False, indent=2) + "\n").encode("utf-8"),
+            )
+            errors = checker.check_offline_zip(root, config, strict=True)
+            self.assertTrue(any("differs from online artifact" in error for error in errors), errors)
+
+    def test_offline_index_must_be_the_deterministic_offline_projection(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            config = replace_offline_payload(
+                root,
+                "index.html",
+                b"<!doctype html><html><body><h1>unrelated but safe</h1></body></html>\n",
+            )
+            errors = checker.check_offline_zip(root, config, strict=True)
+            self.assertTrue(any("offline index differs" in error for error in errors), errors)
+
+    def test_offline_manifest_rejects_duplicate_file_records(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
             archive = next((root / "downloads").glob("*-offline.zip"))
             prefix = "codex-tutorial-cn/"
             with zipfile.ZipFile(archive) as package:
                 infos = package.infolist()
                 payloads = {info.filename: package.read(info.filename) for info in infos}
-            target = prefix + "registry/modules-v1.json"
-            payloads[target] = b"{}\n"
             manifest_name = prefix + "manifest.json"
             manifest = json.loads(payloads[manifest_name].decode("utf-8"))
-            digest = hashlib.sha256(payloads[target]).hexdigest()
-            record = next(item for item in manifest["files"] if item["path"] == "registry/modules-v1.json")
-            record.update({"size": len(payloads[target]), "sha256": digest})
+            manifest["files"].append(dict(manifest["files"][0]))
             payloads[manifest_name] = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
-            sums_name = prefix + "SHA256SUMS.txt"
-            sums = {}
-            for line in payloads[sums_name].decode("utf-8").splitlines():
-                checksum, relative = line.split("  ", 1)
-                sums[relative] = checksum
-            sums["registry/modules-v1.json"] = digest
-            payloads[sums_name] = "".join(
-                f"{checksum}  {relative}\n" for relative, checksum in sums.items()
-            ).encode("utf-8")
             replacement = archive.with_name("replacement.zip")
             with zipfile.ZipFile(replacement, "w", zipfile.ZIP_STORED) as package:
                 for info in infos:
                     package.writestr(info, payloads[info.filename])
             replacement.replace(archive)
-            checksum_path = archive.with_name(archive.name + ".sha256")
-            checksum_path.write_text(
+            archive.with_name(archive.name + ".sha256").write_text(
                 f"{hashlib.sha256(archive.read_bytes()).hexdigest()}  {archive.name}\n",
                 encoding="ascii",
                 newline="\n",
             )
+            config = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
             errors = checker.check_offline_zip(root, config, strict=True)
-            self.assertTrue(any("module catalog" in error for error in errors), errors)
+            self.assertTrue(any("duplicate paths" in error for error in errors), errors)
 
     def test_strict_checker_rejects_taxonomy_drift_from_the_framework(self):
         checker = load_check_module()
