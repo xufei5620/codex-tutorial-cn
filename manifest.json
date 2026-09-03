@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0.0",
   "artifact": "codex-tutorial-cn-online",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "status": "draft-seed-unverified",
-  "generatedDate": "2026-09-02",
+  "generatedDate": "2026-09-03",
   "entry": "index.html",
   "files": [
     {
@@ -14,7 +14,7 @@
     {
       "path": "README.md",
       "size": 3509,
-      "sha256": "69fe0cbe0bd263ed8450b21e9c629a7f5e639a2dad780b48894fc5672a636563"
+      "sha256": "19d178a919b5f9b1a1f9d0747fb4e9fc7f8f700f36bdd92f3389d728605282a0"
     },
     {
       "path": "assets/favicon.svg",
@@ -29,12 +29,12 @@
     {
       "path": "ch01.html",
       "size": 12391,
-      "sha256": "6cecce77c9df6d24c3637bcb55cb575980fe94a613d769e49bbb765b17b114be"
+      "sha256": "3a8e2d7423e73644eb791744ef5ca5c3fc6db1289ed4f9025daa81e800b84217"
     },
     {
       "path": "ch02.html",
       "size": 17459,
-      "sha256": "ce08071a5a26b2c402449f914a313ecf2911a99e63e347062d529a34fbdaa732"
+      "sha256": "938232b427c7bd7ce052d0af2ec7e6b1470465973e7f097fcc5f63faddb69bef"
     },
     {
       "path": "ch03.html",
@@ -44,12 +44,12 @@
     {
       "path": "ch04.html",
       "size": 15360,
-      "sha256": "7fbd9ad938bb819275ebbc1253c44d23251dd25aac9a160af845fbac2a26c843"
+      "sha256": "cb383b860d9a9d1b2bee6834c082316a3050a2cfee6367adc634a9c40b6a35f3"
     },
     {
       "path": "ch05.html",
       "size": 15176,
-      "sha256": "d554f91d71fe255fe7fbb87d1402d12560034a131df40c08050e3abd57f847ee"
+      "sha256": "046359c9a4bbf39f93906191b9f6241322bbe2ca1b99ddbaf42308529d0b3c5d"
     },
     {
       "path": "ch06.html",
@@ -64,22 +64,22 @@
     {
       "path": "ch08.html",
       "size": 24550,
-      "sha256": "b65c31640c3ec3cb7f2d91b4086d8b14c8e23a2472cd358bb43647e6458bfc29"
+      "sha256": "201f6036b9d19338f2bbf54ee2161115846a26199977fed507ba465389007ae4"
     },
     {
       "path": "ch09.html",
       "size": 20026,
-      "sha256": "f3d9c6095fcdf5d0bbc661a6fa10313e8614a06b34fee49a14bb1cf2cf335c57"
+      "sha256": "414591a8bc98da2d078460b767a03cd331b52a24d2c8527c3b00842c03db88ce"
     },
     {
       "path": "ch10.html",
       "size": 16854,
-      "sha256": "fdec884761e904b0c5c35406e80b679e3f6103247e9d16373516cd588018d47c"
+      "sha256": "97c41e5efcd2300d12980a8e78537fe100a72cf9cb67e17d209907f17310fe04"
     },
     {
       "path": "ch11.html",
-      "size": 23055,
-      "sha256": "029d3dfd66ab48daf4551b3e54cc0d27c2befe1fa1f6c53ae6aa58b5063e50ef"
+      "size": 23500,
+      "sha256": "93e80ae74f9e7b1015c97458b8f7f6f78241759088529eb8a2a672da7a59dc97"
     },
     {
       "path": "deploy/Caddyfile",
@@ -114,7 +114,7 @@
     {
       "path": "index.html",
       "size": 8399,
-      "sha256": "d7dc1f9de4af2fc09d3ada91c5344ca62c85779f9a784cfe40a399248e442e93"
+      "sha256": "37d1cea59e2676df525fe77bc89ea4dd56be744f8cd09b6dac307807bbafbd65"
     },
     {
       "path": "maintenance-release.html",
@@ -128,18 +128,18 @@
     },
     {
       "path": "prompts.html",
-      "size": 34527,
-      "sha256": "684792dd5b9bf7e6ef0033d4f72c4d78750bfd06c217277522b2f6b9fe7694a4"
+      "size": 34537,
+      "sha256": "693b6275ef635088e8b7a2f865e96d072f7d3959be4cd0dcc1ff77b2419219db"
     },
     {
       "path": "registry/framework-v1.json",
       "size": 8716,
-      "sha256": "832362bdbe53f2ee8d5aebd1480ec6e0f65ee2e7e3ff7bb1ee98c77330fd57dc"
+      "sha256": "8ec15716fb03dece7d43dda9a76e7b3cf00558d751210e5384e57ee1e40be462"
     },
     {
       "path": "registry/modules-v1.json",
-      "size": 39980,
-      "sha256": "c2c91934c116061214dba1f54522ed57f13491596c5f5923e5c4ac38b540748a"
+      "size": 40009,
+      "sha256": "ad2fd9d48c7e83b43a9a8ca45244bf9fae26e3dd0dc927f5c98307fdd7a2d2ee"
     },
     {
       "path": "robots.txt",
@@ -148,13 +148,13 @@
     },
     {
       "path": "schemas/framework-v1.schema.json",
-      "size": 14612,
-      "sha256": "4746fd17db3cde4b3a407a3513d2523817c8610d41e12affa2697bc8408a979f"
+      "size": 14740,
+      "sha256": "bbd38ab0fe13ae4279d7b6781f9929e16d7a92410ce03d946836e34b745d5cf4"
     },
     {
       "path": "schemas/modules-v1.schema.json",
-      "size": 15279,
-      "sha256": "133977e5c0dfa7ddb4513939f6c13b786edd865da9e721e747f719ee7cbd19c3"
+      "size": 21461,
+      "sha256": "a6f1ff89519ac44357ba795d7c9ede4a8e667c04f8028fce5bb0ee5ab58e0a56"
     },
     {
       "path": "source-research.html",
@@ -178,8 +178,8 @@
     },
     {
       "path": "templates/module-template.html",
-      "size": 2673,
-      "sha256": "a7dee0826a706ce6f717691812c7d55a271fdbd7da8120f3d44744c5982ae998"
+      "size": 3331,
+      "sha256": "1b855f47544d8c8b959d2e3f30a77f8fa2f44716a9937d4c1abc80420eea490d"
     },
     {
       "path": "templates/plugin-template.html",
@@ -188,8 +188,8 @@
     },
     {
       "path": "templates/prompt-card-template.html",
-      "size": 2375,
-      "sha256": "ff999abc9bc65d3cb7c2d4d320677f57341eb4041ccc77dc72f17e5f0054e17d"
+      "size": 2681,
+      "sha256": "f60e7b0477d794fd4d3e7b5f32c1a5056cb5a203f05799a2de64a6ce95afde5a"
     },
     {
       "path": "templates/skill-template.html",

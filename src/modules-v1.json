@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0.0",
   "catalogVersion": "1.0.0",
-  "contentVersion": "0.2.1",
+  "contentVersion": "0.3.0",
   "status": "draft-seed-unverified",
-  "generatedDate": "2026-09-02",
+  "generatedDate": "2026-09-03",
   "contentPipeline": [
     "outline",
     "draft",
@@ -22,6 +22,7 @@
     "unsupported",
     "verification-expired"
   ],
+  "verificationRecords": [],
   "legacyChapterPlaceholders": [
     {"legacyId": "CDX-M-0101", "chapterId": "ch01", "publicPath": "ch01.html"},
     {"legacyId": "CDX-M-0201", "chapterId": "ch02", "publicPath": "ch02.html"},

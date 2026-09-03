@@ -41,9 +41,10 @@
       "enum": [
         "framework-review",
         "draft-seed-unverified",
-        "reviewed",
-        "platform-verified",
-        "stable"
+        "review-in-progress",
+        "acceptance-ready",
+        "stable",
+        "retired"
       ]
     },
     "generatedDate": {
@@ -604,9 +605,12 @@
           "enum": [
             "outline",
             "draft",
-            "reviewed",
-            "platform-verified",
-            "stable"
+            "source-and-rights-review",
+            "editorial-reviewed",
+            "verification",
+            "acceptance-ready",
+            "stable",
+            "retired"
           ]
         },
         "file": {

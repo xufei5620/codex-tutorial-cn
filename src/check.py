@@ -2,9 +2,11 @@
 """Strict, non-mutating release checks for the generated tutorial artifacts."""
 
 import argparse
+from datetime import date
 import hashlib
 import html
 from html.parser import HTMLParser
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -13,12 +15,21 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qsl, unquote, urlsplit
 import zipfile
 
 
 ROOT = Path(__file__).resolve().parent.parent
-STATUS_ZH = {"draft": "草稿", "outline": "大纲", "reviewed": "已复核"}
+STATUS_ZH = {
+    "outline": "大纲",
+    "draft": "草稿",
+    "source-and-rights-review": "来源与权利复核",
+    "editorial-reviewed": "已编辑审校",
+    "verification": "验证中",
+    "acceptance-ready": "待验收",
+    "stable": "稳定",
+    "retired": "已退役",
+}
 EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__"}
 URL_ATTRIBUTES = {
     "archive",
@@ -66,6 +77,8 @@ MANAGED_ROOT_FILES = {
 }
 MANAGED_ROOT_DIRECTORIES = {"assets", "deploy", "registry", "schemas", "specs", "templates"}
 MANAGED_METADATA = {"manifest.json", "SHA256SUMS.txt"}
+PUBLIC_TEXT_SUFFIXES = {".conf", ".css", ".html", ".htm", ".json", ".md", ".sha256", ".svg", ".txt", ".xml", ".xhtml", ".yml", ".yaml"}
+PUBLIC_TEXT_NAMES = {"Caddyfile", "Dockerfile"}
 DEVELOPER_ROOT_ENTRIES = {
     ".dockerignore",
     ".git",
@@ -77,6 +90,40 @@ DEVELOPER_ROOT_ENTRIES = {
     "requirements-dev.txt",
     "src",
     "tests",
+}
+LOCKED_LESSON_COUNTS = {
+    "ch01": 5,
+    "ch02": 5,
+    "ch03": 8,
+    "ch04": 6,
+    "ch05": 6,
+    "ch06": 6,
+    "ch07": 6,
+    "ch08": 8,
+    "ch09": 5,
+    "ch10": 5,
+    "ch11": 5,
+}
+LOCKED_CHAPTER_RISK = {
+    "ch01": "low",
+    "ch02": "low",
+    "ch03": "high",
+    "ch04": "low",
+    "ch05": "medium",
+    "ch06": "high",
+    "ch07": "medium",
+    "ch08": "medium",
+    "ch09": "low",
+    "ch10": "medium",
+    "ch11": "medium",
+}
+LOCKED_PROMPT_TASKS = {
+    "PRM-COM-0001": "communication",
+    "PRM-COM-0002": "document-report",
+    "PRM-COM-0003": "file-organization",
+    "PRM-COM-0004": "table-data",
+    "PRM-COM-0005": "research-plan",
+    "PRM-COM-0006": "visual",
 }
 
 
@@ -119,6 +166,84 @@ def contains_external_url(value: str) -> bool:
     return re.search(r"(?i)https?://|(?:^|[\s\"'(=,;])//|(?:mailto|tel):", value) is not None
 
 
+def walk_strings(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            yield from walk_strings(key)
+            yield from walk_strings(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from walk_strings(item)
+
+
+def private_path_label(value: str) -> str | None:
+    checks = (
+        (r"(?<![A-Za-z])[A-Za-z]:[\\/]", "drive path"),
+        (r"(?:^|[^\\])\\\\[^\\\s]+[\\/]", "UNC path"),
+        (r"(?i)file://", "file URL"),
+        (r"(?i)(?:^|[\\/])\.(?:codex|superpowers)(?:[\\/]|$)", "private tool path"),
+        (r"(?i)(?:^|[\\/])worktrees(?:[\\/]|$)", "private worktree path"),
+        (r"/(?:Users|home)/[^/\s]+/", "private home path"),
+    )
+    for pattern, label in checks:
+        if re.search(pattern, value):
+            return label
+    return None
+
+
+def check_public_text_safety(root: Path, relative_paths: set[str]) -> list[str]:
+    errors = []
+    for relative in sorted(relative_paths):
+        path = root.joinpath(*relative.split("/"))
+        if not path.is_file() or (path.suffix.lower() not in PUBLIC_TEXT_SUFFIXES and path.name not in PUBLIC_TEXT_NAMES):
+            continue
+        try:
+            source = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            errors.append(f"{relative}: declared text artifact is not UTF-8")
+            continue
+        values = [source, html.unescape(source)]
+        if path.suffix.lower() == ".json":
+            try:
+                values = list(walk_strings(json.loads(source)))
+            except json.JSONDecodeError:
+                pass
+        labels = sorted({label for value in values if (label := private_path_label(value))})
+        for label in labels:
+            errors.append(f"{relative}: private path detected ({label})")
+    return errors
+
+
+def source_url_problem(value: str) -> str | None:
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        return "cannot be parsed"
+    if parsed.scheme.lower() != "https" or not parsed.hostname:
+        return "must use a public HTTPS host"
+    if parsed.username is not None or parsed.password is not None:
+        return "must not contain userinfo"
+    host = parsed.hostname.rstrip(".").lower()
+    if host == "localhost" or host.endswith((".localhost", ".local", ".internal")):
+        return "must not use a local hostname"
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        pass
+    else:
+        if address.is_private or address.is_loopback or address.is_link_local or address.is_reserved or address.is_unspecified:
+            return "must not use a private or special IP address"
+    sensitive_names = {"token", "key", "api_key", "apikey", "secret", "password", "auth", "signature", "credential"}
+    for name, _ in parse_qsl(parsed.query, keep_blank_values=True):
+        if name.lower() in sensitive_names:
+            return f"must not contain sensitive query parameter {name!r}"
+    if re.search(r"(?i)(?:token|secret|password|credential)=", parsed.fragment):
+        return "must not contain sensitive fragment data"
+    return None
+
+
 class HTMLAuditParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -156,6 +281,10 @@ class HTMLAuditParser(HTMLParser):
 
     def _audit_tag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
+        attribute_names = [raw_name.lower() for raw_name, _ in attrs]
+        duplicate_attributes = repeated(attribute_names)
+        if duplicate_attributes:
+            self.errors.append(f"contains duplicate attribute names in {tag}: {duplicate_attributes}")
         attributes = {
             raw_name.lower(): html.unescape(raw_value or "").strip()
             for raw_name, raw_value in attrs
@@ -625,7 +754,10 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
     except Exception as error:
         return [f"module registry/schema cannot be read: {error}"], warnings
+    if not isinstance(registry, dict):
+        return ["module catalog root must be an object"], warnings
 
+    schema_invalid = False
     try:
         import jsonschema
     except ImportError:
@@ -633,6 +765,7 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         (errors if strict else warnings).append(message)
     else:
         try:
+            jsonschema.Draft202012Validator.check_schema(schema)
             validator = jsonschema.Draft202012Validator(
                 schema,
                 format_checker=jsonschema.FormatChecker(),
@@ -641,19 +774,16 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
             for error in schema_errors:
                 location = "/".join(str(part) for part in error.path) or "$"
                 errors.append(f"module catalog schema error at {location}: {error.message}")
+            schema_invalid = bool(schema_errors)
         except Exception as error:
             errors.append(f"module catalog schema validation failed: {getattr(error, 'message', error)}")
+            schema_invalid = True
 
-    for pattern, label in (
-        (r"(?<![A-Za-z])[A-Za-z]:[\\/]", "drive path"),
-        (r"\\\\", "UNC path"),
-        (r"\.\./", "parent traversal"),
-        (r"(?i)file://", "file URL"),
-        (r"(?i)\.codex", "Codex private path"),
-        (r"(?i)\.superpowers", "internal worktree path"),
-    ):
-        if re.search(pattern, registry_text):
-            errors.append(f"module catalog contains forbidden {label}")
+    private_labels = sorted({label for value in walk_strings(registry) if (label := private_path_label(value))})
+    for label in private_labels:
+        errors.append(f"module catalog contains forbidden private {label}")
+    if schema_invalid:
+        return errors, warnings
 
     units = registry.get("units")
     if not isinstance(units, list):
@@ -661,6 +791,7 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
     unit_records = [unit for unit in units if isinstance(unit, dict)]
     ids = [unit.get("id") for unit in unit_records]
     paths = [unit.get("publicPath") for unit in unit_records]
+    records_by_id = {unit.get("id"): unit for unit in unit_records}
     duplicate_ids = repeated(ids)
     duplicate_paths = repeated(paths)
     if duplicate_ids:
@@ -675,6 +806,16 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
     reused = sorted(set(legacy_ids) & set(ids))
     if reused:
         errors.append(f"legacy chapter IDs reused by content units: {reused}")
+    expected_legacy = [
+        {
+            "legacyId": f"CDX-M-{number:02d}01",
+            "chapterId": f"ch{number:02d}",
+            "publicPath": f"ch{number:02d}.html",
+        }
+        for number in range(1, 12)
+    ]
+    if legacy != expected_legacy:
+        errors.append("legacy chapter mapping differs from the locked v1 allocation")
 
     collection_keys = [item.get("key") for item in registry.get("collections", []) if isinstance(item, dict)]
     task_keys = [item.get("key") for item in registry.get("taskTypes", []) if isinstance(item, dict)]
@@ -689,6 +830,10 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
         task_key = unit.get("taskKey")
         if task_key is not None and task_key not in task_keys:
             errors.append(f"{unit.get('id')}: unknown task key: {task_key}")
+        for source_ref in unit.get("sourceRefs", []):
+            problem = source_url_problem(source_ref["url"])
+            if problem:
+                errors.append(f"{unit.get('id')}: source URL {problem}: {source_ref['url']}")
 
     slots = []
     for unit in unit_records:
@@ -700,12 +845,48 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
     if duplicate_slots:
         errors.append(f"duplicate unit order within a container: {duplicate_slots}")
 
+    sequence = 1
+    for chapter_id, count in LOCKED_LESSON_COUNTS.items():
+        for order in range(1, count + 1):
+            unit_id = f"CDX-M-{sequence:04d}"
+            record = records_by_id.get(unit_id)
+            expected_identity = {
+                "chapterId": chapter_id,
+                "order": order,
+                "sourceAnchor": f"s{order}",
+                "publicPath": f"{chapter_id}.html#s{order}",
+            }
+            if record is None or any(record.get(key) != value for key, value in expected_identity.items()):
+                errors.append(f"{unit_id}: permanent identity differs from the locked v1 allocation")
+            elif record.get("risk") != LOCKED_CHAPTER_RISK[chapter_id]:
+                errors.append(f"{unit_id}: risk differs from the locked chapter baseline")
+            else:
+                expected_platforms = (
+                    ["windows"]
+                    if unit_id == "CDX-M-0013"
+                    else ["macos"]
+                    if unit_id == "CDX-M-0014"
+                    else ["windows", "macos"]
+                )
+                if record.get("platforms") != expected_platforms:
+                    errors.append(f"{unit_id}: platforms differ from the locked v1 allocation")
+            sequence += 1
+    for prompt_id, task_key in LOCKED_PROMPT_TASKS.items():
+        record = records_by_id.get(prompt_id)
+        if record is None or record.get("taskKey") != task_key:
+            errors.append(f"{prompt_id}: taskKey differs from the locked v1 allocation")
+        elif record.get("risk") != "low" or record.get("platforms") != ["windows", "macos"]:
+            errors.append(f"{prompt_id}: risk/platforms differ from the locked v1 allocation")
+
+    framework = None
     try:
         framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
         if registry.get("contentPipeline") != framework["contentStatus"]["pipeline"]:
             errors.append("module content pipeline differs from framework registry")
         if registry.get("verificationStates") != framework["verification"]["states"]:
             errors.append("module verification states differ from framework registry")
+        if registry.get("status") != framework.get("status"):
+            errors.append("module catalog status differs from framework registry")
         expected_collections = [
             {"key": item["key"], "title": item["title"]}
             for item in framework["promptLibrary"]["collections"]
@@ -714,7 +895,18 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
             errors.append("module collection taxonomy differs from framework registry")
         if [item.get("key") for item in registry.get("taskTypes", [])] != framework["promptLibrary"]["taskKeys"]:
             errors.append("module task taxonomy differs from framework registry")
+        unique_cards = sum(item["uniqueCardCount"] for item in framework["promptLibrary"]["collections"])
+        shared_card = framework["promptLibrary"]["sharedCard"]
+        placement_count = unique_cards + shared_card["placementCount"] - 1
+        if unique_cards != 26 or placement_count != 30:
+            errors.append("prompt library totals differ from the locked 26-card/30-placement plan")
+        if shared_card.get("id") != "PRM-COM-0003" or shared_card.get("taskKey") != "file-organization":
+            errors.append("prompt shared-card identity differs from the locked plan")
+        if shared_card.get("placementCollections") != collection_keys:
+            errors.append("prompt shared-card collections do not close over the catalog taxonomy")
         manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+        if registry.get("status") != manifest.get("status"):
+            errors.append("module catalog status differs from artifact manifest")
         if registry.get("contentVersion") != manifest.get("version"):
             errors.append("module contentVersion differs from artifact version")
         if registry.get("generatedDate") != manifest.get("generatedDate"):
@@ -722,13 +914,64 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
     except Exception as error:
         errors.append(f"module catalog cross-registry check failed: {error}")
 
+    if framework is not None:
+        generated_date = date.fromisoformat(registry["generatedDate"])
+        records = registry.get("verificationRecords", [])
+        evidence_ids = [record["evidenceId"] for record in records]
+        if repeated(evidence_ids):
+            errors.append(f"duplicate verification evidence IDs: {repeated(evidence_ids)}")
+        records_by_unit: dict[str, list[dict]] = {}
+        for record in records:
+            unit_id = record["unitId"]
+            records_by_unit.setdefault(unit_id, []).append(record)
+            unit = records_by_id.get(unit_id)
+            if unit is None:
+                errors.append(f"verification record references unknown unit: {unit_id}")
+                continue
+            if record["platform"] not in unit["platforms"]:
+                errors.append(f"{unit_id}: verification record uses an undeclared platform")
+            checked = date.fromisoformat(record["checkedDate"])
+            expires = date.fromisoformat(record["expiresDate"])
+            if checked > generated_date:
+                errors.append(f"{unit_id}: verification date is later than the catalog date")
+            if expires < checked:
+                errors.append(f"{unit_id}: verification expiry precedes its check date")
+            allowed_days = framework["verification"]["riskRevalidationDays"][unit["risk"]]
+            if (expires - checked).days > allowed_days:
+                errors.append(f"{unit_id}: verification expiry exceeds the {allowed_days}-day risk window")
+            if expires < generated_date and unit["verificationState"] != "verification-expired":
+                errors.append(f"{unit_id}: expired evidence is not reflected in verificationState")
+        for unit in unit_records:
+            unit_id = unit["id"]
+            unit_records_for_verification = records_by_unit.get(unit_id, [])
+            if unit["verificationState"] == "unverified":
+                if unit_records_for_verification:
+                    errors.append(f"{unit_id}: unverified unit must not carry verification records")
+            elif not unit_records_for_verification:
+                errors.append(f"{unit_id}: verification record missing for non-unverified state")
+            else:
+                latest_check = max(record["checkedDate"] for record in unit_records_for_verification)
+                if unit["verificationDate"] != latest_check:
+                    errors.append(f"{unit_id}: verificationDate does not match the latest evidence")
+            if unit["contentStatus"] == "stable":
+                covered = {record["platform"] for record in unit_records_for_verification}
+                if covered != set(unit["platforms"]):
+                    errors.append(f"{unit_id}: stable unit lacks evidence for every declared platform")
+            if unit["lastReviewedDate"] and date.fromisoformat(unit["lastReviewedDate"]) > generated_date:
+                errors.append(f"{unit_id}: lastReviewedDate is later than the catalog date")
+            for source_ref in unit["sourceRefs"]:
+                if date.fromisoformat(source_ref["reviewDate"]) > generated_date:
+                    errors.append(f"{unit_id}: source reviewDate is later than the catalog date")
+
     parsed_units = []
+    registered_content_pages: set[Path] = set()
     chapter_ids = [item.get("chapterId") for item in legacy if isinstance(item, dict)]
     for chapter_id in chapter_ids:
         page = root / f"{chapter_id}.html"
         if not page.is_file():
             errors.append(f"module chapter page missing: {page.name}")
             continue
+        registered_content_pages.add(page.resolve())
         page_units, summaries, unregistered_sections, _ = parse_content_units(page)
         if summaries != ["summary"]:
             errors.append(f"{page.name}: expected exactly one #summary chapter summary")
@@ -747,21 +990,36 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
 
     prompt_page = root / "prompts.html"
     if prompt_page.is_file():
+        registered_content_pages.add(prompt_page.resolve())
         prompt_units, _, _, unregistered_cards = parse_content_units(prompt_page)
         if unregistered_cards:
             errors.append(f"prompts.html: unregistered prompt cards: {unregistered_cards}")
-        for order, unit in enumerate(prompt_units, 1):
+        collection_positions: dict[str, int] = {}
+        for unit in prompt_units:
+            record = records_by_id.get(unit.get("id"), {})
+            collections = record.get("collectionKeys") or ["unregistered"]
+            primary_collection = collections[0]
+            collection_positions[primary_collection] = collection_positions.get(primary_collection, 0) + 1
             parsed_units.append(
                 {
                     **unit,
                     "kind": "prompt-card",
                     "chapterId": None,
-                    "order": order,
+                    "order": collection_positions[primary_collection],
                     "publicPath": f"prompts.html#{unit['anchor']}",
                 }
             )
     else:
         errors.append("prompt page missing: prompts.html")
+
+    for page in public_html_files(root):
+        if page.resolve() in registered_content_pages:
+            continue
+        outside_units, _, _, _ = parse_content_units(page)
+        if outside_units:
+            errors.append(
+                f"{page.relative_to(root).as_posix()}: data-unit-id appears outside registered content pages"
+            )
 
     parsed_ids = [unit.get("id") for unit in parsed_units]
     if repeated(parsed_ids):
@@ -774,7 +1032,6 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
             f"(missing HTML: {missing_html}; missing registry: {missing_registry})"
         )
 
-    records_by_id = {unit.get("id"): unit for unit in unit_records}
     for parsed in parsed_units:
         record = records_by_id.get(parsed.get("id"))
         if record is None:
@@ -790,7 +1047,7 @@ def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str
     return errors, warnings
 
 
-def check_offline_zip(root: Path, chapter_config: dict) -> list[str]:
+def check_offline_zip(root: Path, chapter_config: dict, strict: bool) -> list[str]:
     errors = []
     version = chapter_config["site"]["version"]
     archive = root / "downloads" / f"codex-tutorial-cn-v{version}-offline.zip"
@@ -844,11 +1101,15 @@ def check_offline_zip(root: Path, chapter_config: dict) -> list[str]:
             if not errors:
                 with tempfile.TemporaryDirectory(prefix="codex-tutorial-check-") as directory:
                     package.extractall(directory)
+                    package_root = Path(directory) / "codex-tutorial-cn"
                     link_errors, _, _ = check_site_tree(
-                        Path(directory) / "codex-tutorial-cn",
+                        package_root,
                         allow_root_relative=False,
                     )
                     errors.extend(link_errors)
+                    errors.extend(check_public_text_safety(package_root, payload_paths | MANAGED_METADATA))
+                    module_errors, _ = check_module_registry(package_root, strict)
+                    errors.extend(f"module catalog: {message}" for message in module_errors)
     except Exception as error:
         errors.append(f"ZIP cannot be validated: {error}")
     return errors
@@ -924,6 +1185,7 @@ def main() -> int:
     expected_manifest_paths = managed_public_paths(ROOT, config)
     errors.extend(check_public_root_inventory(ROOT, expected_manifest_paths))
     errors.extend(check_download_inventory(ROOT, config))
+    errors.extend(check_public_text_safety(ROOT, expected_manifest_paths | MANAGED_METADATA))
     errors.extend(f"manifest: {message}" for message in check_manifest(ROOT, expected_manifest_paths))
     registry_errors, registry_warnings = check_registry(ROOT, arguments.strict)
     errors.extend(registry_errors)
@@ -931,7 +1193,7 @@ def main() -> int:
     module_errors, module_warnings = check_module_registry(ROOT, arguments.strict)
     errors.extend(f"modules: {message}" for message in module_errors)
     warnings.extend(f"modules: {message}" for message in module_warnings)
-    errors.extend(f"offline: {message}" for message in check_offline_zip(ROOT, config))
+    errors.extend(f"offline: {message}" for message in check_offline_zip(ROOT, config, arguments.strict))
     if arguments.verify_generated:
         errors.extend(check_generated_sync(ROOT, config))
 

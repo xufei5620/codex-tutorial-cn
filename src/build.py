@@ -21,7 +21,16 @@ CH = cfg['chapters']
 PARTS = cfg['parts']
 EXTRAS = cfg['extras']
 ORDER = [c for p in PARTS for c in p['chapters']]
-STATUS_LABEL = {'draft': '草稿', 'outline': '大纲', 'reviewed': '已复核'}
+STATUS_LABEL = {
+    'outline': '大纲',
+    'draft': '草稿',
+    'source-and-rights-review': '来源与权利复核',
+    'editorial-reviewed': '已编辑审校',
+    'verification': '验证中',
+    'acceptance-ready': '待验收',
+    'stable': '稳定',
+    'retired': '已退役',
+}
 
 css = open(os.path.join(CONTENT, 'style.css'), encoding='utf-8').read()
 ZIP_NAME = f"codex-tutorial-cn-v{cfg['site']['version']}-offline.zip"

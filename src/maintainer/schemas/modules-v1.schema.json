@@ -12,6 +12,7 @@
     "generatedDate",
     "contentPipeline",
     "verificationStates",
+    "verificationRecords",
     "legacyChapterPlaceholders",
     "collections",
     "taskTypes",
@@ -20,7 +21,7 @@
   "properties": {
     "schemaVersion": {
       "type": "string",
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+      "const": "1.0.0"
     },
     "catalogVersion": {
       "type": "string",
@@ -64,6 +65,13 @@
         "unsupported",
         "verification-expired"
       ]
+    },
+    "verificationRecords": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/verificationRecord"
+      }
     },
     "legacyChapterPlaceholders": {
       "type": "array",
@@ -145,6 +153,120 @@
     }
   },
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "draft-seed-unverified"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "units": {
+            "items": {
+              "properties": {
+                "contentStatus": {
+                  "const": "draft"
+                },
+                "verificationState": {
+                  "const": "unverified"
+                },
+                "rights": {
+                  "const": "pending"
+                }
+              }
+            }
+          },
+          "verificationRecords": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "stable"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "units": {
+            "items": {
+              "properties": {
+                "contentStatus": {
+                  "const": "stable"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "acceptance-ready"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "units": {
+            "items": {
+              "properties": {
+                "contentStatus": {
+                  "enum": [
+                    "acceptance-ready",
+                    "stable"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "retired"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "units": {
+            "items": {
+              "properties": {
+                "contentStatus": {
+                  "const": "retired"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "chapterId": {
       "enum": [
@@ -400,17 +522,33 @@
     "sourceRef": {
       "type": "object",
       "required": [
+        "author",
         "url",
-        "accessedDate",
-        "use"
+        "license",
+        "pinnedVersion",
+        "reviewDate",
+        "use",
+        "reviewConclusion"
       ],
       "properties": {
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
         "url": {
           "type": "string",
           "format": "uri",
           "pattern": "^https://[^\\s]+$"
         },
-        "accessedDate": {
+        "license": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pinnedVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewDate": {
           "type": "string",
           "format": "date"
         },
@@ -420,6 +558,108 @@
             "link-only",
             "method-research",
             "asset-reference"
+          ]
+        },
+        "reviewConclusion": {
+          "enum": [
+            "approved",
+            "approved-with-limitations",
+            "rejected",
+            "pending"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "verificationRecord": {
+      "type": "object",
+      "required": [
+        "unitId",
+        "platform",
+        "browser",
+        "productVersion",
+        "extensionVersion",
+        "inputClass",
+        "evidenceId",
+        "result",
+        "checkedDate",
+        "expiresDate",
+        "verifiedBy"
+      ],
+      "properties": {
+        "unitId": {
+          "type": "string",
+          "oneOf": [
+            {
+              "pattern": "^CDX-M-[0-9]{4}$"
+            },
+            {
+              "pattern": "^PRM-[A-Z]{3}-[0-9]{4}$"
+            }
+          ]
+        },
+        "platform": {
+          "enum": [
+            "windows",
+            "macos"
+          ]
+        },
+        "browser": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "productVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "extensionVersion": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputClass": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidenceId": {
+          "type": "string",
+          "pattern": "^EVD-[A-Z0-9-]+$"
+        },
+        "result": {
+          "enum": [
+            "verified",
+            "verified-with-limitations",
+            "verification-failed",
+            "unsupported",
+            "verification-expired"
+          ]
+        },
+        "checkedDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "expiresDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "verifiedBy": {
+          "enum": [
+            "maintainer",
+            "independent-reviewer",
+            "device-owner"
           ]
         }
       },
@@ -684,6 +924,61 @@
           "then": {
             "properties": {
               "lastReviewedDate": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "contentStatus": {
+                "enum": [
+                  "editorial-reviewed",
+                  "verification",
+                  "acceptance-ready",
+                  "stable"
+                ]
+              }
+            },
+            "required": [
+              "contentStatus"
+            ]
+          },
+          "then": {
+            "properties": {
+              "rights": {
+                "enum": [
+                  "owned",
+                  "cleared",
+                  "link-only"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "contentStatus": {
+                "const": "stable"
+              }
+            },
+            "required": [
+              "contentStatus"
+            ]
+          },
+          "then": {
+            "properties": {
+              "verificationState": {
+                "enum": [
+                  "verified",
+                  "verified-with-limitations",
+                  "unsupported"
+                ]
+              },
+              "verificationDate": {
                 "type": "string",
                 "format": "date"
               }

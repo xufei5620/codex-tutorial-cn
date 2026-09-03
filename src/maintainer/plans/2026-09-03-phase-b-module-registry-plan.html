@@ -24,7 +24,7 @@
   <li>提示词卡保留 <code>PRM-COM-0001</code> 至 <code>PRM-COM-0006</code>。</li>
   <li>旧章级 <code>CDX-M-0101</code> 等 11 个 ID 只登记为 <code>legacyChapterPlaceholders</code>，不得复用为小节身份。</li>
   <li>正文保留现有 <code>#s1</code> 等公开锚点，并在对应 <code>section</code> 增加 <code>data-unit-id</code>；小结使用 <code>#summary</code>。</li>
-  <li>当前 71 个单元全部保持 <code>contentStatus=draft</code>、<code>verificationState=unverified</code>、<code>verificationDate=null</code>、<code>lastReviewedDate=null</code>、<code>rights=pending</code>。</li>
+  <li>当前 71 个单元全部保持 <code>contentStatus=draft</code>、<code>verificationState=unverified</code>、<code>verificationDate=null</code>、<code>lastReviewedDate=null</code>、<code>rights=pending</code>；顶层 <code>verificationRecords</code> 为空。</li>
   <li>多数模块平台为 Windows 与 macOS；<code>ch03#s3</code> 仅 Windows，<code>ch03#s4</code> 仅 macOS。</li>
   <li>26 张唯一提示词卡 / 30 个展示位的正确口径为：6 张通用卡，加四个行业各 5 张专属卡并各复用 1 张共享卡。</li>
 </ul>
@@ -38,7 +38,7 @@
   <li><code>registry/modules-v1.json</code> 与 <code>schemas/modules-v1.schema.json</code>：构建生成并进入在线 manifest 与离线 ZIP。</li>
   <li><code>tests/test_module_registry.py</code>：数量、身份、状态、路径、HTML 映射、隐私与生成闭环测试。</li>
 </ul>
-<p>单元最小字段为：<code>id</code>、<code>kind</code>、<code>title</code>、<code>chapterId</code>、<code>collectionKeys</code>、<code>taskKey</code>、<code>order</code>、<code>sourceAnchor</code>、<code>publicPath</code>、<code>platforms</code>、<code>risk</code>、<code>contentStatus</code>、<code>verificationState</code>、<code>verificationDate</code>、<code>sourceRefs</code>、<code>rights</code>、<code>lastReviewedDate</code>。公开目录不保存指向离线包外部的 authoring 路径。</p>
+<p>单元最小字段为：<code>id</code>、<code>kind</code>、<code>title</code>、<code>chapterId</code>、<code>collectionKeys</code>、<code>taskKey</code>、<code>order</code>、<code>sourceAnchor</code>、<code>publicPath</code>、<code>platforms</code>、<code>risk</code>、<code>contentStatus</code>、<code>verificationState</code>、<code>verificationDate</code>、<code>sourceRefs</code>、<code>rights</code>、<code>lastReviewedDate</code>。逐平台证据放在顶层 <code>verificationRecords</code>，记录产品/扩展版本、输入类型、证据 ID、检查与到期日期；公开目录不保存指向离线包外部的 authoring 路径。</p>
 </section>
 
 <section>
@@ -48,7 +48,7 @@
   <li><strong>建立 Schema 与目录源。</strong>使用 <code>additionalProperties=false</code>；为 lesson-module 与 prompt-card 写条件约束；录入 65 个小节和 6 张现有卡，不创建未来占位卡。</li>
   <li><strong>标记 HTML。</strong>给 65 个编号 section 与 6 张卡增加 <code>data-unit-id</code>，给 11 个小结补 <code>id="summary"</code>；保留旧公开深链。</li>
   <li><strong>接入构建。</strong>确定性复制目录与 Schema，加入首页/README 维护入口、根 manifest、SHA256SUMS 和离线 ZIP。</li>
-  <li><strong>接入严格检查。</strong>用 Draft 2020-12 与 <code>FormatChecker</code> 校验；要求公开 HTML 与目录 ID、标题、路径、章节、集合精确一致；拒绝盘符、UNC、<code>..</code>、URL scheme、<code>.codex</code> 和内部工作树路径。</li>
+  <li><strong>接入严格检查。</strong>用 Draft 2020-12 与 <code>FormatChecker</code> 校验；要求公开 HTML 与目录 ID、标题、路径、章节、集合精确一致；拒绝盘符、UNC、<code>..</code>、URL scheme 和内部工作树路径；按高/中/低风险执行 30/90/180 天证据期限。</li>
   <li><strong>统一维护说明。</strong>修正旧生命周期文字，说明 Notion 只是目录投影；修正提示词库 26/30 的数学口径；章级旧 ID 只保留迁移说明。</li>
   <li><strong>生成与复验。</strong>Windows 与 Ubuntu 分别运行完整测试、严格检查、构建与字节比较；对新增 registry 做独立冷审。</li>
 </ol>
@@ -61,7 +61,8 @@
   <li>删除记录、增加未登记 section、标题漂移、非法状态/日期/路径、复用旧 ID均会使严格检查失败。</li>
   <li>所有初始状态仍为 draft + unverified；没有把撰写日期冒充正式复核日期。</li>
   <li>公开 registry 与 Schema 同时存在于在线 manifest 和离线 ZIP，且不含本机路径或内部备注。</li>
-  <li>Windows/Linux 构建一致，现有读者深链不失效，阶段 A 的全部 42 项测试继续通过。</li>
+  <li>内容与发行版本升级为 <code>0.3.0</code>，不以相同版本号覆盖旧离线包。</li>
+  <li>Windows/Linux 构建一致，现有读者深链不失效，阶段 A 的全部测试继续通过。</li>
 </ul>
 </section>
 </article></main>
