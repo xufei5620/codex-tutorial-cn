@@ -1,5 +1,6 @@
 import html
 from html.parser import HTMLParser
+import hashlib
 import importlib.util
 import json
 import os
@@ -155,6 +156,17 @@ class ModuleRegistryTests(unittest.TestCase):
         self.assertEqual([unit["id"] for unit in lessons], [f"CDX-M-{number:04d}" for number in range(1, 66)])
         self.assertEqual([unit["id"] for unit in prompts], PROMPT_IDS)
 
+    def test_phase_b_uses_a_new_artifact_identity(self):
+        config = json.loads((REPO / "src/chapters.json").read_text(encoding="utf-8"))
+        catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
+        self.assertEqual(config["site"]["version"], "0.3.0")
+        self.assertEqual(config["site"]["date"], "2026-09-03")
+        self.assertEqual(catalog["contentVersion"], "0.3.0")
+        self.assertEqual(catalog["generatedDate"], "2026-09-03")
+        chapter_eleven = (REPO / "src/content/ch11.html").read_text(encoding="utf-8")
+        self.assertIn("教程当前是 0.3.0 版", chapter_eleven)
+        self.assertIn("<td>0.3.0</td><td>2026-09-03</td>", chapter_eleven)
+
     def test_initial_catalog_preserves_draft_unverified_pending_state(self):
         catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
         self.assertEqual(catalog["contentPipeline"], PIPELINE)
@@ -166,6 +178,7 @@ class ModuleRegistryTests(unittest.TestCase):
             self.assertIsNone(unit["lastReviewedDate"], unit["id"])
             self.assertEqual(unit["rights"], "pending", unit["id"])
             self.assertEqual(unit["sourceRefs"], [], unit["id"])
+        self.assertEqual(catalog["verificationRecords"], [])
 
     def test_catalog_schema_validates_dates_paths_and_kind_specific_fields(self):
         catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
@@ -173,6 +186,18 @@ class ModuleRegistryTests(unittest.TestCase):
         validator = jsonschema.Draft202012Validator(schema, format_checker=jsonschema.FormatChecker())
         errors = sorted(validator.iter_errors(catalog), key=lambda error: list(error.path))
         self.assertEqual(errors, [], [error.message for error in errors])
+        framework = json.loads((REPO / "src/maintainer/framework-v1.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            schema["$defs"]["sourceRef"]["required"],
+            framework["sourceRights"]["rules"]["thirdPartyRecordFields"],
+        )
+
+    def test_schema_version_is_fixed_to_the_supported_v1_contract(self):
+        catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
+        schema = json.loads(self.schema_path.read_text(encoding="utf-8"))
+        catalog["schemaVersion"] = "999.0.0"
+        validator = jsonschema.Draft202012Validator(schema, format_checker=jsonschema.FormatChecker())
+        self.assertTrue(list(validator.iter_errors(catalog)))
 
     def test_schema_format_checker_rejects_an_impossible_date(self):
         catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
@@ -221,7 +246,15 @@ class ModuleRegistryTests(unittest.TestCase):
 
         changed = json.loads(json.dumps(catalog))
         changed["units"][0]["sourceRefs"] = [
-            {"url": "http://example.invalid/source", "accessedDate": "2026-09-01", "use": "fact-reference"}
+            {
+                "author": "Example",
+                "url": "http://example.invalid/source",
+                "license": "link-only",
+                "pinnedVersion": "accessed-2026-09-01",
+                "reviewDate": "2026-09-01",
+                "reviewConclusion": "approved",
+                "use": "fact-reference",
+            }
         ]
         validator = jsonschema.Draft202012Validator(schema, format_checker=jsonschema.FormatChecker())
         self.assertTrue(list(validator.iter_errors(changed)))
@@ -229,6 +262,27 @@ class ModuleRegistryTests(unittest.TestCase):
         changed = json.loads(json.dumps(catalog))
         changed["units"][0]["contentStatus"] = "editorial-reviewed"
         self.assertTrue(list(validator.iter_errors(changed)))
+
+    def test_schema_requires_verified_cleared_evidence_before_stable(self):
+        catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
+        schema = json.loads(self.schema_path.read_text(encoding="utf-8"))
+        validator = jsonschema.Draft202012Validator(schema, format_checker=jsonschema.FormatChecker())
+        for status in ("acceptance-ready", "stable", "retired"):
+            with self.subTest(top_status=status):
+                changed = json.loads(json.dumps(catalog))
+                changed["status"] = status
+                self.assertTrue(list(validator.iter_errors(changed)))
+        catalog["status"] = "review-in-progress"
+        unit = catalog["units"][0]
+        unit["contentStatus"] = "stable"
+        unit["lastReviewedDate"] = "2026-09-03"
+        self.assertTrue(list(validator.iter_errors(catalog)))
+
+        unit["verificationState"] = "verified"
+        unit["verificationDate"] = "2026-09-03"
+        unit["rights"] = "owned"
+        errors = list(validator.iter_errors(catalog))
+        self.assertEqual(errors, [], [error.message for error in errors])
 
     def test_lesson_units_match_every_numbered_source_section(self):
         catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
@@ -273,6 +327,38 @@ class ModuleRegistryTests(unittest.TestCase):
         old_ids = {item["legacyId"] for item in legacy}
         new_ids = {unit["id"] for unit in catalog["units"]}
         self.assertFalse(old_ids & new_ids)
+
+    def test_permanent_identity_allocation_is_locked_independently_of_html(self):
+        catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
+        lessons = [unit for unit in catalog["units"] if unit["kind"] == "lesson-module"]
+        expected = []
+        sequence = 1
+        for chapter, count in LESSON_COUNTS.items():
+            for order in range(1, count + 1):
+                expected.append(
+                    (
+                        f"CDX-M-{sequence:04d}",
+                        chapter,
+                        order,
+                        f"s{order}",
+                        f"{chapter}.html#s{order}",
+                    )
+                )
+                sequence += 1
+        actual = [
+            (unit["id"], unit["chapterId"], unit["order"], unit["sourceAnchor"], unit["publicPath"])
+            for unit in lessons
+        ]
+        self.assertEqual(actual, expected)
+        expected_legacy = [
+            (f"CDX-M-{number:02d}01", chapter, f"{chapter}.html")
+            for number, chapter in enumerate(LESSON_COUNTS, 1)
+        ]
+        actual_legacy = [
+            (item["legacyId"], item["chapterId"], item["publicPath"])
+            for item in catalog["legacyChapterPlaceholders"]
+        ]
+        self.assertEqual(actual_legacy, expected_legacy)
 
     def test_chapter_maintenance_blocks_label_old_ids_as_legacy(self):
         for number, chapter in enumerate(LESSON_COUNTS, 1):
@@ -319,6 +405,29 @@ class ModuleRegistryTests(unittest.TestCase):
         self.assertIn("src/modules-v1.json", notion)
         self.assertIn("registry/modules-v1.json", notion)
         self.assertIn("单向可读投影", notion)
+        prompt_source = (REPO / "src/content/prompts.html").read_text(encoding="utf-8")
+        self.assertNotIn("进入 reviewed", prompt_source)
+        self.assertIn("进入 editorial-reviewed", prompt_source)
+        framework_schema = json.loads(
+            (REPO / "src/maintainer/schemas/framework-v1.schema.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(framework_schema["$defs"]["chapter"]["properties"]["status"]["enum"], PIPELINE)
+        artifact_statuses = framework_schema["properties"]["status"]["enum"]
+        self.assertNotIn("reviewed", artifact_statuses)
+        self.assertNotIn("platform-verified", artifact_statuses)
+
+    def test_authoring_templates_use_the_catalog_identity_and_canonical_taxonomy(self):
+        module_template = (REPO / "src/maintainer/templates/module-template.html").read_text(encoding="utf-8")
+        self.assertIn("src/modules-v1.json", module_template)
+        self.assertIn("data-unit-id", module_template)
+        self.assertIn("contentStatus", module_template)
+        self.assertIn("verificationState", module_template)
+        prompt_template = (REPO / "src/maintainer/templates/prompt-card-template.html").read_text(encoding="utf-8")
+        self.assertIn("src/modules-v1.json", prompt_template)
+        for title in ("跨行业通用", "电商与零售", "餐饮与本地生活", "传媒与内容创作", "教育与培训"):
+            self.assertIn(title, prompt_template)
+        for title in ("沟通协作", "文档报告", "文件整理", "表格数据", "调研计划", "视觉创意"):
+            self.assertIn(title, prompt_template)
 
     def test_catalog_contains_no_private_or_unsafe_path(self):
         payload = self.catalog_path.read_text(encoding="utf-8")
@@ -350,6 +459,41 @@ class ModuleRegistryTests(unittest.TestCase):
         source = (REPO / "src/content/prompts.html").read_text(encoding="utf-8")
         self.assertIn("每个行业入口新增 5 张专属卡，另复用 1 张共享卡", source)
         self.assertIn("26 张唯一卡、30 个展示位", source)
+
+    def test_prompt_math_tasks_risks_and_platform_exceptions_are_locked(self):
+        catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
+        framework = json.loads((REPO / "src/maintainer/framework-v1.json").read_text(encoding="utf-8"))
+        unique_cards = sum(item["uniqueCardCount"] for item in framework["promptLibrary"]["collections"])
+        shared_placements = framework["promptLibrary"]["sharedCard"]["placementCount"] - 1
+        self.assertEqual(unique_cards, 26)
+        self.assertEqual(unique_cards + shared_placements, 30)
+        self.assertEqual(
+            framework["promptLibrary"]["sharedCard"]["placementCollections"],
+            [item["key"] for item in catalog["collections"]],
+        )
+        prompts = [unit for unit in catalog["units"] if unit["kind"] == "prompt-card"]
+        self.assertEqual([unit["taskKey"] for unit in prompts], [item["key"] for item in catalog["taskTypes"]])
+        self.assertEqual({unit["risk"] for unit in prompts}, {"low"})
+        single_platform = {
+            unit["id"]: unit["platforms"]
+            for unit in catalog["units"]
+            if len(unit["platforms"]) == 1
+        }
+        self.assertEqual(single_platform, {"CDX-M-0013": ["windows"], "CDX-M-0014": ["macos"]})
+
+    def test_public_text_safety_rejects_private_paths_outside_the_catalog(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "specs").mkdir()
+            leak = root / "specs/leak.html"
+            leak.write_text(
+                "<!doctype html><html><body><p>K:/private/worktree/note</p></body></html>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors = checker.check_public_text_safety(root, {"specs/leak.html"})
+            self.assertTrue(any("private path" in error for error in errors), errors)
 
     def test_strict_checker_accepts_the_complete_catalog(self):
         checker = load_check_module()
@@ -401,8 +545,12 @@ class ModuleRegistryTests(unittest.TestCase):
             registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
             registry["units"][0]["sourceRefs"] = [
                 {
+                    "author": "OpenAI",
                     "url": "https://example.com/official-source",
-                    "accessedDate": "2026-09-01",
+                    "license": "link-only",
+                    "pinnedVersion": "accessed-2026-09-01",
+                    "reviewDate": "2026-09-01",
+                    "reviewConclusion": "approved",
                     "use": "fact-reference",
                 }
             ]
@@ -413,6 +561,224 @@ class ModuleRegistryTests(unittest.TestCase):
             )
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertEqual(errors, [])
+
+    def test_strict_checker_rejects_sensitive_or_local_source_urls(self):
+        checker = load_check_module()
+        urls = [
+            "https://token@example.com/source",
+            "https://localhost/source",
+            "https://127.0.0.1/source",
+            "https://10.0.0.1/source",
+            "https://example.com/source?token=secret",
+        ]
+        for url in urls:
+            with self.subTest(url=url), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / "repo"
+                copy_repo(root)
+                registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+                registry["units"][0]["sourceRefs"] = [
+                    {
+                        "author": "Example",
+                        "url": url,
+                        "license": "link-only",
+                        "pinnedVersion": "accessed-2026-09-01",
+                        "reviewDate": "2026-09-01",
+                        "reviewConclusion": "approved",
+                        "use": "fact-reference",
+                    }
+                ]
+                (root / "registry/modules-v1.json").write_text(
+                    json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                errors, _ = checker.check_module_registry(root, strict=True)
+                self.assertTrue(any("source URL" in error for error in errors), errors)
+
+    def test_strict_checker_rejects_unicode_escaped_private_paths(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            payload = (root / "registry/modules-v1.json").read_text(encoding="utf-8")
+            payload = payload.replace('"title": "这套教程写给谁"', '"title": "\\u004b\\u003a\\u005cUsers\\u005calice"')
+            (root / "registry/modules-v1.json").write_text(payload, encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("private" in error or "drive path" in error for error in errors), errors)
+
+    def test_strict_checker_rejects_catalog_status_drift(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            registry["status"] = "stable"
+            (root / "registry/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("status differs" in error or "schema error" in error for error in errors), errors)
+
+    def test_malformed_catalog_returns_errors_instead_of_crashing(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            (root / "registry/modules-v1.json").write_text("[]\n", encoding="utf-8", newline="\n")
+            errors, warnings = checker.check_module_registry(root, strict=True)
+            self.assertEqual(warnings, [])
+            self.assertTrue(errors)
+
+    def test_strict_checker_rejects_data_unit_ids_on_other_public_pages(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            (root / "templates/ghost.html").write_text(
+                '<!doctype html><html><body><section id="ghost" data-unit-id="AUDIT-GHOST-0001">'
+                "<h2>幽灵单元</h2></section></body></html>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("outside registered content pages" in error for error in errors), errors)
+
+    def test_prompt_order_is_scoped_to_its_collection(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            future = dict(registry["units"][-1])
+            future.update(
+                {
+                    "id": "PRM-ECM-0001",
+                    "title": "未来电商卡片",
+                    "collectionKeys": ["prompt-ecommerce"],
+                    "taskKey": "communication",
+                    "order": 1,
+                    "sourceAnchor": "prm-ecm-0001",
+                    "publicPath": "prompts.html#prm-ecm-0001",
+                }
+            )
+            registry["units"].append(future)
+            (root / "registry/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            source = (root / "prompts.html").read_text(encoding="utf-8")
+            source = source.replace(
+                '<section class="summary">',
+                '<section class="prompt-card" id="prm-ecm-0001" data-unit-id="PRM-ECM-0001">'
+                '<h2>卡片：未来电商卡片（PRM-ECM-0001） <span class="badge draft">草稿</span></h2>'
+                "</section>\n<section class=\"summary\">",
+            )
+            (root / "prompts.html").write_text(source, encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertEqual(errors, [])
+
+    def test_strict_checker_rejects_legacy_mapping_changes(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            registry["legacyChapterPlaceholders"][0]["publicPath"] = "ch11.html"
+            (root / "registry/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("legacy chapter mapping differs" in error for error in errors), errors)
+
+    def test_verification_records_enforce_risk_windows_and_catalog_dates(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            registry["status"] = framework["status"] = manifest["status"] = "review-in-progress"
+            unit = next(item for item in registry["units"] if item["id"] == "CDX-M-0013")
+            unit.update(
+                {
+                    "contentStatus": "verification",
+                    "verificationState": "verified",
+                    "verificationDate": "2026-09-01",
+                    "rights": "owned",
+                    "lastReviewedDate": "2026-09-01",
+                }
+            )
+            registry["verificationRecords"] = [
+                {
+                    "unitId": "CDX-M-0013",
+                    "platform": "windows",
+                    "browser": None,
+                    "productVersion": "test-version",
+                    "extensionVersion": None,
+                    "inputClass": "synthetic-install-check",
+                    "evidenceId": "EVD-CDX-M-0013-WINDOWS-001",
+                    "result": "verified",
+                    "checkedDate": "2026-09-01",
+                    "expiresDate": "2026-10-02",
+                    "verifiedBy": "device-owner",
+                }
+            ]
+            for path, value in (
+                (root / "registry/modules-v1.json", registry),
+                (root / "registry/framework-v1.json", framework),
+                (root / "manifest.json", manifest),
+            ):
+                path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("risk window" in error for error in errors), errors)
+
+    def test_offline_check_runs_module_semantics_inside_the_archive(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            config = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
+            archive = next((root / "downloads").glob("*-offline.zip"))
+            prefix = "codex-tutorial-cn/"
+            with zipfile.ZipFile(archive) as package:
+                infos = package.infolist()
+                payloads = {info.filename: package.read(info.filename) for info in infos}
+            target = prefix + "registry/modules-v1.json"
+            payloads[target] = b"{}\n"
+            manifest_name = prefix + "manifest.json"
+            manifest = json.loads(payloads[manifest_name].decode("utf-8"))
+            digest = hashlib.sha256(payloads[target]).hexdigest()
+            record = next(item for item in manifest["files"] if item["path"] == "registry/modules-v1.json")
+            record.update({"size": len(payloads[target]), "sha256": digest})
+            payloads[manifest_name] = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+            sums_name = prefix + "SHA256SUMS.txt"
+            sums = {}
+            for line in payloads[sums_name].decode("utf-8").splitlines():
+                checksum, relative = line.split("  ", 1)
+                sums[relative] = checksum
+            sums["registry/modules-v1.json"] = digest
+            payloads[sums_name] = "".join(
+                f"{checksum}  {relative}\n" for relative, checksum in sums.items()
+            ).encode("utf-8")
+            replacement = archive.with_name("replacement.zip")
+            with zipfile.ZipFile(replacement, "w", zipfile.ZIP_STORED) as package:
+                for info in infos:
+                    package.writestr(info, payloads[info.filename])
+            replacement.replace(archive)
+            checksum_path = archive.with_name(archive.name + ".sha256")
+            checksum_path.write_text(
+                f"{hashlib.sha256(archive.read_bytes()).hexdigest()}  {archive.name}\n",
+                encoding="ascii",
+                newline="\n",
+            )
+            errors = checker.check_offline_zip(root, config, strict=True)
+            self.assertTrue(any("module catalog" in error for error in errors), errors)
 
     def test_strict_checker_rejects_taxonomy_drift_from_the_framework(self):
         checker = load_check_module()

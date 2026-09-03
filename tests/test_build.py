@@ -167,6 +167,7 @@ class BuildBaselineTests(unittest.TestCase):
             index = (root / "index.html").read_text(encoding="utf-8")
             readme = (root / "README.md").read_text(encoding="utf-8")
             chapter_eleven = (root / "ch11.html").read_text(encoding="utf-8")
+            config = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
             for public_copy in (index, readme):
                 self.assertIn("草稿种子", public_copy)
                 self.assertIn("不算完成课程", public_copy)
@@ -174,11 +175,10 @@ class BuildBaselineTests(unittest.TestCase):
             self.assertNotIn("正文草稿已完成", index)
             self.assertNotIn("11 章全部有正文", readme)
             self.assertIn("可选在线预览", readme)
-            self.assertIn("教程当前是 0.2.1 版", chapter_eleven)
+            self.assertIn(f"教程当前是 {config['site']['version']} 版", chapter_eleven)
 
             registry = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
             manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-            config = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
             self.assertEqual(registry["status"], "draft-seed-unverified")
             self.assertEqual(registry["releaseGate"]["currentDecision"], "course-beta-in-development")
             self.assertFalse(registry["currentSeedContent"]["final"])

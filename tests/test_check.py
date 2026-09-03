@@ -230,6 +230,18 @@ class CheckBaselineTests(unittest.TestCase):
                 errors, _, _ = checker.check_site_tree(root)
                 self.assertTrue(errors, label)
 
+    def test_html_safety_check_rejects_duplicate_attribute_names(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "index.html").write_text(
+                '<!doctype html><html><body><section id="wrong" id="right"><h1>x</h1></section></body></html>\n',
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _, _ = checker.check_site_tree(root)
+            self.assertTrue(any("duplicate attribute" in error for error in errors), errors)
+
     def test_svg_asset_safety_check_rejects_remote_runtime_resources(self):
         checker = load_check_module()
         with tempfile.TemporaryDirectory() as directory:
