@@ -297,7 +297,9 @@ def build_offline_stage(stage_root):
 def build_offline_zip(package_root, zip_path):
     year, month, day = (int(value) for value in cfg['site']['date'].split('-'))
     zip_time = (year, month, day, 0, 0, 0)
-    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as package:
+    # ZIP_STORED avoids platform/zlib-specific DEFLATE bytes. The course is small,
+    # so byte-for-byte reproducibility matters more than compression ratio.
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_STORED) as package:
         entries = []
         for directory, names, files in os.walk(package_root):
             names.sort()
@@ -306,7 +308,7 @@ def build_offline_zip(package_root, zip_path):
         for path in sorted(entries, key=lambda item: os.path.relpath(item, os.path.dirname(package_root)).replace(os.sep, '/')):
             archive_name = os.path.relpath(path, os.path.dirname(package_root)).replace(os.sep, '/')
             info = zipfile.ZipInfo(archive_name, date_time=zip_time)
-            info.compress_type = zipfile.ZIP_DEFLATED
+            info.compress_type = zipfile.ZIP_STORED
             info.create_system = 3
             info.external_attr = 0o644 << 16
             with open(path, 'rb') as handle:

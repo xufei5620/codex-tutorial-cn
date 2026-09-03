@@ -227,6 +227,12 @@ class BuildBaselineTests(unittest.TestCase):
                 self.assertNotIn("../", normalized, normalized)
                 self.assertNotRegex(normalized, r"^[A-Za-z]:", normalized)
 
+    def test_offline_zip_uses_stored_entries_for_cross_platform_determinism(self):
+        archive = offline_archive(REPO)
+        with zipfile.ZipFile(archive) as package:
+            compression_methods = {info.compress_type for info in package.infolist()}
+        self.assertEqual(compression_methods, {zipfile.ZIP_STORED})
+
 
 if __name__ == "__main__":
     unittest.main()
