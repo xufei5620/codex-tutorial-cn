@@ -196,6 +196,74 @@ class HTMLAuditParser(HTMLParser):
                         self.errors.append(f"data URL is not allowed in {tag}[{name}]")
 
 
+def normalize_unit_heading(value: str) -> str:
+    value = " ".join(html.unescape(value).split())
+    value = re.sub(r"^\d+\.\d+\s*", "", value)
+    value = re.sub(r"^卡片：", "", value)
+    value = re.sub(r"（PRM-[A-Z]+-\d{4}）\s*草稿$", "", value)
+    return value.strip()
+
+
+class ContentUnitParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.units: list[dict] = []
+        self.summary_anchors: list[str | None] = []
+        self.unregistered_numbered_sections: list[str] = []
+        self.unregistered_prompt_cards: list[str | None] = []
+        self._sections: list[dict | None] = []
+        self._capture_heading = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        tag = tag.lower()
+        attributes = {name.lower(): value or "" for name, value in attrs}
+        if tag == "section":
+            if "summary" in attributes.get("class", "").split():
+                self.summary_anchors.append(attributes.get("id"))
+            unit_id = attributes.get("data-unit-id")
+            anchor = attributes.get("id")
+            classes = attributes.get("class", "").split()
+            if re.fullmatch(r"s[1-9][0-9]*", anchor or "") and not unit_id:
+                self.unregistered_numbered_sections.append(anchor)
+            if "prompt-card" in classes and not unit_id:
+                self.unregistered_prompt_cards.append(anchor)
+            self._sections.append(
+                {"id": unit_id, "anchor": anchor, "heading": []}
+                if unit_id
+                else None
+            )
+        elif tag == "h2" and self._sections and self._sections[-1] is not None:
+            self._capture_heading = True
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.lower()
+        if tag == "h2":
+            self._capture_heading = False
+        elif tag == "section" and self._sections:
+            section = self._sections.pop()
+            if section is not None:
+                section["title"] = normalize_unit_heading("".join(section.pop("heading")))
+                self.units.append(section)
+
+    def handle_data(self, data: str) -> None:
+        if self._capture_heading and self._sections and self._sections[-1] is not None:
+            self._sections[-1]["heading"].append(data)
+
+
+def parse_content_units(
+    path: Path,
+) -> tuple[list[dict], list[str | None], list[str], list[str | None]]:
+    parser = ContentUnitParser()
+    parser.feed(path.read_text(encoding="utf-8"))
+    parser.close()
+    return (
+        parser.units,
+        parser.summary_anchors,
+        parser.unregistered_numbered_sections,
+        parser.unregistered_prompt_cards,
+    )
+
+
 def configure_output() -> None:
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
@@ -397,7 +465,10 @@ def check_site_tree(
         navigation = re.search(r'<nav class="section-nav".*?</nav>', source, re.S)
         if navigation:
             targets = re.findall(r'href="#([^"]+)"', navigation.group(0))
-            sections = re.findall(r'<section\b[^>]*\bid="([^"]+)"', source)
+            sections = re.findall(
+                r'<section\b(?![^>]*\bclass="[^"]*\bsummary\b)[^>]*\sid="([^"]+)"',
+                source,
+            )
             if targets != sections:
                 errors.append(f"{relative}: section navigation does not match section ids")
 
@@ -540,6 +611,185 @@ def check_registry(root: Path, strict: bool) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
+def repeated(values: list) -> list:
+    return sorted({value for value in values if values.count(value) > 1}, key=repr)
+
+
+def check_module_registry(root: Path, strict: bool) -> tuple[list[str], list[str]]:
+    errors, warnings = [], []
+    registry_path = root / "registry/modules-v1.json"
+    schema_path = root / "schemas/modules-v1.schema.json"
+    try:
+        registry_text = registry_path.read_text(encoding="utf-8")
+        registry = json.loads(registry_text)
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    except Exception as error:
+        return [f"module registry/schema cannot be read: {error}"], warnings
+
+    try:
+        import jsonschema
+    except ImportError:
+        message = "jsonschema is unavailable; module catalog schema was not validated"
+        (errors if strict else warnings).append(message)
+    else:
+        try:
+            validator = jsonschema.Draft202012Validator(
+                schema,
+                format_checker=jsonschema.FormatChecker(),
+            )
+            schema_errors = sorted(validator.iter_errors(registry), key=lambda error: list(error.path))
+            for error in schema_errors:
+                location = "/".join(str(part) for part in error.path) or "$"
+                errors.append(f"module catalog schema error at {location}: {error.message}")
+        except Exception as error:
+            errors.append(f"module catalog schema validation failed: {getattr(error, 'message', error)}")
+
+    for pattern, label in (
+        (r"(?<![A-Za-z])[A-Za-z]:[\\/]", "drive path"),
+        (r"\\\\", "UNC path"),
+        (r"\.\./", "parent traversal"),
+        (r"(?i)file://", "file URL"),
+        (r"(?i)\.codex", "Codex private path"),
+        (r"(?i)\.superpowers", "internal worktree path"),
+    ):
+        if re.search(pattern, registry_text):
+            errors.append(f"module catalog contains forbidden {label}")
+
+    units = registry.get("units")
+    if not isinstance(units, list):
+        return errors + ["module catalog units must be an array"], warnings
+    unit_records = [unit for unit in units if isinstance(unit, dict)]
+    ids = [unit.get("id") for unit in unit_records]
+    paths = [unit.get("publicPath") for unit in unit_records]
+    duplicate_ids = repeated(ids)
+    duplicate_paths = repeated(paths)
+    if duplicate_ids:
+        errors.append(f"duplicate unit IDs: {duplicate_ids}")
+    if duplicate_paths:
+        errors.append(f"duplicate public paths: {duplicate_paths}")
+
+    legacy = registry.get("legacyChapterPlaceholders", [])
+    legacy_ids = [item.get("legacyId") for item in legacy if isinstance(item, dict)]
+    if repeated(legacy_ids):
+        errors.append("duplicate legacy chapter IDs")
+    reused = sorted(set(legacy_ids) & set(ids))
+    if reused:
+        errors.append(f"legacy chapter IDs reused by content units: {reused}")
+
+    collection_keys = [item.get("key") for item in registry.get("collections", []) if isinstance(item, dict)]
+    task_keys = [item.get("key") for item in registry.get("taskTypes", []) if isinstance(item, dict)]
+    if repeated(collection_keys):
+        errors.append("duplicate prompt collection keys")
+    if repeated(task_keys):
+        errors.append("duplicate prompt task keys")
+    for unit in unit_records:
+        for collection_key in unit.get("collectionKeys", []):
+            if collection_key not in collection_keys:
+                errors.append(f"{unit.get('id')}: unknown collection key: {collection_key}")
+        task_key = unit.get("taskKey")
+        if task_key is not None and task_key not in task_keys:
+            errors.append(f"{unit.get('id')}: unknown task key: {task_key}")
+
+    slots = []
+    for unit in unit_records:
+        if unit.get("kind") == "lesson-module":
+            slots.append((unit.get("chapterId"), unit.get("order")))
+        elif unit.get("kind") == "prompt-card":
+            slots.extend((collection, unit.get("order")) for collection in unit.get("collectionKeys", []))
+    duplicate_slots = repeated(slots)
+    if duplicate_slots:
+        errors.append(f"duplicate unit order within a container: {duplicate_slots}")
+
+    try:
+        framework = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
+        if registry.get("contentPipeline") != framework["contentStatus"]["pipeline"]:
+            errors.append("module content pipeline differs from framework registry")
+        if registry.get("verificationStates") != framework["verification"]["states"]:
+            errors.append("module verification states differ from framework registry")
+        expected_collections = [
+            {"key": item["key"], "title": item["title"]}
+            for item in framework["promptLibrary"]["collections"]
+        ]
+        if registry.get("collections") != expected_collections:
+            errors.append("module collection taxonomy differs from framework registry")
+        if [item.get("key") for item in registry.get("taskTypes", [])] != framework["promptLibrary"]["taskKeys"]:
+            errors.append("module task taxonomy differs from framework registry")
+        manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+        if registry.get("contentVersion") != manifest.get("version"):
+            errors.append("module contentVersion differs from artifact version")
+        if registry.get("generatedDate") != manifest.get("generatedDate"):
+            errors.append("module generatedDate differs from artifact date")
+    except Exception as error:
+        errors.append(f"module catalog cross-registry check failed: {error}")
+
+    parsed_units = []
+    chapter_ids = [item.get("chapterId") for item in legacy if isinstance(item, dict)]
+    for chapter_id in chapter_ids:
+        page = root / f"{chapter_id}.html"
+        if not page.is_file():
+            errors.append(f"module chapter page missing: {page.name}")
+            continue
+        page_units, summaries, unregistered_sections, _ = parse_content_units(page)
+        if summaries != ["summary"]:
+            errors.append(f"{page.name}: expected exactly one #summary chapter summary")
+        if unregistered_sections:
+            errors.append(f"{page.name}: unregistered numbered sections: {unregistered_sections}")
+        for order, unit in enumerate(page_units, 1):
+            parsed_units.append(
+                {
+                    **unit,
+                    "kind": "lesson-module",
+                    "chapterId": chapter_id,
+                    "order": order,
+                    "publicPath": f"{page.name}#{unit['anchor']}",
+                }
+            )
+
+    prompt_page = root / "prompts.html"
+    if prompt_page.is_file():
+        prompt_units, _, _, unregistered_cards = parse_content_units(prompt_page)
+        if unregistered_cards:
+            errors.append(f"prompts.html: unregistered prompt cards: {unregistered_cards}")
+        for order, unit in enumerate(prompt_units, 1):
+            parsed_units.append(
+                {
+                    **unit,
+                    "kind": "prompt-card",
+                    "chapterId": None,
+                    "order": order,
+                    "publicPath": f"prompts.html#{unit['anchor']}",
+                }
+            )
+    else:
+        errors.append("prompt page missing: prompts.html")
+
+    parsed_ids = [unit.get("id") for unit in parsed_units]
+    if repeated(parsed_ids):
+        errors.append(f"duplicate data-unit-id values in HTML: {repeated(parsed_ids)}")
+    if set(ids) != set(parsed_ids):
+        missing_html = sorted(set(ids) - set(parsed_ids))
+        missing_registry = sorted(set(parsed_ids) - set(ids))
+        errors.append(
+            "unit ID set differs between registry and HTML "
+            f"(missing HTML: {missing_html}; missing registry: {missing_registry})"
+        )
+
+    records_by_id = {unit.get("id"): unit for unit in unit_records}
+    for parsed in parsed_units:
+        record = records_by_id.get(parsed.get("id"))
+        if record is None:
+            continue
+        for field in ("title", "kind", "chapterId", "order", "publicPath"):
+            if record.get(field) != parsed.get(field):
+                errors.append(
+                    f"{parsed.get('id')}: {field} differs between registry and HTML "
+                    f"({record.get(field)!r} != {parsed.get(field)!r})"
+                )
+        if record.get("sourceAnchor") != parsed.get("anchor"):
+            errors.append(f"{parsed.get('id')}: sourceAnchor differs from HTML anchor")
+    return errors, warnings
+
+
 def check_offline_zip(root: Path, chapter_config: dict) -> list[str]:
     errors = []
     version = chapter_config["site"]["version"]
@@ -678,6 +928,9 @@ def main() -> int:
     registry_errors, registry_warnings = check_registry(ROOT, arguments.strict)
     errors.extend(registry_errors)
     warnings.extend(registry_warnings)
+    module_errors, module_warnings = check_module_registry(ROOT, arguments.strict)
+    errors.extend(f"modules: {message}" for message in module_errors)
+    warnings.extend(f"modules: {message}" for message in module_warnings)
     errors.extend(f"offline: {message}" for message in check_offline_zip(ROOT, config))
     if arguments.verify_generated:
         errors.extend(check_generated_sync(ROOT, config))

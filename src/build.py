@@ -174,6 +174,7 @@ def home_body(mode, offline=False):
         <li><a href="templates/plugin-template.html">插件模板</a> / <a href="templates/skill-template.html">Skill 模板</a><span class="muted">扩展条目模板</span></li>
         <li><a href="templates/source-review-template.html">来源复核模板</a> / <a href="templates/verification-template.html">验证记录模板</a><span class="muted">复核与实测记录</span></li>
         <li><a href="registry/framework-v1.json" download>框架登记表（JSON）</a><span class="muted">机器可读的进度与规则登记</span></li>
+        <li><a href="registry/modules-v1.json" download>内容单元目录（JSON）</a> / <a href="schemas/modules-v1.schema.json">Schema</a><span class="muted">65 个课程模块与现有提示词卡的状态登记</span></li>
       </ul>'''
     else:
         aux = '''      <ul class="aux">
@@ -353,6 +354,12 @@ def build_site():
     reg['generatedDate'] = cfg['site']['date']
     reg['releaseGate']['currentDecision'] = 'course-beta-in-development'
     write_json(os.path.join(SITE, 'registry', 'framework-v1.json'), reg)
+    modules = json.load(open(os.path.join(ROOT, 'modules-v1.json'), encoding='utf-8'))
+    if modules['contentVersion'] != cfg['site']['version']:
+        raise ValueError('modules-v1 contentVersion must match chapters.json site.version')
+    if modules['generatedDate'] != cfg['site']['date']:
+        raise ValueError('modules-v1 generatedDate must match chapters.json site.date')
+    copy_public_file(os.path.join(ROOT, 'modules-v1.json'), os.path.join(SITE, 'registry', 'modules-v1.json'))
     # README
     write_text(os.path.join(SITE, 'README.md'), readme())
     # 在线站点 manifest + SHA256SUMS；downloads 单独校验，避免自包含。
@@ -427,6 +434,7 @@ def readme():
 - `deploy/` —— 服务器部署配置与说明
 - `src/` —— **内容源与构建脚本**：改内容请改 `src/content/*.html` 与 `src/chapters.json`，然后运行 `python3 src/build.py` 重新生成以上全部页面（不要直接改根目录的 HTML，会被覆盖）；`python3 src/check.py` 做发布前检查
 - `templates/`、`specs/`、`schemas/`、`registry/`、`maintenance-release.html`、`source-research.html`、`notion-workflow.html` —— 维护者资料
+- [`registry/modules-v1.json`](registry/modules-v1.json) / [`schemas/modules-v1.schema.json`](schemas/modules-v1.schema.json) —— 71 个当前内容单元的双状态目录与校验规则
 - `manifest.json`、`SHA256SUMS.txt` —— 文件清单与校验和
 
 ## 维护约定

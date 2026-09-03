@@ -34,6 +34,7 @@
 - `deploy/` —— 服务器部署配置与说明
 - `src/` —— **内容源与构建脚本**：改内容请改 `src/content/*.html` 与 `src/chapters.json`，然后运行 `python3 src/build.py` 重新生成以上全部页面（不要直接改根目录的 HTML，会被覆盖）；`python3 src/check.py` 做发布前检查
 - `templates/`、`specs/`、`schemas/`、`registry/`、`maintenance-release.html`、`source-research.html`、`notion-workflow.html` —— 维护者资料
+- [`registry/modules-v1.json`](registry/modules-v1.json) / [`schemas/modules-v1.schema.json`](schemas/modules-v1.schema.json) —— 71 个当前内容单元的双状态目录与校验规则
 - `manifest.json`、`SHA256SUMS.txt` —— 文件清单与校验和
 
 ## 维护约定

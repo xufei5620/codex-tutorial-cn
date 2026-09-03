@@ -1,0 +1,696 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-tutorial.local/schemas/modules-v1.schema.json",
+  "title": "Codex tutorial module catalog",
+  "description": "校验 Phase B 的 src/modules-v1.json。目录记录课程模块与现有提示词卡的稳定身份、生命周期、来源、权利和验证状态。",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "catalogVersion",
+    "contentVersion",
+    "status",
+    "generatedDate",
+    "contentPipeline",
+    "verificationStates",
+    "legacyChapterPlaceholders",
+    "collections",
+    "taskTypes",
+    "units"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "catalogVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "contentVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "status": {
+      "enum": [
+        "draft-seed-unverified",
+        "review-in-progress",
+        "acceptance-ready",
+        "stable",
+        "retired"
+      ]
+    },
+    "generatedDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "contentPipeline": {
+      "const": [
+        "outline",
+        "draft",
+        "source-and-rights-review",
+        "editorial-reviewed",
+        "verification",
+        "acceptance-ready",
+        "stable",
+        "retired"
+      ]
+    },
+    "verificationStates": {
+      "const": [
+        "verified",
+        "verified-with-limitations",
+        "verification-failed",
+        "unverified",
+        "unsupported",
+        "verification-expired"
+      ]
+    },
+    "legacyChapterPlaceholders": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/legacyChapterPlaceholder"
+      }
+    },
+    "collections": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/collection"
+      }
+    },
+    "taskTypes": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/taskType"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "$ref": "#/$defs/taskTypeCommunication"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "$ref": "#/$defs/taskTypeDocumentReport"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "$ref": "#/$defs/taskTypeFileOrganization"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "$ref": "#/$defs/taskTypeTableData"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "$ref": "#/$defs/taskTypeResearchPlan"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "$ref": "#/$defs/taskTypeVisual"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      ]
+    },
+    "units": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/unit"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "chapterId": {
+      "enum": [
+        "ch01",
+        "ch02",
+        "ch03",
+        "ch04",
+        "ch05",
+        "ch06",
+        "ch07",
+        "ch08",
+        "ch09",
+        "ch10",
+        "ch11"
+      ]
+    },
+    "contentStatus": {
+      "enum": [
+        "outline",
+        "draft",
+        "source-and-rights-review",
+        "editorial-reviewed",
+        "verification",
+        "acceptance-ready",
+        "stable",
+        "retired"
+      ]
+    },
+    "verificationState": {
+      "enum": [
+        "verified",
+        "verified-with-limitations",
+        "verification-failed",
+        "unverified",
+        "unsupported",
+        "verification-expired"
+      ]
+    },
+    "taskKey": {
+      "enum": [
+        "communication",
+        "document-report",
+        "file-organization",
+        "table-data",
+        "research-plan",
+        "visual"
+      ]
+    },
+    "nullableDate": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "safePublicPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._~!$&'()*+,;=@%/-]*(?:#[A-Za-z0-9][A-Za-z0-9._~!$&'()*+,;=:@%/?-]*)?$",
+      "allOf": [
+        {
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "not": {
+            "pattern": "[\\r\\n]"
+          }
+        }
+      ]
+    },
+    "safeSourceAnchor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$",
+      "not": {
+        "pattern": "[\\r\\n]"
+      }
+    },
+    "legacyChapterPlaceholder": {
+      "type": "object",
+      "required": [
+        "legacyId",
+        "chapterId",
+        "publicPath"
+      ],
+      "properties": {
+        "legacyId": {
+          "type": "string",
+          "pattern": "^CDX-M-(?:0[1-9]|1[01])01$"
+        },
+        "chapterId": {
+          "$ref": "#/$defs/chapterId"
+        },
+        "publicPath": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safePublicPath"
+            },
+            {
+              "type": "string",
+              "pattern": "^ch(?:0[1-9]|1[01])\\.html$"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "collection": {
+      "type": "object",
+      "required": [
+        "key",
+        "title"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^prompt-[a-z]+(?:-[a-z]+)*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskType": {
+      "type": "object",
+      "required": [
+        "key",
+        "title"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/taskKey"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskTypeCommunication": {
+      "type": "object",
+      "required": [
+        "key",
+        "title"
+      ],
+      "properties": {
+        "key": {
+          "const": "communication"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskTypeDocumentReport": {
+      "type": "object",
+      "required": [
+        "key",
+        "title"
+      ],
+      "properties": {
+        "key": {
+          "const": "document-report"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskTypeFileOrganization": {
+      "type": "object",
+      "required": [
+        "key",
+        "title"
+      ],
+      "properties": {
+        "key": {
+          "const": "file-organization"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskTypeTableData": {
+      "type": "object",
+      "required": [
+        "key",
+        "title"
+      ],
+      "properties": {
+        "key": {
+          "const": "table-data"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskTypeResearchPlan": {
+      "type": "object",
+      "required": [
+        "key",
+        "title"
+      ],
+      "properties": {
+        "key": {
+          "const": "research-plan"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskTypeVisual": {
+      "type": "object",
+      "required": [
+        "key",
+        "title"
+      ],
+      "properties": {
+        "key": {
+          "const": "visual"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "sourceRef": {
+      "type": "object",
+      "required": [
+        "url",
+        "accessedDate",
+        "use"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://[^\\s]+$"
+        },
+        "accessedDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "use": {
+          "enum": [
+            "fact-reference",
+            "link-only",
+            "method-research",
+            "asset-reference"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "unit": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "chapterId",
+        "collectionKeys",
+        "taskKey",
+        "order",
+        "sourceAnchor",
+        "publicPath",
+        "platforms",
+        "risk",
+        "contentStatus",
+        "verificationState",
+        "verificationDate",
+        "sourceRefs",
+        "rights",
+        "lastReviewedDate"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "oneOf": [
+            {
+              "pattern": "^CDX-M-[0-9]{4}$"
+            },
+            {
+              "pattern": "^PRM-[A-Z]{3}-[0-9]{4}$"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "lesson-module",
+            "prompt-card"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "chapterId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/chapterId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "collectionKeys": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^prompt-[a-z]+(?:-[a-z]+)*$"
+          }
+        },
+        "taskKey": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/taskKey"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourceAnchor": {
+          "$ref": "#/$defs/safeSourceAnchor"
+        },
+        "publicPath": {
+          "$ref": "#/$defs/safePublicPath"
+        },
+        "platforms": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "windows",
+              "macos"
+            ]
+          }
+        },
+        "risk": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "contentStatus": {
+          "$ref": "#/$defs/contentStatus"
+        },
+        "verificationState": {
+          "$ref": "#/$defs/verificationState"
+        },
+        "verificationDate": {
+          "$ref": "#/$defs/nullableDate"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
+        },
+        "rights": {
+          "enum": [
+            "owned",
+            "cleared",
+            "link-only",
+            "unknown",
+            "conflict",
+            "pending"
+          ]
+        },
+        "lastReviewedDate": {
+          "$ref": "#/$defs/nullableDate"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "lesson-module"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^CDX-M-[0-9]{4}$"
+              },
+              "chapterId": {
+                "$ref": "#/$defs/chapterId"
+              },
+              "collectionKeys": {
+                "const": []
+              },
+              "taskKey": {
+                "type": "null"
+              },
+              "sourceAnchor": {
+                "type": "string",
+                "pattern": "^s[1-9][0-9]*$"
+              },
+              "publicPath": {
+                "type": "string",
+                "pattern": "^ch(?:0[1-9]|1[01])\\.html#s[1-9][0-9]*$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "prompt-card"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^PRM-[A-Z]{3}-[0-9]{4}$"
+              },
+              "chapterId": {
+                "type": "null"
+              },
+              "collectionKeys": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^prompt-[a-z]+(?:-[a-z]+)*$"
+                }
+              },
+              "taskKey": {
+                "$ref": "#/$defs/taskKey"
+              },
+              "sourceAnchor": {
+                "type": "string",
+                "pattern": "^prm-[a-z]{3}-[0-9]{4}$"
+              },
+              "publicPath": {
+                "type": "string",
+                "pattern": "^prompts\\.html#prm-[a-z]{3}-[0-9]{4}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "verificationState": {
+                "const": "unverified"
+              }
+            },
+            "required": [
+              "verificationState"
+            ]
+          },
+          "then": {
+            "properties": {
+              "verificationDate": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "verificationDate": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "contentStatus": {
+                "enum": [
+                  "editorial-reviewed",
+                  "verification",
+                  "acceptance-ready",
+                  "stable",
+                  "retired"
+                ]
+              }
+            },
+            "required": [
+              "contentStatus"
+            ]
+          },
+          "then": {
+            "properties": {
+              "lastReviewedDate": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
