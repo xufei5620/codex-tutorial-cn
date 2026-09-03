@@ -20,11 +20,30 @@ import zipfile
 ROOT = Path(__file__).resolve().parent.parent
 STATUS_ZH = {"draft": "草稿", "outline": "大纲", "reviewed": "已复核"}
 EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__"}
-URL_ATTRIBUTES = {"href", "xlink:href", "src", "data", "poster", "srcset"}
+URL_ATTRIBUTES = {
+    "archive",
+    "background",
+    "cite",
+    "code",
+    "codebase",
+    "data",
+    "href",
+    "icon",
+    "longdesc",
+    "manifest",
+    "poster",
+    "profile",
+    "src",
+    "srcset",
+    "usemap",
+    "xlink:href",
+}
 EXTERNAL_SCHEMES = ("http://", "https://", "mailto:", "tel:")
 EMBEDDED_SCHEMES = ("data:",)
 UNSAFE_SCHEMES = ("javascript:", "vbscript:")
 EXTERNAL_NAVIGATION = {("a", "href")}
+FORBIDDEN_ELEMENTS = {"applet", "base", "embed", "fencedframe", "frame", "frameset", "iframe", "object", "portal", "script"}
+FORBIDDEN_ATTRIBUTES = {"action", "formaction", "ping", "srcdoc"}
 DATA_URL_MEDIA = {
     ("audio", "src"),
     ("image", "href"),
@@ -67,8 +86,22 @@ def srcset_urls(value: str) -> list[str]:
     return [candidate.strip().split()[0] for candidate in value.split(",") if candidate.strip()]
 
 
-def css_urls(source: str) -> list[str]:
+def normalize_css(source: str) -> str:
     source = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
+
+    def decode_escape(match: re.Match) -> str:
+        if match.group(1):
+            try:
+                return chr(int(match.group(1), 16))
+            except (ValueError, OverflowError):
+                return ""
+        return match.group(2) or ""
+
+    return re.sub(r"\\(?:([0-9a-fA-F]{1,6})\s?|([^\r\n\f]))", decode_escape, source)
+
+
+def css_urls(source: str) -> list[str]:
+    source = normalize_css(source)
     values = []
     for match in re.finditer(
         r"url\(\s*(?:([\"'])(.*?)\1|([^\"')\s]+))\s*\)",
@@ -76,13 +109,11 @@ def css_urls(source: str) -> list[str]:
         flags=re.I | re.S,
     ):
         values.append(match.group(2) or match.group(3))
-    for match in re.finditer(
-        r"@import\s+(?!url\s*\()(?:([\"'])(.*?)\1|([^\s;]+))",
-        source,
-        flags=re.I | re.S,
-    ):
-        values.append(match.group(2) or match.group(3))
     return values
+
+
+def contains_external_url(value: str) -> bool:
+    return re.search(r"(?i)https?://|(?:^|[\s\"'(=,;])//|(?:mailto|tel):", value) is not None
 
 
 class HTMLAuditParser(HTMLParser):
@@ -116,18 +147,20 @@ class HTMLAuditParser(HTMLParser):
         if self._style_chunks is not None:
             self._style_chunks.append(data)
 
+    def handle_pi(self, data: str) -> None:
+        if re.match(r"(?i)\s*xml-stylesheet\b", data):
+            self.errors.append("contains xml-stylesheet processing instruction")
+
     def _audit_tag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
         attributes = {
             raw_name.lower(): html.unescape(raw_value or "").strip()
             for raw_name, raw_value in attrs
         }
-        if tag == "script":
-            self.errors.append("contains inline script element")
-        elif tag == "style":
+        if tag in FORBIDDEN_ELEMENTS:
+            self.errors.append(f"contains forbidden {tag} element")
+        if tag == "style":
             self._style_chunks = []
-        elif tag == "base":
-            self.errors.append("contains base element")
         if tag == "meta" and attributes.get("http-equiv", "").lower() == "refresh":
             self.errors.append("contains meta refresh")
         for raw_name, raw_value in attrs:
@@ -135,7 +168,7 @@ class HTMLAuditParser(HTMLParser):
             value = html.unescape(raw_value or "").strip()
             if name == "id" and value:
                 self.ids.append(value)
-            if name in {"href", "xlink:href", "src", "data", "poster"}:
+            if name in URL_ATTRIBUTES - {"srcset"}:
                 self.references.append((tag, name, value))
             elif name == "srcset":
                 self.references.extend((tag, name, candidate) for candidate in srcset_urls(value))
@@ -143,15 +176,19 @@ class HTMLAuditParser(HTMLParser):
                 self.errors.append("contains inline style attribute")
             if name.startswith("on"):
                 self.errors.append(f"contains inline event handler: {name}")
-            if name == "srcdoc":
-                self.errors.append(f"contains srcdoc in {tag}")
+            if name in FORBIDDEN_ATTRIBUTES:
+                self.errors.append(f"contains forbidden attribute {tag}[{name}]")
+            if not name.startswith("xmlns") and contains_external_url(value):
+                direct_external_navigation = (
+                    (tag, name) in EXTERNAL_NAVIGATION
+                    and (is_remote_url(value) or value.lower().startswith(("mailto:", "tel:")))
+                )
+                if not direct_external_navigation:
+                    self.errors.append(f"external URL is not allowed in {tag}[{name}]")
             if name in URL_ATTRIBUTES:
                 candidates = srcset_urls(value) if name == "srcset" else [value]
                 for candidate in candidates:
                     lower = candidate.lower()
-                    external = is_remote_url(candidate) or lower.startswith(("mailto:", "tel:"))
-                    if external and (tag, name) not in EXTERNAL_NAVIGATION:
-                        self.errors.append(f"external resource is not allowed in {tag}[{name}]")
                     if lower.startswith(EMBEDDED_SCHEMES) and (tag, name) not in DATA_URL_MEDIA:
                         self.errors.append(f"data URL is not allowed in {tag}[{name}]")
 
@@ -195,7 +232,9 @@ def checksum_records(payload: str) -> dict[str, str]:
 
 def public_html_files(root: Path) -> list[Path]:
     files = []
-    for path in root.rglob("*.html"):
+    for path in root.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in {".html", ".htm", ".xhtml"}:
+            continue
         relative = path.relative_to(root)
         if any(part in EXCLUDED_PUBLIC_PARTS for part in relative.parts):
             continue
@@ -305,6 +344,8 @@ def check_site_tree(
         return True
 
     def validate_css_references(source_path: Path, relative: str, source: str, context: str) -> None:
+        if re.search(r"(?i)@import\b", normalize_css(source)):
+            errors.append(f"{relative}: CSS @import is not allowed in {context}")
         for reference in css_urls(source):
             if is_remote_url(reference):
                 errors.append(f"{relative}: remote {context} resource: {reference}")

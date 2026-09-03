@@ -216,6 +216,8 @@ class CheckBaselineTests(unittest.TestCase):
                 "<meta http-equiv='refresh' content='0; url=https://example.invalid/redirect'>"
             ),
             "unclosed style": "<style>@import 'https://example.invalid/remote.css';",
+            "legacy background": "<body background='https://example.invalid/pixel.png'></body>",
+            "unknown URL attribute": "<div mystery='https://example.invalid/pixel.png'></div>",
         }
         for label, markup in cases.items():
             with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
@@ -246,6 +248,44 @@ class CheckBaselineTests(unittest.TestCase):
             )
             errors, _, _ = checker.check_site_tree(root)
             self.assertTrue(any("remote" in error for error in errors), errors)
+
+    def test_svg_asset_safety_check_rejects_xml_stylesheets(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "assets").mkdir()
+            (root / "assets/remote.svg").write_text(
+                "<?xml version='1.0'?>\n"
+                "<?xml-stylesheet href='https://example.invalid/remote.css'?>\n"
+                "<svg xmlns='http://www.w3.org/2000/svg'></svg>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            (root / "index.html").write_text(
+                "<!doctype html><html><body><img src='assets/remote.svg'></body></html>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _, _ = checker.check_site_tree(root)
+            self.assertTrue(any("xml-stylesheet" in error for error in errors), errors)
+
+    def test_html_like_htm_files_are_audited_even_when_loaded_locally(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "payload.htm").write_text(
+                "<!doctype html><html><body><script>alert(1)</script></body></html>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            (root / "index.html").write_text(
+                "<!doctype html><html><body><iframe src='payload.htm'></iframe></body></html>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, page_count, _ = checker.check_site_tree(root)
+            self.assertEqual(page_count, 2)
+            self.assertTrue(any("iframe" in error or "script" in error for error in errors), errors)
 
     def test_html_safety_check_allows_an_embedded_image_data_url(self):
         checker = load_check_module()
@@ -303,6 +343,8 @@ class CheckBaselineTests(unittest.TestCase):
         checker = load_check_module()
         cases = {
             "import": "@import 'https://example.invalid/remote.css';\n",
+            "import without whitespace": "@import\"https://example.invalid/remote.css\";\n",
+            "data import": "@import\"data:text/css,body%7Bcolor:red%7D\";\n",
             "url": ".x { background: url(//example.invalid/pixel.png); }\n",
         }
         for label, payload in cases.items():
@@ -316,7 +358,7 @@ class CheckBaselineTests(unittest.TestCase):
                     newline="\n",
                 )
                 errors, _, _ = checker.check_site_tree(root)
-                self.assertTrue(any("remote" in error for error in errors), errors)
+                self.assertTrue(errors, errors)
 
     def test_css_safety_check_allows_local_urls(self):
         checker = load_check_module()
@@ -354,7 +396,10 @@ class CheckBaselineTests(unittest.TestCase):
                     newline="\n",
                 )
                 errors, _, _ = checker.check_site_tree(root)
-                self.assertTrue(any("broken local" in error for error in errors), errors)
+                if label == "import":
+                    self.assertTrue(any("@import" in error for error in errors), errors)
+                else:
+                    self.assertTrue(any("broken local" in error for error in errors), errors)
 
     def test_link_check_accepts_case_insensitive_external_schemes(self):
         checker = load_check_module()
