@@ -11,7 +11,19 @@ import zipfile
 
 
 REPO = Path(__file__).resolve().parents[1]
-TEXT_SUFFIXES = {".css", ".html", ".json", ".md", ".txt", ".xml", ".yml", ".yaml"}
+TEXT_SUFFIXES = {
+    ".conf",
+    ".css",
+    ".html",
+    ".json",
+    ".md",
+    ".sha256",
+    ".svg",
+    ".txt",
+    ".xml",
+    ".yml",
+    ".yaml",
+}
 
 
 def copy_repo(target: Path) -> None:
@@ -63,6 +75,11 @@ def checksum_records(payload: str) -> dict[str, str]:
 
 
 class BuildBaselineTests(unittest.TestCase):
+    def test_git_attributes_force_all_generated_text_types_to_lf(self):
+        attributes = (REPO / ".gitattributes").read_text(encoding="utf-8")
+        for pattern in ("*.conf", "*.svg", "*.sha256"):
+            self.assertIn(f"{pattern} text eol=lf", attributes)
+
     def test_generated_text_is_utf8_lf_on_windows_and_linux(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"
@@ -74,6 +91,21 @@ class BuildBaselineTests(unittest.TestCase):
                 path = root / item["path"]
                 if path.suffix.lower() in TEXT_SUFFIXES or path.name in {"Caddyfile", "Dockerfile"}:
                     self.assertNotIn(b"\r\n", path.read_bytes(), item["path"])
+
+    def test_copied_conf_and_svg_sources_are_normalized_to_lf(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            nginx = root / "src/deploy/nginx.conf"
+            nginx.write_bytes(nginx.read_bytes().replace(b"\n", b"\r\n"))
+            fixture = root / "src/maintainer/templates/line-ending-fixture.svg"
+            fixture.write_bytes(b'<svg xmlns="http://www.w3.org/2000/svg">\r\n</svg>\r\n')
+
+            result = run_build(root)
+
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            self.assertNotIn(b"\r\n", (root / "deploy/nginx.conf").read_bytes())
+            self.assertNotIn(b"\r\n", (root / "templates/line-ending-fixture.svg").read_bytes())
 
     def test_two_consecutive_builds_have_the_same_managed_tree(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -210,6 +242,18 @@ class BuildBaselineTests(unittest.TestCase):
         }
         self.assertEqual(forbidden, set())
 
+    def test_offline_zip_excludes_online_only_routes(self):
+        archive = offline_archive(REPO)
+        prefix = "codex-tutorial-cn/"
+        with zipfile.ZipFile(archive) as package:
+            paths = {
+                name[len(prefix):]
+                for name in package.namelist()
+                if name.startswith(prefix) and not name.endswith("/")
+            }
+        self.assertNotIn("404.html", paths)
+        self.assertNotIn("robots.txt", paths)
+
     def test_offline_zip_has_a_matching_external_sha256_file(self):
         archive = offline_archive(REPO)
         checksum_file = archive.with_name(archive.name + ".sha256")
@@ -232,6 +276,30 @@ class BuildBaselineTests(unittest.TestCase):
         with zipfile.ZipFile(archive) as package:
             compression_methods = {info.compress_type for info in package.infolist()}
         self.assertEqual(compression_methods, {zipfile.ZIP_STORED})
+
+    def test_content_lifecycle_matches_the_formal_course_design(self):
+        expected = [
+            "outline",
+            "draft",
+            "source-and-rights-review",
+            "editorial-reviewed",
+            "verification",
+            "acceptance-ready",
+            "stable",
+            "retired",
+        ]
+        registry = json.loads((REPO / "registry/framework-v1.json").read_text(encoding="utf-8"))
+        schema = json.loads((REPO / "schemas/framework-v1.schema.json").read_text(encoding="utf-8"))
+        self.assertEqual(registry["contentStatus"]["pipeline"], expected)
+        self.assertEqual(schema["$defs"]["pipelineState"]["enum"], expected)
+
+    def test_quality_workflow_builds_before_diff_and_runs_on_main(self):
+        workflow = (REPO / ".github/workflows/quality.yml").read_text(encoding="utf-8")
+        self.assertRegex(workflow, r"(?m)^\s+- main\s*$")
+        build_step = workflow.find("run: python src/build.py")
+        diff_step = workflow.find("run: git diff --exit-code")
+        self.assertGreaterEqual(build_step, 0)
+        self.assertGreater(diff_step, build_step)
 
 
 if __name__ == "__main__":

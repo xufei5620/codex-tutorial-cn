@@ -4,6 +4,7 @@
 import argparse
 import hashlib
 import html
+from html.parser import HTMLParser
 import json
 import os
 from pathlib import Path
@@ -17,9 +18,65 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
 STATUS_ZH = {"draft": "草稿", "outline": "大纲", "reviewed": "已复核"}
-EXCLUDED_PUBLIC_PARTS = {".git", "src", "downloads", "__pycache__"}
+EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__"}
 RUNTIME_TAGS = {"link", "img", "script", "iframe", "source", "audio", "video", "track", "object", "embed"}
+RUNTIME_ATTRIBUTES = {"href", "src", "data", "poster", "srcset"}
 EXTERNAL_SCHEMES = ("http://", "https://", "mailto:", "tel:")
+UNSAFE_SCHEMES = ("javascript:", "vbscript:")
+MANAGED_ROOT_FILES = {
+    "404.html",
+    "README.md",
+    "index.html",
+    "maintenance-release.html",
+    "notion-workflow.html",
+    "robots.txt",
+    "source-research.html",
+}
+MANAGED_ROOT_DIRECTORIES = {"assets", "deploy", "registry", "schemas", "specs", "templates"}
+MANAGED_METADATA = {"manifest.json", "SHA256SUMS.txt"}
+
+
+def is_remote_url(value: str) -> bool:
+    return value.strip().lower().startswith(("http://", "https://", "//"))
+
+
+class HTMLAuditParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.ids: list[str] = []
+        self.hrefs: list[str] = []
+        self.errors: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self._audit_tag(tag, attrs)
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self._audit_tag(tag, attrs)
+
+    def _audit_tag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        tag = tag.lower()
+        if tag == "script":
+            self.errors.append("contains script")
+        for raw_name, raw_value in attrs:
+            name = raw_name.lower()
+            value = html.unescape(raw_value or "").strip()
+            if name == "id" and value:
+                self.ids.append(value)
+            if name == "href":
+                self.hrefs.append(value)
+            if name == "style":
+                self.errors.append("contains inline style attribute")
+            if name.startswith("on"):
+                self.errors.append(f"contains inline event handler: {name}")
+            if value.lower().startswith(UNSAFE_SCHEMES):
+                self.errors.append(f"contains unsafe URL scheme in {tag}[{name}]")
+            if tag in RUNTIME_TAGS and name in RUNTIME_ATTRIBUTES:
+                if name == "srcset":
+                    remote = re.search(r"(?i)(?:https?:)?//", value) is not None
+                else:
+                    remote = is_remote_url(value)
+                if remote:
+                    self.errors.append(f"remote runtime resource in {tag}[{name}]")
 
 
 def configure_output() -> None:
@@ -69,45 +126,59 @@ def public_html_files(root: Path) -> list[Path]:
     return sorted(files)
 
 
-def check_site_tree(root: Path, chapter_config: dict | None = None) -> tuple[list[str], int, int]:
+def public_css_files(root: Path) -> list[Path]:
+    files = []
+    for path in root.rglob("*.css"):
+        relative = path.relative_to(root)
+        if any(part in EXCLUDED_PUBLIC_PARTS for part in relative.parts):
+            continue
+        files.append(path)
+    return sorted(files)
+
+
+def parse_html(path: Path) -> HTMLAuditParser:
+    parser = HTMLAuditParser()
+    parser.feed(path.read_text(encoding="utf-8"))
+    parser.close()
+    return parser
+
+
+def check_site_tree(
+    root: Path,
+    chapter_config: dict | None = None,
+    *,
+    allow_root_relative: bool = True,
+) -> tuple[list[str], int, int]:
     errors = []
     pages = public_html_files(root)
-    ids_cache: dict[Path, list[str]] = {}
+    parser_cache: dict[Path, HTMLAuditParser] = {}
 
-    def ids_of(path: Path) -> list[str]:
-        if path not in ids_cache:
-            ids_cache[path] = re.findall(r'\bid="([^"]+)"', path.read_text(encoding="utf-8"))
-        return ids_cache[path]
+    def audit_of(path: Path) -> HTMLAuditParser:
+        if path not in parser_cache:
+            parser_cache[path] = parse_html(path)
+        return parser_cache[path]
 
     link_total = 0
     for path in pages:
         source = path.read_text(encoding="utf-8")
         relative = path.relative_to(root).as_posix()
-        if re.search(r"<script\b", source, re.I):
-            errors.append(f"{relative}: contains script")
-        if re.search(r"\sstyle\s*=", source, re.I):
-            errors.append(f"{relative}: contains inline style attribute")
-        for match in re.finditer(
-            r'<([A-Za-z][\w:-]*)\b[^>]*\b(href|src|data|poster)="([^"]+)"',
-            source,
-            re.I,
-        ):
-            tag = match.group(1).lower()
-            value = html.unescape(match.group(3)).strip()
-            if tag in RUNTIME_TAGS and value.startswith(("http://", "https://", "//")):
-                errors.append(f"{relative}: remote runtime resource in {tag}")
-        for match in re.finditer(r'\bhref="([^"]+)"', source, re.I):
-            href = html.unescape(match.group(1)).strip()
+        audit = audit_of(path)
+        errors.extend(f"{relative}: {message}" for message in audit.errors)
+        for href in audit.hrefs:
             if not href or href.startswith(EXTERNAL_SCHEMES):
                 continue
             link_total += 1
             link_path, _, fragment = href.partition("#")
             if not link_path:
                 target = path
-            elif link_path == "/":
-                target = root / "index.html"
             elif link_path.startswith("/"):
-                target = root / link_path.lstrip("/")
+                if not allow_root_relative:
+                    errors.append(f"{relative}: root-relative link is not portable offline: {href}")
+                    continue
+                if link_path == "/":
+                    target = root / "index.html"
+                else:
+                    target = root / link_path.lstrip("/")
             else:
                 target = path.parent / link_path
             try:
@@ -121,10 +192,10 @@ def check_site_tree(root: Path, chapter_config: dict | None = None) -> tuple[lis
             if not resolved.exists():
                 errors.append(f"{relative}: broken local link: {href}")
                 continue
-            if fragment and resolved.suffix.lower() == ".html" and fragment not in ids_of(resolved):
+            if fragment and resolved.suffix.lower() == ".html" and fragment not in audit_of(resolved).ids:
                 errors.append(f"{relative}: missing anchor: {href}")
 
-        ids = ids_of(path)
+        ids = audit.ids
         duplicates = sorted({value for value in ids if ids.count(value) > 1})
         if duplicates:
             errors.append(f"{relative}: duplicate ids: {duplicates}")
@@ -148,10 +219,40 @@ def check_site_tree(root: Path, chapter_config: dict | None = None) -> tuple[lis
                     errors.append(f"{relative}: chapter badge missing")
                 elif badge.group(1) != wanted or badge.group(2) != STATUS_ZH.get(wanted, wanted):
                     errors.append(f"{relative}: chapter badge differs from chapters.json")
+
+    for path in public_css_files(root):
+        relative = path.relative_to(root).as_posix()
+        source = path.read_text(encoding="utf-8")
+        source_without_comments = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
+        if re.search(r"(?i)@import\s+(?:url\(\s*)?[\"']?\s*(?:https?:)?//", source_without_comments):
+            errors.append(f"{relative}: remote CSS import")
+        if re.search(r"(?i)url\(\s*[\"']?\s*(?:https?:)?//", source_without_comments):
+            errors.append(f"{relative}: remote CSS url")
     return errors, len(pages), link_total
 
 
-def check_manifest(root: Path) -> list[str]:
+def managed_public_paths(root: Path, chapter_config: dict) -> set[str]:
+    paths = set(MANAGED_ROOT_FILES)
+    paths.update(f"{chapter_id}.html" for chapter_id in chapter_config["chapters"])
+    paths.update(f"{extra_id}.html" for extra_id in chapter_config["extras"])
+    paths.update(
+        path.name
+        for path in root.glob("ch[0-9][0-9].html")
+        if path.is_file()
+    )
+    for directory_name in MANAGED_ROOT_DIRECTORIES:
+        directory = root / directory_name
+        if not directory.is_dir():
+            continue
+        paths.update(
+            path.relative_to(root).as_posix()
+            for path in directory.rglob("*")
+            if path.is_file()
+        )
+    return paths
+
+
+def check_manifest(root: Path, expected_paths: set[str]) -> list[str]:
     errors = []
     try:
         manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
@@ -180,8 +281,13 @@ def check_manifest(root: Path) -> list[str]:
             errors.append(f"checksum mismatch: {relative}")
     if len(declared) != len(set(declared)):
         errors.append("manifest contains duplicate paths")
-    if set(sums) != set(declared):
+    declared_set = set(declared)
+    if set(sums) != declared_set:
         errors.append("manifest and SHA256SUMS path sets differ")
+    for relative in sorted(expected_paths - declared_set):
+        errors.append(f"manifest omits managed file: {relative}")
+    for relative in sorted(declared_set - expected_paths):
+        errors.append(f"manifest declares unmanaged file: {relative}")
     return errors
 
 
@@ -234,6 +340,9 @@ def check_offline_zip(root: Path, chapter_config: dict) -> list[str]:
             manifest = json.loads(package.read(prefix + "manifest.json").decode("utf-8"))
             sums = checksum_records(package.read(prefix + "SHA256SUMS.txt").decode("utf-8"))
             payload_paths = files - {"manifest.json", "SHA256SUMS.txt"}
+            online_only = payload_paths & {"404.html", "robots.txt"}
+            if online_only:
+                errors.append(f"ZIP contains online-only files: {sorted(online_only)}")
             records = manifest.get("files", [])
             declared = {record.get("path") for record in records if isinstance(record, dict)}
             if declared != payload_paths or set(sums) != payload_paths:
@@ -253,22 +362,33 @@ def check_offline_zip(root: Path, chapter_config: dict) -> list[str]:
             if not errors:
                 with tempfile.TemporaryDirectory(prefix="codex-tutorial-check-") as directory:
                     package.extractall(directory)
-                    link_errors, _, _ = check_site_tree(Path(directory) / "codex-tutorial-cn")
+                    link_errors, _, _ = check_site_tree(
+                        Path(directory) / "codex-tutorial-cn",
+                        allow_root_relative=False,
+                    )
                     errors.extend(link_errors)
     except Exception as error:
         errors.append(f"ZIP cannot be validated: {error}")
     return errors
 
 
-def generated_paths(root: Path) -> set[str]:
-    manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-    paths = {record["path"] for record in manifest["files"]}
-    paths.update({"manifest.json", "SHA256SUMS.txt"})
-    paths.update(path.relative_to(root).as_posix() for path in (root / "downloads").glob("*"))
+def generated_paths(root: Path, chapter_config: dict) -> set[str]:
+    paths = managed_public_paths(root, chapter_config)
+    paths.update(MANAGED_METADATA)
+    version = chapter_config["site"]["version"]
+    archive_name = f"codex-tutorial-cn-v{version}-offline.zip"
+    paths.update({f"downloads/{archive_name}", f"downloads/{archive_name}.sha256"})
+    downloads = root / "downloads"
+    if downloads.is_dir():
+        paths.update(
+            path.relative_to(root).as_posix()
+            for path in downloads.rglob("*")
+            if path.is_file()
+        )
     return paths
 
 
-def check_generated_sync(root: Path) -> list[str]:
+def check_generated_sync(root: Path, chapter_config: dict) -> list[str]:
     errors = []
     with tempfile.TemporaryDirectory(prefix="codex-tutorial-rebuild-") as directory:
         candidate = Path(directory) / "repo"
@@ -291,15 +411,20 @@ def check_generated_sync(root: Path) -> list[str]:
         if result.returncode:
             return ["generated verification rebuild failed"]
         try:
-            expected_paths = generated_paths(root)
-            actual_paths = generated_paths(candidate)
+            expected_paths = generated_paths(root, chapter_config)
+            actual_paths = generated_paths(candidate, chapter_config)
         except Exception as error:
             return [f"generated file inventory cannot be read: {error}"]
         if expected_paths != actual_paths:
             errors.append("generated file sets differ from source build")
         for relative in sorted(expected_paths & actual_paths):
-            expected = root.joinpath(*relative.split("/")).read_bytes()
-            actual = candidate.joinpath(*relative.split("/")).read_bytes()
+            expected_path = root.joinpath(*relative.split("/"))
+            actual_path = candidate.joinpath(*relative.split("/"))
+            if not expected_path.is_file() or not actual_path.is_file():
+                errors.append(f"generated output missing from one tree: {relative}")
+                continue
+            expected = expected_path.read_bytes()
+            actual = actual_path.read_bytes()
             if expected != actual:
                 errors.append(f"generated output differs from source build: {relative}")
     return errors
@@ -316,13 +441,14 @@ def main() -> int:
     errors, warnings = [], []
     site_errors, page_count, link_count = check_site_tree(ROOT, config)
     errors.extend(site_errors)
-    errors.extend(f"manifest: {message}" for message in check_manifest(ROOT))
+    expected_manifest_paths = managed_public_paths(ROOT, config)
+    errors.extend(f"manifest: {message}" for message in check_manifest(ROOT, expected_manifest_paths))
     registry_errors, registry_warnings = check_registry(ROOT, arguments.strict)
     errors.extend(registry_errors)
     warnings.extend(registry_warnings)
     errors.extend(f"offline: {message}" for message in check_offline_zip(ROOT, config))
     if arguments.verify_generated:
-        errors.extend(check_generated_sync(ROOT))
+        errors.extend(check_generated_sync(ROOT, config))
 
     print(f"checked {page_count} HTML pages and {link_count} local links")
     for warning in warnings:

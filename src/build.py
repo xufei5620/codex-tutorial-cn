@@ -29,7 +29,9 @@ FAVICON = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect w
 NOT_FOUND = '''  <header class="hero"><div class="hero-in"><p class="eyebrow">404</p><h1>找不到这一页</h1><p class="lede">链接可能拼错了，或者这一页已经改了名字。</p><div class="hero-actions"><a class="btn" href="/">回到目录</a></div></div></header>
   <main id="content"><p>如果你是从别处点链接过来的，请按第 11 章 11.5 的方式告诉维护者是哪个链接失效了。</p></main>'''
 
-TEXT_SUFFIXES = {'.css', '.html', '.json', '.md', '.txt', '.xml', '.yml', '.yaml'}
+TEXT_SUFFIXES = {
+    '.conf', '.css', '.html', '.json', '.md', '.sha256', '.svg', '.txt', '.xml', '.yml', '.yaml',
+}
 TEXT_NAMES = {'Caddyfile', 'Dockerfile'}
 
 
@@ -282,7 +284,7 @@ def build_offline_stage(stage_root):
     package_root = os.path.join(stage_root, 'codex-tutorial-cn')
     os.makedirs(package_root)
     offline_roots = sorted(set(GENERATED) - {
-        'deploy', 'downloads', 'README.md', 'index.html', 'manifest.json', 'SHA256SUMS.txt',
+        '404.html', 'deploy', 'downloads', 'README.md', 'robots.txt', 'index.html', 'manifest.json', 'SHA256SUMS.txt',
     })
     for name in offline_roots:
         if not os.path.exists(os.path.join(SITE, name)):

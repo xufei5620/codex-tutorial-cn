@@ -103,13 +103,13 @@
     },
     {
       "path": "deploy/nginx.conf",
-      "size": 1122,
-      "sha256": "79d9d720572c66c5290a240a5f4e323ca138b63e1181fb0a231848003aca0e2c"
+      "size": 1094,
+      "sha256": "31ee859fc721df27d3af2b7c8deb1dccbf70ef91c95c7aeecd7d09ff6643bf1e"
     },
     {
       "path": "deploy/nginx.docker.conf",
-      "size": 366,
-      "sha256": "ac9e4fed6825fca730c0ed80969145cf98b963247cbd807158a9aff19364fac2"
+      "size": 354,
+      "sha256": "c28b98aa9ca7fff12aafca4e99be6d83696594ccc63b6270dabc7a1176ec0362"
     },
     {
       "path": "index.html",
@@ -133,8 +133,8 @@
     },
     {
       "path": "registry/framework-v1.json",
-      "size": 8688,
-      "sha256": "8087514591ff6a73693c2158bd18bb9bb45e233ac9cd52b5057422349d3da56a"
+      "size": 8716,
+      "sha256": "832362bdbe53f2ee8d5aebd1480ec6e0f65ee2e7e3ff7bb1ee98c77330fd57dc"
     },
     {
       "path": "robots.txt",
@@ -143,8 +143,8 @@
     },
     {
       "path": "schemas/framework-v1.schema.json",
-      "size": 14582,
-      "sha256": "34164438e1cc721ee98348497f388ac2074b0ceb48280f905e05683827df780e"
+      "size": 14612,
+      "sha256": "4746fd17db3cde4b3a407a3513d2523817c8610d41e12affa2697bc8408a979f"
     },
     {
       "path": "source-research.html",
