@@ -3,7 +3,7 @@
   site/     —— 离线多文件站点（仓库用，双击 index.html 即可阅读，无 JavaScript）
   preview.html —— 单页预览（claude.ai artifact 用，含极少量 JavaScript 做路由）
 """
-import json, re, os, shutil, hashlib, datetime, sys
+import json, re, os, shutil, hashlib, datetime, sys, tempfile, zipfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))          # 仓库里的 src/
 CONTENT = os.path.join(ROOT, 'content')
@@ -28,6 +28,45 @@ ZIP_NAME = f"codex-tutorial-cn-v{cfg['site']['version']}-offline.zip"
 FAVICON = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#084a51"/><path d="M18 16h20a8 8 0 0 1 8 8v24H26a8 8 0 0 0-8 8z" fill="#dcecee"/><path d="M18 16v40" stroke="#0e6b74" stroke-width="4"/><path d="M26 26h14M26 34h14" stroke="#084a51" stroke-width="3" stroke-linecap="round"/></svg>'''
 NOT_FOUND = '''  <header class="hero"><div class="hero-in"><p class="eyebrow">404</p><h1>找不到这一页</h1><p class="lede">链接可能拼错了，或者这一页已经改了名字。</p><div class="hero-actions"><a class="btn" href="/">回到目录</a></div></div></header>
   <main id="content"><p>如果你是从别处点链接过来的，请按第 11 章 11.5 的方式告诉维护者是哪个链接失效了。</p></main>'''
+
+TEXT_SUFFIXES = {
+    '.conf', '.css', '.html', '.json', '.md', '.sha256', '.svg', '.txt', '.xml', '.yml', '.yaml',
+}
+TEXT_NAMES = {'Caddyfile', 'Dockerfile'}
+
+
+def write_text(path, text):
+    normalized = str(text).replace('\r\n', '\n').replace('\r', '\n').rstrip('\n') + '\n'
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write(normalized)
+
+
+def write_json(path, value):
+    write_text(path, json.dumps(value, ensure_ascii=False, indent=2))
+
+
+def copy_public_file(source, target):
+    suffix = os.path.splitext(source)[1].lower()
+    if suffix in TEXT_SUFFIXES or os.path.basename(source) in TEXT_NAMES:
+        with open(source, encoding='utf-8') as handle:
+            write_text(target, handle.read())
+    else:
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copy2(source, target)
+
+
+def copy_public_path(source, target):
+    if os.path.isdir(source):
+        for directory, names, files in os.walk(source):
+            names.sort()
+            relative = os.path.relpath(directory, source)
+            destination = target if relative == '.' else os.path.join(target, relative)
+            os.makedirs(destination, exist_ok=True)
+            for name in sorted(files):
+                copy_public_file(os.path.join(directory, name), os.path.join(destination, name))
+    else:
+        copy_public_file(source, target)
 
 
 def read(name):
@@ -111,9 +150,10 @@ def doc_page(pid, mode):
   </main>
 </div>'''
 
-def home_body(mode):
+def home_body(mode, offline=False):
     L = lambda t, a=None: resolve_links('{{link:%s%s}}' % (t, '#' + a if a else ''), mode, 'home')
-    done = sum(1 for c in CH.values() if c['status'] != 'outline')
+    seeded = sum(1 for c in CH.values() if c['status'] != 'outline')
+    reviewed = sum(1 for c in CH.values() if c['status'] == 'reviewed')
     toc = []
     for p in PARTS:
         toc.append(f'    <section class="part">\n      <div class="part-head"><h2>{p["label"]}</h2><p>{p["desc"]}</p></div>\n      <ol class="toc">')
@@ -151,14 +191,14 @@ def home_body(mode):
       <p class="lede">写给第一次接触 AI 与 Codex 的读者：不需要编程、命令行或 Git 基础。在线阅读，或下载离线版——解压后双击打开即可，无需联网、无需账号。</p>
       <div class="hero-actions">
         <a class="btn" href="{L('ch01')}">从第 1 章开始</a>
-        {('<a class="btn ghost" href="downloads/' + ZIP_NAME + '" download>下载离线版（ZIP）</a>') if mode == 'multi' else ''}
-        <p class="progress">正文草稿已完成 {done} / {len(CH)} 章</p>
+        {('<span class="btn ghost" aria-disabled="true">当前已是离线版</span>' if offline else '<a class="btn ghost" href="downloads/' + ZIP_NAME + '" download>下载离线版（ZIP）</a>') if mode == 'multi' else ''}
+        <p class="progress">{seeded} / {len(CH)} 章已有草稿种子；正式审校 {reviewed} / {len(CH)} 章</p>
       </div>
     </div>
   </header>
   <main id="content">
     <aside class="callout note" data-label="阅读须知">
-      <p>全部 11 章均已有可读正文，但都还是「<strong>草稿</strong>」：内容依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未在真实的 Windows / macOS 电脑上逐步实测</strong>。软件界面更新很快，若你看到的按钮名称与教程不同，以屏幕上实际显示为准，并欢迎反馈。每一章都会经过写作、复核、实测三步后才标记为完成。</p>
+      <p>全部 11 章均已有可读的「<strong>草稿种子</strong>」，但这些种子<strong>不算完成课程</strong>：内容依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未逐条复核或实测</strong>。软件界面更新很快，若你看到的按钮名称与教程不同，以屏幕上实际显示为准，并欢迎反馈。每一章都会经过来源与权利审查、编辑审校和平台验证后才进入正式版本。</p>
       <ul class="legend">
         <li>{badge('draft')} 正文可读，待复核与实测</li>
         <li>{badge('outline')} 只有规划，正文未写</li>
@@ -178,7 +218,7 @@ def home_body(mode):
     </details>
 
     <footer>
-      <p>本教程为纯静态 HTML：无 JavaScript、无远程资源、无跟踪。在线版与离线版内容完全相同，离线版解压后双击 <code>index.html</code> 即可阅读。版本 {cfg['site']['version']}（{cfg['site']['date']}），更新记录见<a href="{L('ch11', 's3')}">第 11 章</a>。</p>
+      <p>本教程为纯静态 HTML：无 JavaScript、无远程资源、无跟踪。在线版与离线版的课程正文和示例一致；离线版解压后双击 <code>index.html</code> 即可阅读。版本 {cfg['site']['version']}（{cfg['site']['date']}），更新记录见<a href="{L('ch11', 's3')}">第 11 章</a>。</p>
     </footer>
   </main>'''
 
@@ -208,81 +248,156 @@ def page_shell(title, body_class, inner, css_href='assets/style.css', desc=DESCR
 </html>
 '''
 
+def collect_file_records(root):
+    records = []
+    for directory, names, files in os.walk(root):
+        names.sort()
+        for name in sorted(files):
+            if name in ('manifest.json', 'SHA256SUMS.txt'):
+                continue
+            path = os.path.join(directory, name)
+            relative = os.path.relpath(path, root).replace(os.sep, '/')
+            payload = open(path, 'rb').read()
+            records.append({'path': relative, 'size': len(payload), 'sha256': hashlib.sha256(payload).hexdigest()})
+    return records
+
+
+def write_manifest_and_sums(root, artifact):
+    records = collect_file_records(root)
+    manifest = {
+        'schemaVersion': '1.0.0',
+        'artifact': artifact,
+        'version': cfg['site']['version'],
+        'status': 'draft-seed-unverified',
+        'generatedDate': cfg['site']['date'],
+        'entry': 'index.html',
+        'files': records,
+    }
+    write_json(os.path.join(root, 'manifest.json'), manifest)
+    write_text(os.path.join(root, 'SHA256SUMS.txt'), ''.join(
+        f"{record['sha256']}  {record['path']}\n" for record in records
+    ))
+    return records
+
+
+def build_offline_stage(stage_root):
+    package_root = os.path.join(stage_root, 'codex-tutorial-cn')
+    os.makedirs(package_root)
+    offline_roots = sorted(set(GENERATED) - {
+        '404.html', 'deploy', 'downloads', 'README.md', 'robots.txt', 'index.html', 'manifest.json', 'SHA256SUMS.txt',
+    })
+    for name in offline_roots:
+        if not os.path.exists(os.path.join(SITE, name)):
+            continue
+        copy_public_path(os.path.join(SITE, name), os.path.join(package_root, name))
+    write_text(os.path.join(package_root, 'index.html'),
+               page_shell(SITE_TITLE, 'home', home_body('multi', offline=True)))
+    write_manifest_and_sums(package_root, 'codex-tutorial-cn-offline')
+    return package_root
+
+
+def build_offline_zip(package_root, zip_path):
+    year, month, day = (int(value) for value in cfg['site']['date'].split('-'))
+    zip_time = (year, month, day, 0, 0, 0)
+    # ZIP_STORED avoids platform/zlib-specific DEFLATE bytes. The course is small,
+    # so byte-for-byte reproducibility matters more than compression ratio.
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_STORED) as package:
+        entries = []
+        for directory, names, files in os.walk(package_root):
+            names.sort()
+            for name in sorted(files):
+                entries.append(os.path.join(directory, name))
+        for path in sorted(entries, key=lambda item: os.path.relpath(item, os.path.dirname(package_root)).replace(os.sep, '/')):
+            archive_name = os.path.relpath(path, os.path.dirname(package_root)).replace(os.sep, '/')
+            info = zipfile.ZipInfo(archive_name, date_time=zip_time)
+            info.compress_type = zipfile.ZIP_STORED
+            info.create_system = 3
+            info.external_attr = 0o644 << 16
+            with open(path, 'rb') as handle:
+                package.writestr(info, handle.read())
+
+
 def build_site():
     for name in GENERATED:
         p = os.path.join(SITE, name)
         if os.path.isdir(p): shutil.rmtree(p)
         elif os.path.exists(p): os.remove(p)
     os.makedirs(os.path.join(SITE, 'assets'))
-    open(os.path.join(SITE, 'assets', 'style.css'), 'w', encoding='utf-8').write(css)
-    open(os.path.join(SITE, 'assets', 'favicon.svg'), 'w', encoding='utf-8').write(FAVICON)
-    open(os.path.join(SITE, 'index.html'), 'w', encoding='utf-8').write(
-        page_shell(SITE_TITLE, 'home', home_body('multi')))
-    open(os.path.join(SITE, '404.html'), 'w', encoding='utf-8').write(
-        page_shell(f'找不到页面｜{SITE_TITLE}', 'home', NOT_FOUND, css_href='/assets/style.css'))
-    open(os.path.join(SITE, 'robots.txt'), 'w', encoding='utf-8').write('User-agent: *\nAllow: /\nDisallow: /templates/\nDisallow: /specs/\nDisallow: /schemas/\nDisallow: /registry/\nDisallow: /src/\nDisallow: /deploy/\n')
-    shutil.copytree(os.path.join(ROOT, 'deploy'), os.path.join(SITE, 'deploy'))
+    write_text(os.path.join(SITE, 'assets', 'style.css'), css)
+    write_text(os.path.join(SITE, 'assets', 'favicon.svg'), FAVICON)
+    write_text(os.path.join(SITE, 'index.html'), page_shell(SITE_TITLE, 'home', home_body('multi')))
+    write_text(os.path.join(SITE, '404.html'), page_shell(f'找不到页面｜{SITE_TITLE}', 'home', NOT_FOUND, css_href='/assets/style.css'))
+    write_text(os.path.join(SITE, 'robots.txt'), 'User-agent: *\nAllow: /\nDisallow: /templates/\nDisallow: /specs/\nDisallow: /schemas/\nDisallow: /registry/\nDisallow: /src/\nDisallow: /deploy/\n')
+    copy_public_path(os.path.join(ROOT, 'deploy'), os.path.join(SITE, 'deploy'))
     for cid in ORDER:
         c = CH[cid]
-        open(os.path.join(SITE, cid + '.html'), 'w', encoding='utf-8').write(
-            page_shell(f'第 {c["num"]} 章 {c["title"]}｜{SITE_TITLE}', '', doc_page(cid, 'multi')))
+        write_text(os.path.join(SITE, cid + '.html'),
+                   page_shell(f'第 {c["num"]} 章 {c["title"]}｜{SITE_TITLE}', '', doc_page(cid, 'multi')))
     for eid, e in EXTRAS.items():
-        open(os.path.join(SITE, eid + '.html'), 'w', encoding='utf-8').write(
-            page_shell(f'{e["title"]}｜{SITE_TITLE}', '', doc_page(eid, 'multi')))
+        write_text(os.path.join(SITE, eid + '.html'),
+                   page_shell(f'{e["title"]}｜{SITE_TITLE}', '', doc_page(eid, 'multi')))
     # 维护者文件：从原仓库原样复制
     for name in ['maintenance-release.html', 'notion-workflow.html', 'source-research.html', 'templates', 'specs', 'schemas']:
         src = os.path.join(MAINT, name)
         dst = os.path.join(SITE, name)
-        (shutil.copytree if os.path.isdir(src) else shutil.copy2)(src, dst)
+        copy_public_path(src, dst)
     # 登记表
     os.makedirs(os.path.join(SITE, 'registry'))
     reg = json.load(open(os.path.join(MAINT, 'framework-v1.json'), encoding='utf-8'))
-    reg['version'] = cfg['site']['version']
-    reg['status'] = 'draft-complete-unverified'
+    reg['contentVersion'] = cfg['site']['version']
+    reg['artifactVersion'] = cfg['site']['version']
+    reg['status'] = 'draft-seed-unverified'
     reg['chapters'] = [{'number': CH[c]['num'], 'title': CH[c]['title'], 'status': CH[c]['status'], 'file': c + '.html'} for c in ORDER]
     reg['productNote'] = ('2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），'
                           '教程中的“Codex”指该应用左上角菜单中的 Codex 视图。')
     reg['generatedDate'] = cfg['site']['date']
-    json.dump(reg, open(os.path.join(SITE, 'registry', 'framework-v1.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+    reg['releaseGate']['currentDecision'] = 'course-beta-in-development'
+    write_json(os.path.join(SITE, 'registry', 'framework-v1.json'), reg)
     # README
-    open(os.path.join(SITE, 'README.md'), 'w', encoding='utf-8').write(readme())
-    # manifest + SHA256SUMS
-    files = []
-    for dp, dns, fns in os.walk(SITE):
-        dns[:] = [d for d in dns if d not in ('.git', 'src', 'downloads')]
-        for fn in fns:
-            if fn in ('manifest.json', 'SHA256SUMS.txt') or fn.startswith('.'):
-                continue
-            p = os.path.join(dp, fn)
-            rel = os.path.relpath(p, SITE).replace(os.sep, '/')
-            data = open(p, 'rb').read()
-            files.append({'path': rel, 'size': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
-    files.sort(key=lambda f: f['path'])
-    manifest = {'schemaVersion': '1.0.0', 'artifact': 'codex-tutorial-cn', 'version': cfg['site']['version'],
-                'status': 'draft-complete-unverified', 'generatedDate': cfg['site']['date'], 'entry': 'index.html', 'files': files}
-    json.dump(manifest, open(os.path.join(SITE, 'manifest.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
-    open(os.path.join(SITE, 'SHA256SUMS.txt'), 'w', encoding='utf-8').write(
-        ''.join(f"{f['sha256']}  {f['path']}\n" for f in files))
-    # 离线版 ZIP（放进 downloads/，不计入清单，避免自包含）
-    import zipfile
-    dl = os.path.join(SITE, 'downloads'); os.makedirs(dl)
-    zpath = os.path.join(dl, ZIP_NAME)
-    # 可重现打包：时间戳固定为站点日期、条目按名称排序、权限固定，同样的源文件必然得到逐字节相同的 ZIP
-    y, m, d = (int(x) for x in cfg['site']['date'].split('-'))
-    zip_time = (y, m, d, 0, 0, 0)
-    with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
-        for dp, dns, fns in os.walk(SITE):
-            dns[:] = sorted(d for d in dns if d not in ('.git', 'src', 'downloads', 'deploy'))
-            for fn in sorted(fns):
-                if fn.startswith('.'): continue
-                p = os.path.join(dp, fn)
-                arcname = os.path.join('codex-tutorial-cn', os.path.relpath(p, SITE)).replace(os.sep, '/')
-                zi = zipfile.ZipInfo(arcname, date_time=zip_time)
-                zi.compress_type = zipfile.ZIP_DEFLATED
-                zi.create_system = 3
-                zi.external_attr = 0o644 << 16
-                with open(p, 'rb') as f:
-                    z.writestr(zi, f.read())
+    write_text(os.path.join(SITE, 'README.md'), readme())
+    # 在线站点 manifest + SHA256SUMS；downloads 单独校验，避免自包含。
+    online_records = []
+    online_roots = sorted(set(GENERATED) - {'manifest.json', 'SHA256SUMS.txt', 'downloads'})
+    for generated_name in online_roots:
+        generated_path = os.path.join(SITE, generated_name)
+        if os.path.isfile(generated_path):
+            payload = open(generated_path, 'rb').read()
+            online_records.append({
+                'path': generated_name.replace(os.sep, '/'),
+                'size': len(payload),
+                'sha256': hashlib.sha256(payload).hexdigest(),
+            })
+        elif os.path.isdir(generated_path):
+            for directory, names, files in os.walk(generated_path):
+                names.sort()
+                for name in sorted(files):
+                    path = os.path.join(directory, name)
+                    relative = os.path.relpath(path, SITE).replace(os.sep, '/')
+                    payload = open(path, 'rb').read()
+                    online_records.append({
+                        'path': relative,
+                        'size': len(payload),
+                        'sha256': hashlib.sha256(payload).hexdigest(),
+                    })
+    online_records.sort(key=lambda record: record['path'])
+    online_manifest = {
+        'schemaVersion': '1.0.0', 'artifact': 'codex-tutorial-cn-online',
+        'version': cfg['site']['version'], 'status': 'draft-seed-unverified',
+        'generatedDate': cfg['site']['date'], 'entry': 'index.html', 'files': online_records,
+    }
+    write_json(os.path.join(SITE, 'manifest.json'), online_manifest)
+    write_text(os.path.join(SITE, 'SHA256SUMS.txt'), ''.join(
+        f"{record['sha256']}  {record['path']}\n" for record in online_records
+    ))
+
+    downloads = os.path.join(SITE, 'downloads')
+    os.makedirs(downloads)
+    zip_path = os.path.join(downloads, ZIP_NAME)
+    with tempfile.TemporaryDirectory(prefix='codex-tutorial-offline-') as stage_root:
+        package_root = build_offline_stage(stage_root)
+        build_offline_zip(package_root, zip_path)
+    zip_digest = hashlib.sha256(open(zip_path, 'rb').read()).hexdigest()
+    write_text(zip_path + '.sha256', f'{zip_digest}  {os.path.basename(zip_path)}')
 
 def readme():
     rows = '\n'.join(f"| {CH[c]['num']:02d} | [{CH[c]['title']}]({c}.html) | {STATUS_LABEL[CH[c]['status']]} |" for c in ORDER)
@@ -290,11 +405,11 @@ def readme():
 
 写给第一次接触 AI 与 Codex 的中文读者的离线教程。不需要编程、命令行或 Git 基础。
 
-**怎么读：** 在线版部署好后直接打开网址；或者下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。
+**怎么读：** 离线 HTML 是主要交付：下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。
 
-**怎么部署到自己的服务器：** 见 [deploy/DEPLOY.md](deploy/DEPLOY.md)——Docker 一条命令，或 Caddy / Nginx 复制文件即可，没有构建步骤。
+**可选在线预览：** 如需把同一批生成页面放到服务器，再看 [deploy/DEPLOY.md](deploy/DEPLOY.md)。在线部署不是课程完成或正式发布的必要条件。
 
-**当前版本：** {cfg['site']['version']}（{cfg['site']['date']}）。11 章全部有正文，均为「草稿」：依据官方文档撰写，尚未在真实电脑上逐步实测。
+**当前版本：** {cfg['site']['version']}（{cfg['site']['date']}）。11 章均有「草稿种子」，但不算完成课程；内容依据官方文档撰写，尚未逐条复核或实测。
 
 > 2026 年 7 月 9 日起，Codex 桌面应用已并入「ChatGPT 桌面应用」（macOS / Windows）。本教程所说的 Codex，指该应用左上角菜单里的 **Codex** 视图。
 
@@ -316,7 +431,7 @@ def readme():
 
 ## 维护约定
 
-**改内容的正确姿势：** 编辑 `src/content/` 里对应章节的 HTML 片段（章节标题、状态在 `src/chapters.json`），运行 `python3 src/build.py`（只需要 Python 3，无第三方依赖），根目录下的所有页面、README、清单、离线 ZIP 会一起重新生成；再运行 `python3 src/check.py` 检查链接、锚点、徽章与登记表；把生成结果一并提交。跨页链接写成 `{{link:ch04}}` 或 `{{link:prompts#prm-com-0001}}`，构建时自动换成正确地址。
+**改内容的正确姿势：** 编辑 `src/content/` 里对应章节的 HTML 片段（章节标题、状态在 `src/chapters.json`）。首次维护先运行 `python -m pip install -r requirements-dev.txt`；然后运行 `python src/build.py` 重新生成页面、README、清单和离线 ZIP，再运行 `python src/check.py --strict --verify-generated`。构建器本身只使用 Python 标准库；固定的 `jsonschema` 仅用于维护者和 CI 的严格登记表检查。跨页链接写成 `{{{{link:ch04}}}}` 或 `{{{{link:prompts#prm-com-0001}}}}`，构建时自动换成正确地址。
 
 每一章底部都有「维护者信息」：模块 ID、风险级别、来源与权利、验证状态、复核日期。新增或修改内容请使用 `templates/` 中的模板，并在第 11 章更新版本记录与验证状态表。来源清单见第 11 章 11.2。
 '''
@@ -354,7 +469,7 @@ def build_preview():
 {chr(10).join(routes)}
 {js}
 '''
-    open(os.path.join(ROOT, 'preview.html'), 'w', encoding='utf-8').write(html)  # 内部预览用，不属于站点
+    write_text(os.path.join(ROOT, 'preview.html'), html)  # 内部预览用，不属于站点
 
 if __name__ == '__main__':
     build_site()
