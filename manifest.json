@@ -137,11 +137,6 @@
       "sha256": "37e5c79db381c3c80325df69488bb007c3035f85ebc9c571a1bb134b2b91978f"
     },
     {
-      "path": "requirements-dev.txt",
-      "size": 19,
-      "sha256": "44ff0dc2f1e40311b8239e83146749ab9d9cee2a650e699f5464755d552ee20d"
-    },
-    {
       "path": "robots.txt",
       "size": 139,
       "sha256": "6a4429e6f799a119f78c436d60b77168b342a292ccb0fb268611c320c301cbe5"
@@ -200,26 +195,6 @@
       "path": "templates/verification-template.html",
       "size": 2857,
       "sha256": "794d78fcd94803bcb8ed0ff8a83708defabc416e6e74247280e4e0249dbbad18"
-    },
-    {
-      "path": "tests/__pycache__/test_build.cpython-314.pyc",
-      "size": 16151,
-      "sha256": "f57bdb7d26d2ed7d5ce15c66892c0f8d731f30b10b1ee5ee4c7d063ee2f9ff2d"
-    },
-    {
-      "path": "tests/__pycache__/test_check.cpython-314.pyc",
-      "size": 1845,
-      "sha256": "9baaccff5c171ac3ba7aa36524b83666e96f785b61559d4b0b240d8406419b28"
-    },
-    {
-      "path": "tests/test_build.py",
-      "size": 7613,
-      "sha256": "db73789950c601f1ff96d786d51c8acb30d5845d65c93092075bb5ccdd5ec030"
-    },
-    {
-      "path": "tests/test_check.py",
-      "size": 819,
-      "sha256": "15ee07ba0b125af081d533a7a8f51fe8a8f2098226c5c0bbc2d5cbb5b792be27"
     }
   ]
 }

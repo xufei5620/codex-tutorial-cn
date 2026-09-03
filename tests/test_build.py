@@ -18,7 +18,7 @@ def copy_repo(target: Path) -> None:
     shutil.copytree(
         REPO,
         target,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "preview.html"),
+        ignore=shutil.ignore_patterns(".git", ".venv", "__pycache__", "*.pyc", "preview.html"),
         dirs_exist_ok=True,
     )
 
@@ -109,6 +109,23 @@ class BuildBaselineTests(unittest.TestCase):
             self.assertIn("{{link:ch04}}", readme)
             self.assertIn("{{link:prompts#prm-com-0001}}", readme)
 
+    def test_online_manifest_contains_only_generated_public_artifacts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            result = run_build(root)
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            paths = {item["path"] for item in manifest["files"]}
+            forbidden = {
+                path
+                for path in paths
+                if path.startswith(("src/", "tests/", ".github/"))
+                or path in {"requirements-dev.txt", ".gitattributes", ".gitignore", ".dockerignore"}
+                or "__pycache__" in path
+            }
+            self.assertEqual(forbidden, set())
+
     def test_offline_manifest_declares_only_files_that_are_inside_the_zip(self):
         archive = offline_archive(REPO)
         prefix = "codex-tutorial-cn/"
@@ -146,6 +163,24 @@ class BuildBaselineTests(unittest.TestCase):
                 self.assertEqual(item["size"], len(payload), item["path"])
                 self.assertEqual(item["sha256"], digest, item["path"])
                 self.assertEqual(sums[item["path"]], digest, item["path"])
+
+    def test_offline_zip_contains_only_reader_and_generated_maintainer_artifacts(self):
+        archive = offline_archive(REPO)
+        prefix = "codex-tutorial-cn/"
+        with zipfile.ZipFile(archive) as package:
+            paths = {
+                name[len(prefix):]
+                for name in package.namelist()
+                if name.startswith(prefix) and not name.endswith("/")
+            }
+        forbidden = {
+            path
+            for path in paths
+            if path.startswith(("src/", "tests/", ".github/", "deploy/"))
+            or path in {"requirements-dev.txt", ".gitattributes", ".gitignore", ".dockerignore"}
+            or "__pycache__" in path
+        }
+        self.assertEqual(forbidden, set())
 
     def test_offline_zip_has_a_matching_external_sha256_file(self):
         archive = offline_archive(REPO)

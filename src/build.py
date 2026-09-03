@@ -280,11 +280,11 @@ def write_manifest_and_sums(root, artifact):
 def build_offline_stage(stage_root):
     package_root = os.path.join(stage_root, 'codex-tutorial-cn')
     os.makedirs(package_root)
-    excluded_directories = {'.git', 'src', 'downloads', 'deploy'}
-    excluded_files = {'.dockerignore', '.gitattributes', '.gitignore', 'README.md',
-                      'index.html', 'manifest.json', 'SHA256SUMS.txt'}
-    for name in sorted(os.listdir(SITE)):
-        if name in excluded_directories or name in excluded_files or name.startswith('.'):
+    offline_roots = sorted(set(GENERATED) - {
+        'deploy', 'downloads', 'README.md', 'index.html', 'manifest.json', 'SHA256SUMS.txt',
+    })
+    for name in offline_roots:
+        if not os.path.exists(os.path.join(SITE, name)):
             continue
         copy_public_path(os.path.join(SITE, name), os.path.join(package_root, name))
     write_text(os.path.join(package_root, 'index.html'),
@@ -351,15 +351,28 @@ def build_site():
     write_text(os.path.join(SITE, 'README.md'), readme())
     # 在线站点 manifest + SHA256SUMS；downloads 单独校验，避免自包含。
     online_records = []
-    for directory, names, files in os.walk(SITE):
-        names[:] = sorted(name for name in names if name not in ('.git', 'src', 'downloads'))
-        for name in sorted(files):
-            if name in ('manifest.json', 'SHA256SUMS.txt') or name.startswith('.'):
-                continue
-            path = os.path.join(directory, name)
-            relative = os.path.relpath(path, SITE).replace(os.sep, '/')
-            payload = open(path, 'rb').read()
-            online_records.append({'path': relative, 'size': len(payload), 'sha256': hashlib.sha256(payload).hexdigest()})
+    online_roots = sorted(set(GENERATED) - {'manifest.json', 'SHA256SUMS.txt', 'downloads'})
+    for generated_name in online_roots:
+        generated_path = os.path.join(SITE, generated_name)
+        if os.path.isfile(generated_path):
+            payload = open(generated_path, 'rb').read()
+            online_records.append({
+                'path': generated_name.replace(os.sep, '/'),
+                'size': len(payload),
+                'sha256': hashlib.sha256(payload).hexdigest(),
+            })
+        elif os.path.isdir(generated_path):
+            for directory, names, files in os.walk(generated_path):
+                names.sort()
+                for name in sorted(files):
+                    path = os.path.join(directory, name)
+                    relative = os.path.relpath(path, SITE).replace(os.sep, '/')
+                    payload = open(path, 'rb').read()
+                    online_records.append({
+                        'path': relative,
+                        'size': len(payload),
+                        'sha256': hashlib.sha256(payload).hexdigest(),
+                    })
     online_records.sort(key=lambda record: record['path'])
     online_manifest = {
         'schemaVersion': '1.0.0', 'artifact': 'codex-tutorial-cn-online',
