@@ -150,6 +150,11 @@
           "minLength": 1,
           "pattern": "\\S"
         },
+        "captureDate": {
+          "type": "string",
+          "format": "date",
+          "description": "界面截图的实际截取日期；不同于登记记录的最后复核日期 lastReviewedDate。"
+        },
         "industry": {
           "enum": [
             "ecommerce",
@@ -194,7 +199,8 @@
           "then": {
             "required": [
               "platform",
-              "observedProductVersion"
+              "observedProductVersion",
+              "captureDate"
             ]
           },
           "else": {
@@ -208,6 +214,11 @@
                 {
                   "required": [
                     "observedProductVersion"
+                  ]
+                },
+                {
+                  "required": [
+                    "captureDate"
                   ]
                 }
               ]

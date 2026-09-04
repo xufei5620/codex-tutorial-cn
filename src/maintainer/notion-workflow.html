@@ -24,7 +24,7 @@
   </header>
 
   <aside class="notice"><strong>状态：当前阶段暂缓启用（2026-09-01 决定）。</strong>单人维护阶段不建 Notion 台账：章节导航以 <code>src/chapters.json</code> 为准，内容单元身份与双状态以 <code>src/modules-v1.json</code> 为准，并构建为公开只读的 <code>registry/modules-v1.json</code>。本页保留为未来多人协作时的启用方案；届时仍不得维护第二套事实源。</aside>
-  <aside class="notice"><strong>边界：</strong>本框架不要求读者拥有 Notion，也不把私有反馈、原始截图、环境日志或未清权素材同步到公开页面。公开 Notion 仅在用户验收后，作为 Git 已发布版本的单向可读投影；可以上传或嵌入图片，但必须保留媒体 ID、GitHub 源路径和最后复核日期，Notion 上的任何编辑都不能回写课程源文件。</aside>
+  <aside class="notice"><strong>边界：</strong>本框架不要求读者拥有 Notion，也不把私有反馈、原始截图、环境日志或未清权素材同步到公开页面。公开 Notion 仅在用户验收后，作为 Git 已发布版本的单向可读投影；可以上传或嵌入图片，但必须保留媒体 ID、GitHub 源路径和最后复核日期；界面截图还必须保留实际截取日期 <code>captureDate</code>，它不等于最后复核日期，Notion 上的任何编辑都不能回写课程源文件。</aside>
 
   <section>
     <h2>一条事实如何流动</h2>
@@ -39,7 +39,7 @@
       <tbody>
         <tr><td>课程模块</td><td>投影每一个已登记内容单元；不在 Notion 新建正式身份。</td><td>永久单元 ID、标题、所属章节、内容状态、验证状态、公开路径、平台、风险、最近复核日期</td></tr>
         <tr><td>素材与来源</td><td>登记官方文档、GitHub 项目、图片、提示词方法和授权条件。</td><td>来源名称、URL、固定版本或 commit、许可证、使用方式、审查结论、权利状态、登记日期</td></tr>
-        <tr><td>图片与效果图</td><td>登记维护者上传、嵌入或复核过的图片投影；不把 Notion 当作图片的权威源。</td><td>媒体 ID、行业、Prompt ID、图片 URL 或附件、来源、权利状态、验证状态、GitHub 路径、最后复核日期</td></tr>
+        <tr><td>图片与效果图</td><td>登记维护者上传、嵌入或复核过的图片投影；不把 Notion 当作图片的权威源。</td><td>媒体 ID、行业、Prompt ID、图片 URL 或附件、来源、权利状态、验证状态、GitHub 路径、最后复核日期；界面截图另含实际截取日期 <code>captureDate</code></td></tr>
         <tr><td>反馈</td><td>收集读者问题，避免把原始隐私信息写入课程。</td><td>教程版本、模块 ID、问题描述、平台、产品版本、脱敏附件、处理状态、关联任务</td></tr>
         <tr><td>复验与发布任务</td><td>管理“谁在什么环境复验了什么”。</td><td>任务 ID、模块 ID、环境、步骤、预期、实际、证据位置、验证状态、到期日、阻断级别</td></tr>
         <tr><td>变更与撤回</td><td>保留发行决策、风险和墓碑记录。</td><td>版本、影响模块、变更类型、风险级别、决定、发布日期、撤回原因、替代版本</td></tr>
@@ -67,7 +67,7 @@
 
   <section>
     <h2>图片投影与止损条件</h2>
-    <p>图片台账的入口是仓库里的 <code>src/media-v1.json</code>；构建器只会把已登记且通过校验的图片复制到 <code>assets/media/</code>，并把它们纳入 <code>manifest.json</code>、<code>SHA256SUMS.txt</code> 和离线 ZIP，不会生成额外的图片 registry 页面。每条记录都要把媒体 ID、行业、Prompt ID、图片 URL 或附件、来源、权利状态、验证状态、GitHub 路径和最后复核日期写全。Notion 里可以上传或嵌入图片，但必须保留原始媒体 ID 和 GitHub 源路径，方便回指和复验。</p>
+    <p>图片台账的入口是仓库里的 <code>src/media-v1.json</code>；构建器只会把已登记且通过校验的图片复制到 <code>assets/media/</code>，并把它们纳入 <code>manifest.json</code>、<code>SHA256SUMS.txt</code> 和离线 ZIP，不会生成额外的图片 registry 页面。每条记录都要把媒体 ID、行业、Prompt ID、图片 URL 或附件、来源、权利状态、验证状态、GitHub 路径和最后复核日期写全；界面截图还必须写实际截取日期 <code>captureDate</code>，不能用 <code>lastReviewedDate</code> 代替。Notion 里可以上传或嵌入图片，但必须保留原始媒体 ID 和 GitHub 源路径，方便回指和复验。</p>
     <ul>
       <li>权利状态是 <code>pending</code>、来源不明、许可冲突、路径缺失或无法写清 GitHub 源路径时，立即停用公开投影。</li>
       <li>图片一旦改成生成示例，就必须保留 <code>generated-example</code> 标记，不得伪装成现场截图、官方图或真实拍摄。</li>

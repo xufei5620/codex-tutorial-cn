@@ -27,26 +27,26 @@
 
   <section>
     <h2>行业映射</h2>
-    <p>行业名称用于图片目录、登记表、Notion 投影和维护说明的同一套口径。行业代码用于 Prompt ID，图片文件名仍保留可读的行业英文名。</p>
+    <p>行业名称用于图片目录、登记表、Notion 投影和维护说明的同一套口径，并写入小写的 <code>industry</code> 字段。当前示例绑定的是课程已有的通用 Prompt 卡；未来行业专用 Prompt 卡仍须先进入 <code>src/modules-v1.json</code>，图片文件名保留可读的行业英文名。</p>
     <table>
       <thead>
-        <tr><th>行业</th><th>用途范围</th><th>Prompt ID 代码</th><th>图片文件名前缀</th></tr>
+        <tr><th>行业</th><th>用途范围</th><th>媒体 ID 示例</th></tr>
       </thead>
       <tbody>
-        <tr><td>ecommerce</td><td>商品图、活动页、促销横幅、转化型展示图</td><td>ECO</td><td><code>IMG-PROMPT-ecommerce-0001</code></td></tr>
-        <tr><td>education</td><td>课程封面、教学示意、学习路径、知识卡片</td><td>EDU</td><td><code>IMG-PROMPT-education-0001</code></td></tr>
-        <tr><td>marketing</td><td>品牌活动、社媒宣传、广告概念、活动海报</td><td>MKT</td><td><code>IMG-PROMPT-marketing-0001</code></td></tr>
-        <tr><td>design</td><td>界面概念、品牌视觉、构图示意、风格探索</td><td>DSG</td><td><code>IMG-PROMPT-design-0001</code></td></tr>
-        <tr><td>office</td><td>办公流程、管理看板、协作示意、流程图式效果</td><td>OFF</td><td><code>IMG-PROMPT-office-0001</code></td></tr>
+        <tr><td>ecommerce</td><td>商品图、活动页、促销横幅、转化型展示图</td><td><code>IMG-PROMPT-ECOMMERCE-0001</code></td></tr>
+        <tr><td>education</td><td>课程封面、教学示意、学习路径、知识卡片</td><td><code>IMG-PROMPT-EDUCATION-0001</code></td></tr>
+        <tr><td>marketing</td><td>品牌活动、社媒宣传、广告概念、活动海报</td><td><code>IMG-PROMPT-MARKETING-0001</code></td></tr>
+        <tr><td>design</td><td>界面概念、品牌视觉、构图示意、风格探索</td><td><code>IMG-PROMPT-DESIGN-0001</code></td></tr>
+        <tr><td>office</td><td>办公流程、管理看板、协作示意、流程图式效果</td><td><code>IMG-PROMPT-OFFICE-0001</code></td></tr>
       </tbody>
     </table>
   </section>
 
   <section>
     <h2>命名规则</h2>
-    <p class="flow"><code>IMG-PROMPT-&lt;industry&gt;-&lt;four-digit-sequence&gt;</code></p>
+    <p class="flow"><code>IMG-PROMPT-&lt;UPPERCASE-INDUSTRY&gt;-&lt;four-digit-sequence&gt;</code></p>
     <ul>
-      <li><code>&lt;industry&gt;</code> 取 <code>ecommerce</code>、<code>education</code>、<code>marketing</code>、<code>design</code>、<code>office</code> 之一。</li>
+      <li>媒体 ID 中的行业段必须大写；登记表的 <code>industry</code> 字段仍取小写的 <code>ecommerce</code>、<code>education</code>、<code>marketing</code>、<code>design</code>、<code>office</code> 之一。</li>
       <li><code>&lt;four-digit-sequence&gt;</code> 是四位零填充序号，按行业各自递增，不跨行业共用流水号。</li>
       <li>同一张图只允许一个 ID；同一 ID 不能对应多个文件，也不能复用给不同版本的图。</li>
     </ul>
@@ -54,20 +54,22 @@
 
   <section>
     <h2>Prompt ID 绑定</h2>
-    <p>Prompt ID 是提示词卡的稳定主键，格式为 <code>PRM-XXX-NNNN</code>。这里的 <code>XXX</code> 是行业代码，必须和媒体记录里的行业一致。</p>
+    <p>Prompt ID 是提示词卡的稳定主键，格式为 <code>PRM-XXX-NNNN</code>。下列是当前可解析到课程 <code>src/modules-v1.json</code> 的通用提示词卡；它们仅为计划中的行业效果图绑定示例，不代表已有媒体文件。</p>
     <table>
       <thead>
         <tr><th>媒体 ID</th><th>Prompt ID</th><th>绑定方式</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>IMG-PROMPT-ecommerce-0001</code></td><td><code>PRM-ECO-0001</code></td><td>同一行业、同一提示词卡、同一版本的一对一绑定。</td></tr>
-        <tr><td><code>IMG-PROMPT-education-0001</code></td><td><code>PRM-EDU-0001</code></td><td>媒体和提示词都来自同一份维护记录；不允许只保留图片不保留 Prompt ID。</td></tr>
-        <tr><td><code>IMG-PROMPT-marketing-0001</code></td><td><code>PRM-MKT-0001</code></td><td>如果图像换版，必须新开媒体 ID；旧绑定不覆盖。</td></tr>
-        <tr><td><code>IMG-PROMPT-design-0001</code></td><td><code>PRM-DSG-0001</code></td><td>页面展示、Notion 投影和 Git 记录都引用同一对 ID。</td></tr>
-        <tr><td><code>IMG-PROMPT-office-0001</code></td><td><code>PRM-OFF-0001</code></td><td>办公类示意图也按同样规则登记，不因为是流程图就放松门禁。</td></tr>
+        <tr><td><code>IMG-PROMPT-ECOMMERCE-0001</code></td><td><code>PRM-COM-0001</code></td><td>计划中的行业条目；同一行业、同一提示词卡、同一版本的一对一绑定。</td></tr>
+        <tr><td><code>IMG-PROMPT-EDUCATION-0001</code></td><td><code>PRM-COM-0002</code></td><td>计划中的行业条目；媒体和提示词都来自同一份维护记录。</td></tr>
+        <tr><td><code>IMG-PROMPT-MARKETING-0001</code></td><td><code>PRM-COM-0003</code></td><td>计划中的行业条目；如果图像换版，必须新开媒体 ID。</td></tr>
+        <tr><td><code>IMG-PROMPT-DESIGN-0001</code></td><td><code>PRM-COM-0004</code></td><td>计划中的行业条目；页面展示、Notion 投影和 Git 记录都引用同一对 ID。</td></tr>
+        <tr><td><code>IMG-PROMPT-OFFICE-0001</code></td><td><code>PRM-COM-0005</code></td><td>计划中的行业条目；办公类示意图也按同样规则登记。</td></tr>
       </tbody>
     </table>
   </section>
+
+  <p>同一批当前可解析的示例还包括 <code>PRM-COM-0006</code>；只有在实际媒体生成、来源和权利均已复核后，才可为它新增对应的媒体登记记录。</p>
 
   <section>
     <h2>复核与停用</h2>

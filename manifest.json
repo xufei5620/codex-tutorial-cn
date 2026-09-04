@@ -133,13 +133,13 @@
     },
     {
       "path": "notion-workflow.html",
-      "size": 7898,
-      "sha256": "c5b94d12b431aba9588438b9c7300fe27455625f9bb2983c3bb3ce57b9cf5384"
+      "size": 8187,
+      "sha256": "a58a2effbdea64b2692aa2ddbfb405e76199e7a691a5953c536c0bfe075e437f"
     },
     {
       "path": "prompt-image-guide.html",
-      "size": 5643,
-      "sha256": "eabedcb80c56c51ed1bc468f36cbb80d7b56a5466a1c172e49c698b7a6c7af86"
+      "size": 6091,
+      "sha256": "f69030ab5ca18578bb4aa8eef7b8c7d3c40f934e7b68fea1e19be0974fc83f91"
     },
     {
       "path": "prompts.html",
@@ -168,8 +168,8 @@
     },
     {
       "path": "schemas/media-v1.schema.json",
-      "size": 6134,
-      "sha256": "6ccfaee72327bd961723caa749c34ebd671d270a08a0c6c7033dada8dbb1aca4"
+      "size": 6504,
+      "sha256": "058613d877a3bda048e054a37f33ba8dbce67a6a71859c0fedb77fb5c6fcc868"
     },
     {
       "path": "schemas/modules-v1.schema.json",
@@ -198,8 +198,8 @@
     },
     {
       "path": "specs/2026-09-04-image-course-assets-design.html",
-      "size": 11414,
-      "sha256": "9dc4c7a9bbe0fb997345d4665ed57495576b9c806aeb9a4f50d15663a63a598a"
+      "size": 11601,
+      "sha256": "4c7c10340595441985a13a40ebc3a665ab2f8b0b01638e98a2168d9dc2acb92e"
     },
     {
       "path": "templates/module-template.html",

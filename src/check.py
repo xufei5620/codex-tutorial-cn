@@ -84,6 +84,12 @@ MANAGED_METADATA = {"manifest.json", "SHA256SUMS.txt"}
 PUBLIC_TEXT_SUFFIXES = {".cfg", ".conf", ".css", ".htm", ".html", ".ini", ".json", ".md", ".sha256", ".svg", ".toml", ".txt", ".xhtml", ".xml", ".yaml", ".yml"}
 PUBLIC_TEXT_NAMES = {"Caddyfile", "Dockerfile"}
 PUBLIC_BINARY_SUFFIXES = {".avif", ".gif", ".ico", ".jpeg", ".jpg", ".png", ".webp"}
+MEDIA_TYPE_BY_SUFFIX = {
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".svg": "image/svg+xml",
+}
+PUBLISHABLE_MEDIA_RIGHTS = {"owned", "licensed"}
 DEVELOPER_ROOT_ENTRIES = {
     ".dockerignore",
     ".git",
@@ -1147,6 +1153,22 @@ def check_media_catalog(root: Path, strict: bool) -> tuple[list[str], list[str]]
     if duplicate_ids:
         errors.append(f"duplicate asset IDs: {duplicate_ids}")
 
+    prompt_card_ids: set[str] = set()
+    try:
+        modules = json_loads_strict((root / "src/modules-v1.json").read_text(encoding="utf-8"))
+        units = modules.get("units") if isinstance(modules, dict) else None
+        if not isinstance(units, list):
+            raise ValueError("modules-v1.json units must be an array")
+        prompt_card_ids = {
+            unit["id"]
+            for unit in units
+            if isinstance(unit, dict)
+            and unit.get("kind") == "prompt-card"
+            and isinstance(unit.get("id"), str)
+        }
+    except Exception as error:
+        errors.append(f"media promptId lookup cannot read modules-v1.json: {error}")
+
     for asset in asset_records:
         asset_id = asset.get("id", "<unknown>")
         path = asset.get("path")
@@ -1155,6 +1177,11 @@ def check_media_catalog(root: Path, strict: bool) -> tuple[list[str], list[str]]
                 errors.append(f"{asset_id}: path traversal or unsupported media path: {path}")
             else:
                 source = root / "src" / "media" / Path(path.removeprefix("assets/media/"))
+                expected_media_type = MEDIA_TYPE_BY_SUFFIX.get(source.suffix.lower())
+                if expected_media_type and asset.get("mediaType") != expected_media_type:
+                    errors.append(
+                        f"{asset_id}: mediaType {asset.get('mediaType')!r} does not match path suffix {source.suffix.lower()}"
+                    )
                 if source.is_symlink():
                     errors.append(f"{asset_id}: media source must not be a symbolic link")
                 elif not source.is_file():
@@ -1170,6 +1197,10 @@ def check_media_catalog(root: Path, strict: bool) -> tuple[list[str], list[str]]
                 errors.append(f"{asset_id}: sourceUrl {problem}")
             elif label := private_path_label(source_url):
                 errors.append(f"{asset_id}: sourceUrl contains forbidden private {label}")
+        if asset.get("kind") == "prompt-effect":
+            prompt_id = asset.get("promptId")
+            if isinstance(prompt_id, str) and prompt_id not in prompt_card_ids:
+                errors.append(f"{asset_id}: unknown promptId: {prompt_id}")
     return errors, warnings
 
 
@@ -1184,13 +1215,17 @@ def check_media_references(
     if not isinstance(assets, list):
         return ["media catalog assets must be an array"], warnings
 
-    registered_paths = {}
+    publishable_paths = {}
+    pending_paths = {}
     for asset in assets:
         if not isinstance(asset, dict):
             continue
         path = asset.get("path")
         if isinstance(path, str) and safe_relative(path) and path.startswith("assets/media/"):
-            registered_paths[path] = asset
+            if asset.get("rights") in PUBLISHABLE_MEDIA_RIGHTS:
+                publishable_paths[path] = asset
+            else:
+                pending_paths[path] = asset
 
     media_root = root / "assets" / "media"
     present_paths = (
@@ -1202,9 +1237,11 @@ def check_media_references(
         if media_root.exists()
         else set()
     )
-    for relative in sorted(present_paths - set(registered_paths)):
+    for relative in sorted(present_paths & set(pending_paths)):
+        errors.append(f"pending-rights media artifact: {relative}")
+    for relative in sorted(present_paths - set(publishable_paths) - set(pending_paths)):
         errors.append(f"unregistered media artifact: {relative}")
-    for relative in sorted(set(registered_paths) - present_paths):
+    for relative in sorted(set(publishable_paths) - present_paths):
         errors.append(f"registered media artifact missing from generated output: {relative}")
 
     root_resolved = root.resolve()
@@ -1237,8 +1274,11 @@ def check_media_references(
             relative = resolved.relative_to(root).as_posix()
         except ValueError:
             return
-        if relative.startswith("assets/media/") and relative not in registered_paths:
-            errors.append(f"{source_relative}: unregistered media reference in {context}: {reference}")
+        if relative.startswith("assets/media/"):
+            if relative in pending_paths:
+                errors.append(f"{source_relative}: pending-rights media reference in {context}: {reference}")
+            elif relative not in publishable_paths:
+                errors.append(f"{source_relative}: unregistered media reference in {context}: {reference}")
 
     for path in public_html_files(root) + public_svg_files(root):
         relative = path.relative_to(root).as_posix()

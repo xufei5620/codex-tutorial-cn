@@ -55,6 +55,7 @@ def valid_screenshot() -> dict:
         "rights": "owned",
         "platform": "windows",
         "observedProductVersion": "ChatGPT desktop 2026-09-04",
+        "captureDate": "2026-09-04",
         "verificationState": "unverified",
         "verificationDate": None,
         "lastReviewedDate": "2026-09-04",
@@ -193,6 +194,19 @@ class MediaRegistryTests(unittest.TestCase):
         asset["mediaType"] = "image/jpeg"
         self.assertRejected(catalog_with(asset), "mediaType")
 
+    def test_media_type_must_match_path_suffix(self):
+        png_asset = valid_prompt_effect()
+        png_asset["path"] = "assets/media/prompts/education/lesson-outline.png"
+        mutations = [
+            (png_asset, "image/webp"),
+            (valid_prompt_effect(), "image/svg+xml"),
+            (valid_owned_diagram(), "image/png"),
+        ]
+        for asset, mismatched_media_type in mutations:
+            with self.subTest(path=asset["path"], media_type=mismatched_media_type):
+                asset["mediaType"] = mismatched_media_type
+                self.assertRejected(catalog_with(asset), "does not match path suffix")
+
     def test_path_traversal_is_rejected(self):
         asset = valid_screenshot()
         asset["path"] = "../outside.svg"
@@ -209,6 +223,16 @@ class MediaRegistryTests(unittest.TestCase):
             with self.subTest(missing_field=missing_field):
                 del asset[missing_field]
                 self.assertRejected(catalog_with(asset), missing_field)
+
+    def test_ui_screenshot_without_capture_date_is_rejected(self):
+        asset = valid_screenshot()
+        del asset["captureDate"]
+        self.assertRejected(catalog_with(asset), "captureDate")
+
+    def test_prompt_effect_with_unknown_prompt_id_is_rejected(self):
+        asset = valid_prompt_effect()
+        asset["promptId"] = "PRM-FAK-9999"
+        self.assertRejected(catalog_with(asset), "unknown promptId")
 
     def test_source_url_with_credentials_is_rejected(self):
         asset = valid_screenshot()

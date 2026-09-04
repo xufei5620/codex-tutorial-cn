@@ -87,13 +87,19 @@ def media_asset_record() -> dict[str, object]:
         "rights": "owned",
         "platform": "windows",
         "observedProductVersion": "ChatGPT desktop 2026-09-04",
+        "captureDate": "2026-09-04",
         "verificationState": "unverified",
         "verificationDate": None,
         "lastReviewedDate": "2026-09-04",
     }
 
 
-def install_media_fixture(root: Path, asset: dict[str, object] | None = None) -> dict[str, object]:
+def install_media_fixture(
+    root: Path,
+    asset: dict[str, object] | None = None,
+    *,
+    reference: bool = True,
+) -> dict[str, object]:
     asset = dict(media_asset_record() if asset is None else asset)
     relative = asset["path"].removeprefix("assets/media/")
     source = root / "src/media" / relative
@@ -107,14 +113,15 @@ def install_media_fixture(root: Path, asset: dict[str, object] | None = None) ->
         encoding="utf-8",
         newline="\n",
     )
-    with (root / "src/content/ch03.html").open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(
-            "\n"
-            "<figure>\n"
-            f'  <img src="{{{{media:{asset["id"]}}}}}" alt="{asset["alt"]}">\n'
-            f"  <figcaption>{asset['caption']}</figcaption>\n"
-            "</figure>\n"
-        )
+    if reference:
+        with (root / "src/content/ch03.html").open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(
+                "\n"
+                "<figure>\n"
+                f'  <img src="{{{{media:{asset["id"]}}}}}" alt="{asset["alt"]}">\n'
+                f"  <figcaption>{asset['caption']}</figcaption>\n"
+                "</figure>\n"
+            )
     return asset
 
 
@@ -157,6 +164,52 @@ class CheckBaselineTests(unittest.TestCase):
             self.assertEqual(warnings, [])
             self.assertTrue(
                 any("unregistered media" in error for error in errors),
+                errors,
+            )
+
+    def test_strict_check_rejects_pending_rights_media_leaked_into_generated_output(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            shutil.rmtree(root / ".superpowers", ignore_errors=True)
+            asset = media_asset_record()
+            asset["rights"] = "pending"
+            install_media_fixture(root, asset, reference=False)
+            leaked = root / asset["path"]
+            leaked.parent.mkdir(parents=True, exist_ok=True)
+            leaked.write_bytes(PNG_DOT)
+            catalog = json.loads((root / "src/media-v1.json").read_text(encoding="utf-8"))
+
+            errors, warnings = checker.check_media_references(root, catalog, strict=True)
+
+            self.assertEqual(warnings, [])
+            self.assertTrue(
+                any("pending-rights media artifact" in error for error in errors),
+                errors,
+            )
+
+    def test_strict_check_rejects_public_reference_to_pending_rights_media(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            shutil.rmtree(root / ".superpowers", ignore_errors=True)
+            asset = media_asset_record()
+            asset["rights"] = "pending"
+            install_media_fixture(root, asset, reference=False)
+            (root / "ch03.html").write_text(
+                '<img src="assets/media/course/ch03/codex-entry-windows.png" alt="pending">\n',
+                encoding="utf-8",
+                newline="\n",
+            )
+            catalog = json.loads((root / "src/media-v1.json").read_text(encoding="utf-8"))
+
+            errors, warnings = checker.check_media_references(root, catalog, strict=True)
+
+            self.assertEqual(warnings, [])
+            self.assertTrue(
+                any("pending-rights media reference" in error for error in errors),
                 errors,
             )
 

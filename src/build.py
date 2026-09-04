@@ -92,6 +92,7 @@ TEXT_NAMES = {'Caddyfile', 'Dockerfile'}
 BINARY_SUFFIXES = {'.avif', '.gif', '.ico', '.jpeg', '.jpg', '.png', '.webp'}
 MEDIA_MACRO_PATTERN = re.compile(r'\{\{media:(IMG-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]{4})\}\}')
 MEDIA_SUFFIXES = {'.png', '.webp', '.svg'}
+PUBLISHABLE_MEDIA_RIGHTS = {'owned', 'licensed'}
 
 
 def validate_binary_asset(path, suffix):
@@ -202,6 +203,8 @@ def resolve_media_macro(text, media_by_id):
         asset = media_by_id.get(asset_id)
         if asset is None:
             raise ValueError(f'unknown media id: {asset_id}')
+        if asset.get('rights') not in PUBLISHABLE_MEDIA_RIGHTS:
+            raise ValueError(f'{asset_id}: pending rights media cannot be published')
         path = asset.get('path')
         if (
             not isinstance(path, str)
@@ -218,6 +221,8 @@ def resolve_media_macro(text, media_by_id):
 def copy_media_assets(catalog):
     for asset in catalog:
         asset_id = asset.get('id', '<unknown>')
+        if asset.get('rights') not in PUBLISHABLE_MEDIA_RIGHTS:
+            continue
         path = asset.get('path')
         if (
             not isinstance(path, str)

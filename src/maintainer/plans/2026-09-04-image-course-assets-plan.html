@@ -34,8 +34,9 @@
         <li>源图片只放 <code>src/media/</code>；生成图片只出现在 <code>assets/media/</code>，不手改根目录生成页面。</li>
         <li>图片 ID 使用 <code>IMG-&lt;用途&gt;-&lt;四位序号&gt;</code>，例如 <code>IMG-C01-0001</code> 和 <code>IMG-PROMPT-0001</code>；同一 ID 不得重复。</li>
         <li>所有正文图片使用相对路径；禁止远程图片 URL、数据中含凭据的图片和路径越界。</li>
-        <li>每张图必须有非空 <code>alt</code>、图注、<code>rights</code>、<code>sourceType</code> 和 <code>verificationState</code>；版权或来源不清时不得发布。</li>
-        <li>界面截图只有在记录平台、应用版本、截取日期并保留 <code>unverified</code> 时才能进入实测前版本；示意图必须写明“示意图”或“生成示例”。</li>
+        <li>每张图必须有非空 <code>alt</code>、图注、<code>rights</code>、<code>sourceType</code> 和 <code>verificationState</code>；版权或来源不清时不得发布。<code>rights=pending</code> 只能留在源登记表，不能被正文宏、公开目录、manifest、校验和或离线 ZIP 使用。</li>
+        <li>界面截图只有在记录平台、应用版本、<code>captureDate</code> 截取日期并保留 <code>unverified</code> 时才能进入实测前版本；示意图必须写明“示意图”或“生成示例”。</li>
+        <li>媒体文件后缀必须与 <code>mediaType</code> 一致；效果图的 <code>promptId</code> 必须解析到 <code>src/modules-v1.json</code> 中真实存在的提示词卡，未解析的占位 ID 不得发布。</li>
         <li>没有图片时，现有 0.4.0 正文、链接、manifest、ZIP 和 Sites 内容保持字节级兼容；新增图片后在线、离线和 Sites 的相对路径一致。</li>
         <li>所有图片都必须进入公开白名单；不提交真实客户资料、密码、验证码、API Key、私人路径或未经授权的 GitHub 素材。</li>
       </ul>
@@ -109,7 +110,7 @@
         <li>[ ] 在 Notion 工作流中写清图片数据库字段：媒体 ID、行业、Prompt ID、图片 URL/附件、来源、版权状态、验证状态、GitHub 路径和最后复核日期。</li>
         <li>[ ] 明确 Notion 图片可上传或嵌入，但每条记录必须保留媒体 ID 和 GitHub 来源；Notion 修改不自动回写课程源码。</li>
         <li>[ ] 在 ch11 的来源/维护说明中加入图片资产登记入口、版权停止条件和效果图“生成示例”标签规则。</li>
-        <li>[ ] 在 <code>src/maintainer/prompt-image-guide.html</code> 中为 <code>ecommerce</code>、<code>education</code>、<code>marketing</code>、<code>design</code>、<code>office</code> 建立行业映射，写清后续效果图文件名格式 <code>IMG-PROMPT-&lt;行业&gt;-&lt;四位序号&gt;</code> 与 Prompt ID 绑定方式；不要创建空的伪效果图。</li>
+        <li>[ ] 在 <code>src/maintainer/prompt-image-guide.html</code> 中为 <code>ecommerce</code>、<code>education</code>、<code>marketing</code>、<code>design</code>、<code>office</code> 建立行业映射，写清后续效果图文件名格式 <code>IMG-PROMPT-&lt;INDUSTRY&gt;-&lt;四位序号&gt;</code>（ID 段使用大写，<code>industry</code> 字段保留小写）与真实 Prompt ID 绑定方式；不要创建空的伪效果图。</li>
         <li>[ ] 运行 <code>python src/build.py</code>、<code>python -m unittest discover -s tests -q</code>、严格检查和差异检查。</li>
         <li>[ ] 提交：<code>git add src/maintainer/notion-workflow.html src/content/ch11.html src/maintainer/prompt-image-guide.html &amp;&amp; git commit -m "docs: define image and notion projection workflow"</code>。</li>
       </ol>
@@ -128,9 +129,22 @@
       </ol>
     </section>
 
+    <section id="task-6">
+      <h2>Task 6：补齐媒体发布安全契约（整体验收修复）</h2>
+      <p><strong>触发：</strong>整体验收发现四项会影响后续截图与 Prompt 效果图扩展的 Important 契约缺口；当前两张自有概念图不受影响，但必须先把门禁改成 fail-closed。</p>
+      <p><strong>Files：</strong>修改 <code>src/build.py</code>、<code>src/check.py</code>、<code>src/maintainer/schemas/media-v1.schema.json</code>、<code>src/maintainer/prompt-image-guide.html</code> 与相关测试；重新生成公开目录和离线 ZIP。</p>
+      <ol>
+        <li>[ ] <code>rights=pending</code> 资产保留在源登记表，但不得被媒体宏解析、复制到 <code>assets/media/</code>、写入公开 manifest/SHA256/ZIP，且正文引用 pending ID 时严格失败。</li>
+        <li>[ ] 将截图 <code>captureDate</code> 设为必填，并明确它是实际截取日期；<code>lastReviewedDate</code> 仍表示登记复核日期。</li>
+        <li>[ ] 统一可执行 ID：媒体 ID 使用大写段；指南中的示例只引用已存在的 Prompt ID，检查器拒绝无法解析到提示词卡的 <code>promptId</code>。</li>
+        <li>[ ] 强制 <code>.png</code> ↔ <code>image/png</code>、<code>.webp</code> ↔ <code>image/webp</code>、<code>.svg</code> ↔ <code>image/svg+xml</code>，并为错配增加失败测试。</li>
+        <li>[ ] 运行媒体、构建、检查和完整回归；记录严格检查、ZIP 闭合、跨平台摘要，完成后再由站点所有者保存/部署 Sites。</li>
+      </ol>
+    </section>
+
     <section class="gate" id="final-gate">
       <h2>最终完成门槛</h2>
-      <p>只有当媒体登记、宏解析、来源/版权、安全检查、两张概念图、Notion 投影说明、在线/离线/Sites 路径和 Windows/Ubuntu 重复构建全部通过时，才把本阶段标记为完成。界面截图和行业 Prompt 效果图仍按规格进入后续阶段，不能用自绘概念图替代真实产品实测。</p>
+      <p>只有当媒体登记、宏解析、来源/版权、安全检查（包括 pending 隔离、截图采集日期、Prompt 引用完整性和媒体类型/后缀一致性）、两张概念图、Notion 投影说明、在线/离线/Sites 路径和 Windows/Ubuntu 重复构建全部通过时，才把本阶段标记为完成。界面截图和行业 Prompt 效果图仍按规格进入后续阶段，不能用自绘概念图替代真实产品实测。</p>
     </section>
 
     <!-- Machine-readable task briefs for the subagent-driven execution skill.
@@ -164,7 +178,7 @@ Run python src/build.py, python -m unittest discover -s tests -q, python src/che
 
 Files: modify src/maintainer/notion-workflow.html, src/content/ch11.html, and src/build.py; create src/maintainer/prompt-image-guide.html and add it to the builder's public maintainer-document allowlist. Do not create empty or unauthorized effect images.
 
-Document Notion fields: media ID, industry, Prompt ID, image URL or attachment, source, rights status, verification status, GitHub path, and last review date. State that Notion may upload/embed an image but must retain the media ID and GitHub source; Notion edits never write back to course source. Add the media registry entry point, copyright stop conditions, and the generated-example label rule to ch11. In the prompt image guide map ecommerce, education, marketing, design, and office, and define IMG-PROMPT-<industry>-<four-digit-sequence> plus Prompt ID binding. Use HTML maintainer docs and no fake placeholder assets.
+Document Notion fields: media ID, industry, Prompt ID, image URL or attachment, source, rights status, verification status, GitHub path, and last review date. State that Notion may upload/embed an image but must retain the media ID and GitHub source; Notion edits never write back to course source. Add the media registry entry point, copyright stop conditions, and the generated-example label rule to ch11. In the prompt image guide map ecommerce, education, marketing, design, and office, and define IMG-PROMPT-<INDUSTRY>-<four-digit-sequence> (uppercase ID segment, lowercase industry field) plus Prompt ID binding. Use HTML maintainer docs and no fake placeholder assets.
 
 Run python src/build.py, python -m unittest discover -s tests -q, python src/check.py --strict --verify-generated, and git diff --check. Commit with subject docs: define image and notion projection workflow. Write the detailed report to the SDD report path supplied by the controller.
 
@@ -175,6 +189,14 @@ Files: generated root pages, manifest.json, SHA256SUMS.txt, registry/, downloads
 Run two Windows builds, the full suite, strict verification, and diff check; record HTML count, link count, media count, and ZIP SHA-256. Run the same commit in Ubuntu/WSL and require the ZIP SHA-256 to match. Inspect the ZIP for every referenced media file, relative HTML/media paths, no remote media URLs, no private test files, and no unregistered assets. Push codex/image-course-assets and create/update a Draft PR based on PR #10. Prepare the exact generated static output and archive for the controller/site owner to use in the existing private Sites project; do not call Sites tools from the implementer and do not change access to public or merge automatically.
 
 Before reporting completion, run python -m unittest discover -s tests -q, python src/check.py --strict --verify-generated, git diff --check, and verify a clean git status plus the final ZIP checksum. Write the detailed report to the SDD report path supplied by the controller.
+
+# Task 6: 补齐媒体发布安全契约（整体验收修复）
+
+Files: modify src/build.py, src/check.py, src/maintainer/schemas/media-v1.schema.json, src/maintainer/prompt-image-guide.html, and focused tests; regenerate the public tree and offline ZIP. Do not call Sites tools.
+
+Implement all four acceptance fixes: (1) rights=pending records remain source-only; macros referencing them fail, and pending assets are excluded from generated assets/media, manifests, checksums, and the offline ZIP; (2) ui-screenshot requires captureDate, with docs distinguishing actual capture date from lastReviewedDate; (3) use uppercase executable media-ID segments while keeping lowercase industry field values, and require every prompt-effect promptId to resolve to an existing prompt-card in src/modules-v1.json before publication; (4) enforce .png/image/png, .webp/image/webp, and .svg/image/svg+xml correspondence. Update prompt-image-guide examples to use the executable convention and existing prompt IDs, without creating fake effect images.
+
+TDD steps: add focused negative tests for pending macro/copy/check/ZIP exclusion, missing screenshot captureDate, unknown promptId, and mediaType/path mismatch; run the focused tests to capture RED; implement the smallest fail-closed changes; run focused tests, the full unittest suite, python src/build.py, python src/check.py --strict --verify-generated, and git diff --check. Commit with subject fix: harden media publication contracts. Write the detailed report to the SDD report path supplied by the controller.
     </script>
   </main>
 </body>

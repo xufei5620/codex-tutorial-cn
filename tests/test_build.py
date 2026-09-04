@@ -104,13 +104,19 @@ def media_asset_record() -> dict[str, object]:
         "rights": "owned",
         "platform": "windows",
         "observedProductVersion": "ChatGPT desktop 2026-09-04",
+        "captureDate": "2026-09-04",
         "verificationState": "unverified",
         "verificationDate": None,
         "lastReviewedDate": "2026-09-04",
     }
 
 
-def install_media_fixture(root: Path, asset: dict[str, object] | None = None) -> dict[str, object]:
+def install_media_fixture(
+    root: Path,
+    asset: dict[str, object] | None = None,
+    *,
+    reference: bool = True,
+) -> dict[str, object]:
     asset = dict(media_asset_record() if asset is None else asset)
     relative = asset["path"].removeprefix("assets/media/")
     source = root / "src/media" / relative
@@ -124,14 +130,15 @@ def install_media_fixture(root: Path, asset: dict[str, object] | None = None) ->
         encoding="utf-8",
         newline="\n",
     )
-    with (root / "src/content/ch03.html").open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(
-            "\n"
-            "<figure>\n"
-            f'  <img src="{{{{media:{asset["id"]}}}}}" alt="{asset["alt"]}">\n'
-            f"  <figcaption>{asset['caption']}</figcaption>\n"
-            "</figure>\n"
-        )
+    if reference:
+        with (root / "src/content/ch03.html").open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(
+                "\n"
+                "<figure>\n"
+                f'  <img src="{{{{media:{asset["id"]}}}}}" alt="{asset["alt"]}">\n'
+                f"  <figcaption>{asset['caption']}</figcaption>\n"
+                "</figure>\n"
+            )
     return asset
 
 
@@ -172,6 +179,38 @@ class BuildBaselineTests(unittest.TestCase):
 
             self.assertNotEqual(result.returncode, 0)
             self.assertIn(b"unknown media id", result.stderr.lower())
+
+    def test_build_rejects_media_macro_referencing_pending_rights(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            asset = media_asset_record()
+            asset["rights"] = "pending"
+            install_media_fixture(root, asset)
+
+            result = run_build(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"pending rights", result.stderr.lower())
+
+    def test_build_excludes_unreferenced_pending_media_from_public_artifacts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            asset = media_asset_record()
+            asset["rights"] = "pending"
+            install_media_fixture(root, asset, reference=False)
+
+            result = run_build(root)
+
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            self.assertFalse((root / asset["path"]).exists())
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            self.assertNotIn(asset["path"], {item["path"] for item in manifest["files"]})
+            sums = (root / "SHA256SUMS.txt").read_text(encoding="utf-8")
+            self.assertNotIn(f"  {asset['path']}\n", sums)
+            with zipfile.ZipFile(offline_archive(root)) as package:
+                self.assertNotIn(f"codex-tutorial-cn/{asset['path']}", package.namelist())
 
     def test_build_rejects_media_path_traversal(self):
         with tempfile.TemporaryDirectory() as directory:
