@@ -255,6 +255,7 @@ class ModuleRegistryTests(unittest.TestCase):
                 "id": "PRM-ECM-0001",
                 "title": "未来电商卡片",
                 "collectionKeys": ["prompt-ecommerce"],
+                "placementCollectionKeys": ["prompt-ecommerce"],
                 "order": 1,
                 "sourceAnchor": "prm-ecm-0001",
                 "publicPath": "prompts.html#prm-ecm-0001",
@@ -436,6 +437,12 @@ class ModuleRegistryTests(unittest.TestCase):
             self.assertEqual(record["title"], parsed["title"])
             self.assertIsNone(record["chapterId"])
             self.assertEqual(record["collectionKeys"], ["prompt-common"])
+            expected_placements = (
+                ["prompt-common", "prompt-ecommerce", "prompt-food", "prompt-media", "prompt-education"]
+                if record["id"] == "PRM-COM-0003"
+                else ["prompt-common"]
+            )
+            self.assertEqual(record["placementCollectionKeys"], expected_placements)
             self.assertEqual(record["order"], order)
             self.assertEqual(record["sourceAnchor"], parsed["anchor"])
             self.assertEqual(record["publicPath"], f"prompts.html#{parsed['anchor']}")
@@ -523,7 +530,7 @@ class ModuleRegistryTests(unittest.TestCase):
         catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
         framework = json.loads((REPO / "src/maintainer/framework-v1.json").read_text(encoding="utf-8"))
         expected_collections = [
-            {"key": item["key"], "title": item["title"]}
+            {"key": item["key"], "title": item["title"], "idPrefix": item["idPrefix"]}
             for item in framework["promptLibrary"]["collections"]
         ]
         self.assertEqual(catalog["collections"], expected_collections)
@@ -642,6 +649,16 @@ class ModuleRegistryTests(unittest.TestCase):
             if len(unit["platforms"]) == 1
         }
         self.assertEqual(single_platform, {"CDX-M-0013": ["windows"], "CDX-M-0014": ["macos"]})
+        self.assertEqual(
+            {item["key"]: item["idPrefix"] for item in catalog["collections"]},
+            {
+                "prompt-common": "COM",
+                "prompt-ecommerce": "ECM",
+                "prompt-food": "FOD",
+                "prompt-media": "MED",
+                "prompt-education": "EDU",
+            },
+        )
 
     def test_public_text_safety_rejects_private_paths_outside_the_catalog(self):
         checker = load_check_module()
@@ -890,6 +907,7 @@ class ModuleRegistryTests(unittest.TestCase):
                     "id": "PRM-ECM-0001",
                     "title": "未来电商卡片",
                     "collectionKeys": ["prompt-ecommerce"],
+                    "placementCollectionKeys": ["prompt-ecommerce"],
                     "taskKey": "communication",
                     "order": 1,
                     "sourceAnchor": "prm-ecm-0001",
@@ -907,7 +925,8 @@ class ModuleRegistryTests(unittest.TestCase):
                 '<section class="summary">',
                 '<section class="prompt-card" id="prm-ecm-0001" data-unit-id="PRM-ECM-0001" '
                 'data-content-status="draft" data-verification-state="unverified" '
-                'data-collection-keys="prompt-ecommerce" data-task-key="communication">'
+                'data-collection-keys="prompt-ecommerce" data-task-key="communication" '
+                'data-placement-collections="prompt-ecommerce">'
                 '<h2>卡片：未来电商卡片（PRM-ECM-0001） <span class="badge draft">草稿</span></h2>'
                 '<dl><dt>行业 / 任务分类</dt><dd>电商与零售；沟通协作</dd></dl>'
                 "</section>\n<section class=\"summary\">",
@@ -928,6 +947,7 @@ class ModuleRegistryTests(unittest.TestCase):
                     "id": "PRM-ECM-0001",
                     "title": "未来电商卡片",
                     "collectionKeys": ["prompt-ecommerce"],
+                    "placementCollectionKeys": ["prompt-ecommerce"],
                     "taskKey": "communication",
                     "order": 1,
                     "sourceAnchor": "prm-foo-0001",
@@ -966,8 +986,58 @@ class ModuleRegistryTests(unittest.TestCase):
             self.assertIn('data-collection-keys="prompt-common"', prompts)
             self.assertIn('data-task-key="communication"', prompts)
             self.assertIn('<span class="badge editorial-reviewed">已编辑审校</span>', prompts)
+            self.assertIn(
+                'data-placement-collections="prompt-common prompt-ecommerce prompt-food prompt-media prompt-education"',
+                prompts,
+            )
             errors, _ = checker.check_module_registry(root, strict=True)
             self.assertEqual(errors, [])
+
+    def test_shared_prompt_placement_metadata_cannot_drift(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            source = (root / "prompts.html").read_text(encoding="utf-8")
+            source = source.replace(
+                ' data-placement-collections="prompt-common prompt-ecommerce prompt-food prompt-media prompt-education"',
+                "",
+                1,
+            )
+            (root / "prompts.html").write_text(source, encoding="utf-8", newline="\n")
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("placement collections" in error for error in errors), errors)
+
+    def test_build_rejects_shared_prompt_placement_plan_drift(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "src/modules-v1.json").read_text(encoding="utf-8"))
+            shared = next(item for item in registry["units"] if item["id"] == "PRM-COM-0003")
+            shared["placementCollectionKeys"] = ["prompt-common"]
+            (root / "src/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            result = run_build(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"placement collections", result.stderr)
+
+    def test_non_shared_prompt_cannot_inflate_placement_memberships(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            registry = json.loads((root / "registry/modules-v1.json").read_text(encoding="utf-8"))
+            registry["units"][-1]["placementCollectionKeys"] = [item["key"] for item in registry["collections"]]
+            (root / "registry/modules-v1.json").write_text(
+                json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _ = checker.check_module_registry(root, strict=True)
+            self.assertTrue(any("placement collections differ" in error for error in errors), errors)
 
     def test_strict_checker_rejects_legacy_mapping_changes(self):
         checker = load_check_module()
