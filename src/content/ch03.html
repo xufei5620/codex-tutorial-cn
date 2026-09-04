@@ -1,10 +1,10 @@
       <header class="chapter-head">
         <p class="kicker">第 3 章 <span class="badge draft">草稿</span></p>
         <h1>安装、登录与界面</h1>
-        <ul class="meta"><li>预计阅读 12 分钟</li><li>适用平台：Windows / macOS（分别写了步骤）</li><li>前提：读过第 2 章；有一个能收邮件的邮箱</li></ul>
+        <ul class="meta"><li>正文学习约 25 分钟；下载、安装与登录耗时另计</li><li>适用平台：Windows / macOS（分别写了步骤）</li><li>前提：读过第 2 章；已有 ChatGPT 账号，或准备按官方流程创建一个；准备一个空的练习文件夹</li></ul>
       </header>
 
-      <aside class="goal"><strong>本章目标</strong><p>在自己的电脑上装好应用、登录、切换到 Codex，并且认识界面上的几个主要区域。读完后你还会明白「权限模式」是什么——这是安全使用 Codex 最重要的一个设置。</p></aside>
+      <aside class="goal"><strong>本章目标</strong><p>从官方入口安装 ChatGPT 桌面应用，用 ChatGPT 账号完成登录，进入 Codex，认清界面的主要区域，并把权限保持在适合初学者的安全边界。每一步都给出可观察结果、纠正方法和停止条件。</p></aside>
 
       <nav class="section-nav" aria-label="本章内容"><p class="label">本章内容</p><ol>
         <li><a href="#s1">3.1 开始前：你需要什么</a></li>
@@ -17,141 +17,261 @@
         <li><a href="#s8">3.8 装不上、登不进怎么办</a></li>
       </ol></nav>
 
-      <aside class="callout note" data-label="关于本章的准确性"><p>本章依据 2026 年 9 月 1 日查阅的官方文档撰写，<strong>尚未在真实电脑上逐步实测</strong>。按钮名称以你屏幕上实际显示为准；官方界面目前以英文为主，教程在英文名称后附了中文解释。发现不一致的地方，请按<a href="{{link:ch11}}">第 11 章</a>的方式反馈。</p></aside>
+      <aside class="callout note" data-label="验证范围"><p>本章于 2026 年 9 月 4 日按当前<a href="https://learn.chatgpt.com/docs/app">官方桌面应用文档</a>、<a href="https://learn.chatgpt.com/docs/quickstart">快速入门</a>和平台专项文档复核。<strong>Windows 与 macOS 的真实设备逐步验证尚未完成</strong>，所以不承诺未被官方文档确认的最低系统版本、处理器或固定按钮位置。若你的界面不同，以屏幕上的实际文字为准，并按<a href="{{link:ch11}}">第 11 章</a>反馈。</p></aside>
 
       <section id="s1" data-unit-id="CDX-M-0011">
         <h2><span class="sn">3.1</span>开始前：你需要什么</h2>
         <div class="table-wrap"><table>
-          <thead><tr><th>需要</th><th>说明</th></tr></thead>
+          <thead><tr><th>需要</th><th>现在怎么确认</th><th>不符合时怎么办</th></tr></thead>
           <tbody>
-            <tr><td>一台电脑</td><td><strong>macOS：</strong>macOS 14 或更新，Apple 芯片（M1 及之后）或 Intel 芯片都可以；下载页如果同时给出两种版本，按自己电脑的芯片选（不确定就打开「关于本机」看一眼）。<strong>Windows：</strong>通过 Microsoft Store 安装，官方没有写明最低版本；按经验，能正常使用 Microsoft Store 的 Windows 10 / 11 一般可以（这是推断，以商店页面的提示为准）。</td></tr>
-            <tr><td>一个 ChatGPT 账号</td><td>没有就在登录时顺手注册，需要一个邮箱。所有套餐（包括免费）都能使用 Codex，只是每 5 小时和每周的用量额度不同，用完要等额度恢复。</td></tr>
-            <tr><td>网络</td><td>安装和使用都要联网。Codex 是在线服务，你的对话会发送到服务器处理（<a href="{{link:ch01}}">第 1 章</a>的隐私底线由此而来）。</td></tr>
-            <tr><td>大约 20 分钟</td><td>下载、安装、登录、认识界面。别赶时间，看到不认识的提示框就停下来读一读。</td></tr>
+            <tr><td>一台 Windows 或 Mac 电脑</td><td>打开<a href="https://chatgpt.com/download/">官方下载安装页</a>，确认页面为你的系统提供可选版本。课程目前不对 Windows 最低版本、macOS 最低版本或 Intel Mac 作未经验证的承诺。</td><td>页面没有适合你设备的版本，或安装程序明确提示不兼容，就停止安装，不要去第三方网站找所谓“兼容版”。</td></tr>
+            <tr><td>一个 ChatGPT 账号，或创建账号的准备</td><td>本章主路线使用 <strong>ChatGPT 账号登录</strong>。已有账号就准备好自己的登录方式；没有账号，可以等桌面应用安装完成后，从应用发起的官方浏览器流程查看是否提供创建入口。个人账号和单位工作空间看到的功能可能不同。</td><td>单位设备或工作空间要求 SSO（单位统一登录）、邀请或管理员批准时，先向管理员确认。不要为了绕过限制临时注册或借用别人的账号。</td></tr>
+            <tr><td>稳定网络</td><td>安装、登录和向模型发送请求都需要联网；本地文件操作和云端处理的边界还会受登录方式与权限设置影响，隐私底线见<a href="{{link:ch01}}">第 1 章</a>。</td><td>网络不稳定时先暂停，不要在登录按钮上反复点击，也不要把密码或验证码发给别人代登。</td></tr>
+            <tr><td>一个空的练习文件夹</td><td>按下面的“创建并确认为空”步骤，新建一个没有私人资料的文件夹，例如“Codex-练习”。以后第一次允许 Codex 处理本机文件时，只选择这个文件夹。</td><td>不要直接选择整个“桌面”“文档”“下载”、个人照片库或公司的共享盘。</td></tr>
+            <tr><td>正文学习约 25 分钟</td><td>这是阅读、理解和完成检查的估计时间；下载、安装与登录耗时另计，网络和设备状态不同，实际时间也会不同。</td><td>时间不够就停在当前步骤；不要为了赶进度选择 Full access 或忽略系统警告。</td></tr>
           </tbody>
         </table></div>
-        <aside class="callout stop" data-label="停一停"><strong>关于地区可用性：</strong>OpenAI 在官方帮助中心公布了 ChatGPT 的支持国家和地区名单，<strong>中国大陆与香港目前不在名单内</strong>；欧洲部分地区有些功能（如操作电脑、记忆）暂不开放。名单会变化，请以官方页面为准（链接见<a href="{{link:ch11#s2}}">第 11 章 11.2</a>）。本教程只讲在支持地区的正常使用方法，不提供任何绕开地区限制的做法——那样做可能违反服务条款，也可能违反你所在地的法规。</aside>
+
+        <aside class="callout note" data-label="还没有 ChatGPT 账号"><p>没有账号不影响你先完成官方下载与安装。等桌面应用正常打开后，从应用里的登录按钮启动浏览器流程；若页面提供创建账号，可按官方提示使用自己的邮箱或受支持的登录方式注册。单位设备或工作空间要求 SSO、邀请或管理员批准时，先联系管理员。本章不要求为注册而购买套餐，也不把 API Key 当作零基础替代路线。</p></aside>
+
+        <h3>创建并确认练习文件夹为空</h3>
+        <ol class="steps">
+          <li><strong>Windows：</strong>打开“文件资源管理器”，进入一个你自己拥有、专门用于练习且不含真实资料的位置；右键空白处选择“新建 → 文件夹”，命名为「Codex-练习」。</li>
+          <li><strong>macOS：</strong>打开 Finder，进入一个你自己拥有、专门用于练习且不含真实资料的位置；使用“文件 → 新建文件夹”或当前系统显示的同义操作，命名为「Codex-练习」。</li>
+          <li><strong>两种系统都要检查：</strong>双击打开「Codex-练习」，确认里面没有文件或子文件夹，再记住它的完整位置。若同名文件夹已经存在，先打开核对；只有确认为空且专用于本教程时才复用，否则选择下一个未使用的名称，例如「Codex-练习-02」「Codex-练习-03」。把最终名称写在纸上或记事本里。<strong>后续章节为了简短统一写「Codex-练习」，实际操作时都要替换成你在这里记录的最终名称，不要再创建另一个文件夹。</strong></li>
+        </ol>
+
+        <h3>开始前检查</h3>
+        <ol class="steps">
+          <li><strong>看下载页。</strong>能看到与你的操作系统相符的下载入口。</li>
+          <li><strong>看账号。</strong>已有账号时，知道自己将使用个人账号还是单位工作空间；没有账号时，知道要等应用安装完成后从官方登录流程查看创建入口。</li>
+          <li><strong>看练习范围。</strong>已经亲自打开练习文件夹，确认其中没有文件、子文件夹或真实业务资料。</li>
+        </ol>
+        <p><strong>通过标准：</strong>三项都满足再继续。任何一项不确定，就先纠正，不把“不确定”当成“应该可以”。</p>
+
+        <aside class="callout stop" data-label="地区与账号停止条件"><p>产品、功能和套餐的地区可用性会变化。若官方页面或登录界面明确提示当前地区、账号或工作空间不支持，请停止，不使用代理、共享账号或其他方式绕开限制。本教程只讲官方支持范围内的正常使用。套餐能力和实时额度以<a href="https://learn.chatgpt.com/docs/pricing">官方定价与功能页</a>以及账号内的用量页面为准。</p></aside>
       </section>
 
       <section id="s2" data-unit-id="CDX-M-0012">
         <h2><span class="sn">3.2</span>先弄清楚：现在的 Codex 在哪里</h2>
-        <p>这一点很容易让人绕晕，先说清楚。2026 年 2 月，OpenAI 发布了独立的「Codex 桌面应用」；到了 2026 年 7 月 9 日，这个应用<strong>并入了新的「ChatGPT 桌面应用」</strong>。现在你要安装的软件叫 <strong>ChatGPT</strong>，装好以后，应用左上角的菜单里有三个视图：<strong>Chat</strong>（普通聊天）、<strong>Work</strong>（工作）、<strong>Codex</strong>。本教程说的「Codex」，就是这第三个视图。</p>
-        <p>三件容易弄错的事：</p>
-        <ul>
-          <li><strong>别下载成「ChatGPT Classic」。</strong>下载页上还有一个叫 Classic（经典版）的旧应用，它<em>没有</em> Codex。要装的是不带 Classic 字样的 ChatGPT。</li>
-          <li><strong>手机 App 里用不了 Codex。</strong>Codex 视图在 macOS 和 Windows 的桌面应用里；手机 App 只能远程查看电脑上正在进行的 Codex 对话。网页版有没有 Codex 视图，官方文档没有明确说明，本教程只讲桌面应用。</li>
-          <li><strong>网上很多资料讲的是「Codex CLI」。</strong>那是给程序员用的命令行工具（本教程未核实其细节，也不涉及——<a href="{{link:ch01}}">第 1 章</a>说过，我们不讲命令行）。看到满屏黑底白字的命令，说明那份资料不是给你看的。</li>
-        </ul>
+        <p><strong>这一步只认准桌面应用中的 Codex。</strong>现在要下载的软件名称是 <strong>ChatGPT</strong>；安装并登录以后，再从应用里的产品或模式入口选择 <strong>Codex</strong>。本章后面的安装、界面和权限步骤都指这条桌面路线。</p>
+        <aside class="callout note" data-label="界面名称会变化"><p>当前官方快速入门让用户从 ChatGPT 的下拉入口选择 Codex。菜单在窗口里的具体位置可能随版本变化，所以只认准文字 <strong>Codex</strong>，不把“左上角第几个按钮”当成固定规则。若下载页仍显示旧名称或图标，也以当前官方安装入口和应用内说明为准。</p></aside>
+        <p><strong>可观察结果：</strong>你能说出：“我要安装 ChatGPT 桌面应用，登录后选择 Codex。”做到这一点就可以继续，不需要先学习其他入口或开发术语。</p>
+
+        <details>
+          <summary>可选补充：旧名称和其他 Codex 入口</summary>
+          <p>2026 年 2 月，OpenAI 发布了独立 Codex 桌面应用；2026 年 7 月 9 日，Codex <strong>并入 ChatGPT 桌面应用</strong>。这段变化可在<a href="https://learn.chatgpt.com/docs/changelog">官方更新记录</a>中核对。下面这些入口都真实存在，但不是完成本章的前提。</p>
+          <div class="table-wrap"><table>
+            <thead><tr><th>入口</th><th>在哪里运行</th><th>本教程怎么安排</th></tr></thead>
+            <tbody>
+              <tr><td><strong>ChatGPT 桌面应用中的 Codex</strong></td><td>在你的 Windows 或 Mac 上运行本地任务，可使用你明确加入项目的文件夹。</td><td><strong>本章主路线。</strong></td></tr>
+              <tr><td><strong>Codex Cloud</strong></td><td>从<a href="https://chatgpt.com/codex">网页入口</a>连接 GitHub 或 GitLab，在隔离的云环境中运行任务。</td><td>属于进阶路线，详见<a href="https://learn.chatgpt.com/docs/cloud">官方云端说明</a>。</td></tr>
+              <tr><td><strong>手机 Remote</strong></td><td>ChatGPT 手机应用可以连接一台在线的 Mac 或 Windows 主机，远程启动、指导、审批和审阅任务；工作仍在连接的电脑上运行。</td><td>不是手机本地执行；可用性取决于推出范围与工作空间，见<a href="https://learn.chatgpt.com/docs/remote">官方说明</a>。</td></tr>
+              <tr><td><strong>Codex CLI / IDE 扩展</strong></td><td>分别在终端或代码编辑器中使用。</td><td>是不同学习路线，参考<a href="https://learn.chatgpt.com/docs/codex/cli">CLI</a>与<a href="https://learn.chatgpt.com/docs/codex/ide">IDE 扩展</a>文档。</td></tr>
+            </tbody>
+          </table></div>
+        </details>
       </section>
 
       <section id="s3" data-unit-id="CDX-M-0013">
         <h2><span class="sn">3.3</span>Windows 安装步骤</h2>
+        <p>官方 Windows 专项说明见<a href="https://learn.chatgpt.com/docs/windows/windows-app">ChatGPT 桌面应用 for Windows</a>。它提供 Microsoft 的官方下载入口；页面和按钮文案可能随 Windows、Microsoft Store 或安装器版本变化。</p>
         <ol class="steps">
-          <li><strong>打开官方下载页。</strong>在浏览器地址栏输入 <code>chatgpt.com/download</code> 并回车。你应该看到 OpenAI 的下载页面，上面有 Windows 和 macOS 的下载按钮。<em>只从这个官方地址下载</em>，不要从搜索结果里的其他网站下载安装包。</li>
-          <li><strong>点 Windows 的下载按钮。</strong>它会打开 Microsoft Store（Windows 自带的应用商店），显示名为「ChatGPT」的应用页面。确认应用名不带「Classic」。</li>
-          <li><strong>在 Store 里点「获取」或「安装」。</strong>你应该看到进度条，等它走完。中途 Store 有什么提示，照提示做即可。</li>
-          <li><strong>打开应用。</strong>安装完成后点「打开」，或者在开始菜单搜索「ChatGPT」。你应该看到应用窗口，上面有登录按钮。</li>
+          <li><strong>从官方页面开始。</strong>在浏览器地址栏手动输入 <code>https://chatgpt.com/download/</code>，确认使用 HTTPS，再选择 Windows。不要从广告、网盘、软件下载站或陌生邮件附件安装。</li>
+          <li><strong>进入 Microsoft 安装流程。</strong>官方链接可能打开 Microsoft Store，也可能调用 Microsoft 的安装器。确认要安装的应用名称是 <strong>ChatGPT</strong>，然后使用页面实际显示的“获取”“安装”或同义按钮。</li>
+          <li><strong>等安装完成。</strong>只处理正常的 Microsoft 安装提示。若系统要求管理员密码、关闭安全软件、修改执行策略或运行一段陌生命令，先取消并看本节的停止条件。</li>
+          <li><strong>打开应用。</strong>从安装完成页点“打开”，或在开始菜单搜索“ChatGPT”。第一次打开时不要急着选择文件夹或更高权限。</li>
         </ol>
-        <p><strong>预期结果：</strong>桌面或开始菜单里出现 ChatGPT 应用，能正常打开到登录界面。接下来跳到 3.5。</p>
-        <aside class="callout note" data-label="说明"><p>Windows 版在后台会用到系统自带的命令工具来完成它的工作，你不需要碰它。如果应用弹出你看不懂的技术性提示（要求修改某项系统设置之类），不要自己改，按 3.8 的方式求助。</p></aside>
+
+        <p><strong>可观察结果：</strong>开始菜单里能找到 ChatGPT；应用可以正常打开，并显示登录入口。达到这个结果后去 3.5。</p>
+
+        <h3>检查、纠正与停止</h3>
+        <ul>
+          <li><strong>检查：</strong>浏览器起点是官方 HTTPS 下载页，后续安装来自该页面指向的 Microsoft 流程。</li>
+          <li><strong>纠正：</strong>若安装到一半失败，完整关闭安装器，重启 Windows，再从官方页重新开始；记录完整错误文字和出现时间。</li>
+          <li><strong>停止：</strong>第三方页面要求付费下载、输入 ChatGPT 密码、关闭安全软件或以管理员身份运行陌生脚本时，立即停止。</li>
+        </ul>
+
+        <aside class="callout note" data-label="Windows 默认运行方式"><p>官方文档说明 Windows 桌面应用默认使用 Windows 原生 Codex 代理，在 PowerShell（Windows 自带的命令工具）中运行命令，并用 Windows 沙盒限制可接触的资源。初学者保持默认即可，不需要安装 WSL（在 Windows 中运行 Linux 的可选环境），也不要为了“让它更顺”而以管理员身份长期运行应用。沙盒的正式解释见 3.7。</p></aside>
       </section>
 
       <section id="s4" data-unit-id="CDX-M-0014">
         <h2><span class="sn">3.4</span>macOS 安装步骤</h2>
+        <p>本章只跟随<a href="https://learn.chatgpt.com/docs/app">官方桌面应用页</a>当前提供的 macOS 版本。由于真实设备验证尚未完成，这里不承诺 Intel Mac、固定 macOS 最低版本或一定存在某种安装包；下载页没有为你的设备提供版本时就停止。</p>
         <ol class="steps">
-          <li><strong>打开官方下载页。</strong>在浏览器地址栏输入 <code>chatgpt.com/download</code> 并回车。页面会给出 Mac 版的下载按钮；如果同时列出 Apple 芯片和 Intel 两种版本，按 3.1 说的选。确认按钮不带「Classic」字样。</li>
-          <li><strong>下载 .dmg 文件。</strong>点下载后，浏览器右上角会显示下载进度；完成后在「下载」文件夹里能看到一个 <code>.dmg</code> 文件（这是 Mac 上常见的安装包格式）。</li>
-          <li><strong>双击 .dmg，把图标拖进「应用程序」。</strong>通常会弹出一个小窗口，左边是 ChatGPT 图标，右边是「Applications（应用程序）」文件夹——把左边拖到右边即可。这一步官方文档没有细写，属于 macOS 安装应用的通用做法。</li>
-          <li><strong>从「启动台」或「应用程序」文件夹打开 ChatGPT。</strong>首次打开时，macOS 可能会弹出确认框，问你是否打开这个从网上下载的应用——这是 macOS 对所有下载应用的通用做法，确认打开即可（文案以实际为准）。你应该看到应用窗口和登录按钮。</li>
+          <li><strong>先确认自己的设备。</strong>打开苹果菜单里的“关于本机”，记下芯片类型和 macOS 版本。此信息只用于和官方下载页、安装程序的兼容提示核对。</li>
+          <li><strong>从官方页面下载。</strong>在浏览器地址栏手动输入 <code>https://chatgpt.com/download/</code>，选择页面为你的 Mac 提供的版本。不要根据第三方文章猜测 Intel 或 Apple 芯片版本。</li>
+          <li><strong>按安装包实际提示安装。</strong>如果下载的是 <code>.dmg</code>，双击打开；若窗口要求把 ChatGPT 拖进 Applications（应用程序），照做。若官方安装包显示其他流程，以它的实际提示为准。</li>
+          <li><strong>从“应用程序”打开 ChatGPT。</strong>macOS 可能显示正常的“从互联网下载，是否打开”确认。先核对应用是刚从官方入口下载的 ChatGPT，再确认打开。</li>
         </ol>
-        <p><strong>预期结果：</strong>「应用程序」文件夹里有 ChatGPT，能正常打开到登录界面。</p>
-        <aside class="callout note" data-label="Intel 芯片的 Mac"><p>官方说明 Intel 芯片的 Mac 也能安装（下载页会给出对应版本），但 Codex 视图里某些功能是否在 Intel 机器上完整可用，官方没有明确说明。如果你用的是 Intel 机型，遇到功能缺失时先不要怀疑自己操作错了。</p></aside>
+
+        <p><strong>可观察结果：</strong>“应用程序”中有 ChatGPT；应用可以正常打开，并显示登录入口。达到这个结果后去 3.5。</p>
+
+        <aside class="callout stop" data-label="macOS 安全停止条件"><p>若 macOS 显示“身份不明的开发者”、无法验证开发者、安装包损坏，或官方下载页没有适合你设备的版本，<strong>不要绕过 Gatekeeper（macOS 的应用来源安全检查），也不要在终端移除隔离属性</strong>。删除该安装包，从官方入口重新下载；仍出现同样提示，就保存截图并按 3.8 求助。</p></aside>
+        <aside class="callout note" data-label="macOS 权限不是一回事"><p>本地命令的沙盒使用 macOS 自带的系统隔离机制（技术名 Seatbelt；现在不必记住）；访问“桌面”“下载”“音乐”等受保护文件夹时，macOS 还可能单独询问。以后若安装 Computer Use，又会涉及屏幕录制和辅助功能权限。这些权限彼此独立，不能因为允许了一个就默认全都允许。</p></aside>
       </section>
 
       <section id="s5" data-unit-id="CDX-M-0015">
         <h2><span class="sn">3.5</span>首次登录，切换到 Codex</h2>
+        <p>官方支持使用 ChatGPT 账号或 API Key 登录本地 Codex。本章采用较容易理解的 <strong>ChatGPT 账号登录</strong>；完整差异见<a href="https://learn.chatgpt.com/docs/auth">官方身份验证文档</a>。</p>
         <ol class="steps">
-          <li><strong>点「Continue to sign in」（继续登录）。</strong>应用会打开你的浏览器，跳到 OpenAI 的登录页。没有账号就在这里注册，用邮箱即可。</li>
-          <li><strong>在浏览器里完成登录。</strong>输入邮箱和密码（或用其他账号登录）。登录成功后，按浏览器的提示回到应用；如果浏览器问是否允许打开 ChatGPT，允许即可（具体文案以实际为准）。</li>
-          <li><strong>回到应用，找到左上角的菜单。</strong>你应该看到自己已登录，界面默认可能停在 Chat 或 Work 视图。点应用<strong>左上角</strong>的菜单，选择 <strong>Codex</strong>。</li>
-          <li><strong>看到 Codex 视图。</strong>左侧是一列侧栏，中间偏下是一个大输入框。到这里就算成功了。</li>
+          <li><strong>从应用启动登录。</strong>在未登录页面选择 <strong>Continue to sign in</strong>（继续登录）或意思相同的按钮。正常流程会打开默认浏览器。</li>
+          <li><strong>在浏览器完成登录。</strong>优先使用刚才由应用自动打开的页面，不从搜索结果重新找登录页。使用邮箱密码时，核对 HTTPS 和完整主机名：<code>chatgpt.com</code>、<code>openai.com</code>，或以点号分隔的官方子域名才属于这两个域；<code>fakeopenai.com</code>、<code>openai.com.example.net</code> 和 <code>chatgpt.com.example.net</code> 都不是。选择 Google、Microsoft、Apple 或单位 SSO 后可能进入相应身份提供方；只在你刚选择的正式登录流程中继续，不确定域名就关闭页面，从桌面应用重新发起。</li>
+          <li><strong>正确处理其他登录方式。</strong>若你主动选择 Google、Microsoft、Apple 或单位 SSO，浏览器进入相应身份提供方的正式域名属于正常流程。没有主动选择却被带到陌生网站，就关闭页面。</li>
+          <li><strong>回到桌面应用。</strong>登录成功后，浏览器可能询问是否打开 ChatGPT。确认请求来自刚完成的官方登录流程，再返回应用。</li>
+          <li><strong>核对身份。</strong>在个人资料或账号菜单确认当前账号和工作空间。单位工作空间里看不到某项功能，不一定是安装失败，也可能是套餐、角色或管理员策略造成的。</li>
+          <li><strong>选择 Codex。</strong>从应用里的 ChatGPT 产品下拉菜单或当前版本提供的模式入口选择 <strong>Codex</strong>。不要依赖固定方位，只认准名称。</li>
+          <li><strong>先看权限再发送。</strong>找到输入框附近的权限选择器，确认显示 <strong>Ask for approval</strong>。如果找不到，先读后面的<a href="#s6">3.6</a>找到权限位置，再读<a href="#s7">3.7</a>了解边界，然后回到本步骤；仍找不到就按 3.8 排查。此时先不发送任务，也不选择 Full access。</li>
         </ol>
-        <p><strong>预期结果：</strong>左上角显示当前是 Codex 视图，输入框可以点进去打字。</p>
-        <aside class="callout stop" data-label="停一停"><strong>登录时只在浏览器里输入密码，只输入在 OpenAI 的官方登录页（地址以 <code>openai.com</code> 或 <code>chatgpt.com</code> 结尾）。</strong>任何在对话框里、弹窗里、或者别的网站上要你输入 ChatGPT 密码、验证码的地方，都不要输。登录界面还有一个「Sign in another way」（用其他方式登录）选项，那是给开发者输入 API 密钥用的，你不需要它。</aside>
+
+        <p><strong>可观察结果：</strong>应用显示正确账号和工作空间；当前产品为 Codex；能看到 New chat（新建对话）或输入框；权限为 Ask for approval。</p>
+
+        <aside class="callout note" data-label="API Key 是另一种计费方式"><p><strong>Sign in another way</strong>（用其他方式登录）可以进入 API Key 登录，这不是故障入口。API Key 使用量按 OpenAI API 价格另行计费，不使用 ChatGPT 套餐内含额度，而且部分依赖 ChatGPT 工作空间或云服务的功能可能不可用。初学者没有明确的 API 计费需求就不要选择；任何情况下都不要把 API Key 粘贴进普通对话。</p></aside>
+
+        <h3>纠正和停止条件</h3>
+        <ul>
+          <li>登录后回不到应用：关闭重复打开的登录页，只保留一次由应用发起的流程；仍失败就记录浏览器和应用显示的完整错误。</li>
+          <li>看不到 Codex：先确认账号、工作空间、登录方式和应用版本，再按 3.8 排查，不要反复卸载。</li>
+          <li>网页、聊天框、远程协助者或陌生弹窗索要密码、验证码、恢复码或 API Key：立即停止，不输入、不发送。</li>
+        </ul>
       </section>
 
       <section id="s6" data-unit-id="CDX-M-0016">
         <h2><span class="sn">3.6</span>界面导览：认识五个区域</h2>
-        <p>Codex 视图的界面大致分五块。先认个脸熟，不用现在就把每个按钮都点一遍。</p>
+        <p>下面的“五个区域”是为了帮助你认路，不是对每个版本像素级不变的承诺。侧栏项目、名称和位置会随套餐、工作空间、功能开关与版本变化。</p>
         <div class="table-wrap"><table>
-          <thead><tr><th>区域</th><th>在哪里</th><th>它是干什么的</th></tr></thead>
+          <thead><tr><th>区域</th><th>常见位置</th><th>你现在只需知道</th></tr></thead>
           <tbody>
-            <tr><td>侧栏</td><td>窗口左侧</td><td>列出你的东西：<strong>Chats</strong>（对话）、<strong>Projects</strong>（项目，也就是你让它处理的文件夹）、<strong>Scheduled</strong>（定时任务）、<strong>Activity</strong>（活动，具体内容以界面为准）。顶部有搜索框。</td></tr>
-            <tr><td>输入框</td><td>窗口中下方</td><td>你打字、粘贴材料、发送请求的地方。通常也可以把文件拖进去作为材料（以实际界面为准）。</td></tr>
-            <tr><td>输入框下面的两个小选择器</td><td>紧贴输入框下沿</td><td>一个是<strong>模型选择</strong>（用哪个 AI 模型，新手用默认即可），另一个是<strong>权限模式</strong>（Codex 被允许做到什么程度——3.7 专门讲）。</td></tr>
-            <tr><td>对话与审阅区</td><td>窗口中间大块</td><td>显示 Codex 的回复。当它修改了你文件夹里的文件时，这里会出现一个<strong>审阅面板（review panel）</strong>，逐行显示改了什么，并提供撤销（撤销能力的边界见<a href="{{link:ch05#s4}}">第 5 章 5.4</a>）。</td></tr>
-            <tr><td>设置（Settings）</td><td>头像菜单里（具体位置以实际界面为准）</td><td>分为 General（通用）、Notifications（通知）、Appearance（外观）、Personalization（个性化，含「记忆」开关）、Computer Use（操作电脑）、Browser（内置浏览器）等。新手只需要知道它在哪。</td></tr>
+            <tr><td>导航与侧栏</td><td>窗口左侧</td><td>常见内容有 <strong>Chats</strong>（对话）、<strong>Projects</strong>（项目）以及在账号可用时出现的 Scheduled、Activity 等。Projects 既可能是 ChatGPT 项目，也可能连接一个或多个本机文件夹；不要把“项目”简单等同于任意文件夹。</td></tr>
+            <tr><td>输入框（composer）</td><td>窗口中下方</td><td>输入请求、添加材料和发送消息。发送前先看清当前项目、目标和权限；不要把密码、验证码或密钥当材料上传。</td></tr>
+            <tr><td>模型与权限控制</td><td>输入框附近</td><td>模型决定使用哪种模型，可用项取决于账号和工作空间；新手保持推荐默认值。权限决定本地动作的边界，本章固定使用 Ask for approval。</td></tr>
+            <tr><td>对话与审阅区</td><td>窗口中间和可展开面板</td><td>对话区显示过程与结果。若项目是 Git 仓库，还可能出现 review pane（审阅面板）；它可能包含原来就存在的改动，不应全部归因于 Codex。零基础阶段先不要操作其中的技术按钮，回退边界见<a href="{{link:ch05#s4}}">第 5 章 5.4</a>。</td></tr>
+            <tr><td>Settings（设置）</td><td>应用菜单；位置以当前版本为准</td><td>官方快捷键是 macOS 的 <kbd>Cmd</kbd>+<kbd>,</kbd>、Windows 的 <kbd>Ctrl</kbd>+<kbd>,</kbd>。常见分类包括 General、Notifications、Appearance、Browser、Computer Use、Personalization、Memories 和 Archived chats；实际可见项可能不同。</td></tr>
           </tbody>
         </table></div>
-        <p>还有两个东西你会在后面章节遇到：<strong>Plugins</strong>（插件，<a href="{{link:ch06}}">第 6 章</a>）和输入 <code>$</code> 弹出的 <strong>Skill</strong> 菜单（<a href="{{link:ch07}}">第 7 章</a>）。现在不用管。</p>
-        <h3>「新建对话」时会问你两件事</h3>
-        <p>点新建对话，Codex 可能让你选<strong>在哪里工作</strong>：<strong>Local</strong>（本机的某个文件夹）、<strong>Worktree</strong>（给程序员用的隔离副本）、<strong>Cloud</strong>（云端）。零基础读者记两条就够：只是聊天、不需要它碰文件，就什么都不选直接开始；需要它整理某个文件夹里的文件，就选 Local 并挑一个<em>专门为练习新建的文件夹</em>。<a href="{{link:ch08}}">第 8 章</a>会详细讲。</p>
+
+        <details>
+          <summary>可选补充：Git 审阅面板里的英文</summary>
+          <p>以后使用 Git 项目时，面板可能显示 Unstaged、Staged、Branch、Commit 或 Last turn，并提供暂存、取消暂存和回退操作。这些都不是完成本章的前提；没学过 Git 时，只需记住“面板可能同时显示你、Codex 和其他工具留下的改动”，不要使用 Revert all。</p>
+        </details>
+
+        <p>后面章节会专门介绍 <strong>Plugins</strong>（插件，<a href="{{link:ch06}}">第 6 章</a>）和 <strong>Skills</strong>（技能，<a href="{{link:ch07}}">第 7 章</a>）。当前 Codex 界面可能在输入特定前缀时给出技能或插件建议；到对应章节再按你的实际界面操作。</p>
+
+        <h3>判断一：这次对话要不要加入项目</h3>
+        <p>项目用于组织一组相关对话、文件和说明；“是否加入项目”回答的是<strong>这次对话要不要共享这些上下文</strong>，还没有决定任务在本机还是云端运行。</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>判断</th><th>含义</th><th>初学者怎么选</th></tr></thead>
+          <tbody>
+            <tr><td><strong>不加入项目</strong></td><td>适合一次性的自包含问题，不自动获得某个项目共享的文件、说明和相关对话上下文。</td><td>只问独立问题、也不需要项目材料时可以用。</td></tr>
+            <tr><td><strong>加入或创建项目</strong></td><td>让相关对话在同一个项目下组织，并使用你为该项目明确提供的文件夹、文件或说明。</td><td>第 4 章会加入练习项目，并先只提供空的「Codex-练习」文件夹；第 5 章继续在这个专用项目中使用虚构材料。</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>判断二：这次 Codex 对话在哪里运行</h3>
+        <p>完成第一个判断后，再选择 Codex 对话的运行位置。<strong>Local、Worktree、Cloud 回答的是运行与文件隔离方式</strong>，不能拿来代替“是否加入项目”的判断。</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>运行位置</th><th>含义</th><th>初学者怎么选</th></tr></thead>
+          <tbody>
+            <tr><td>Local</td><td>在本机项目或指定文件夹范围内工作。</td><td>需要练习文件操作时，只选 3.1 新建的空练习文件夹。</td></tr>
+            <tr><td>Worktree</td><td>在 Git 仓库的隔离工作副本中工作。</td><td>本章不选；到具备 Git 基础后再学。</td></tr>
+            <tr><td>Cloud</td><td>在云环境运行，通常需要连接 GitHub 或 GitLab 并配置环境。</td><td>本章不选；它不是“把本机文件自动搬到云端”的按钮。</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>基础路线的连续选择：</strong>第 4 章先加入练习项目，再为其中的 Codex 对话选择 Local，并且只打开空的「Codex-练习」文件夹。不要因为看到 Local 就以为已经选对项目，也不要因为加入了项目就假定它一定在本机运行。</p>
+
+        <h3>30 秒界面检查</h3>
+        <ol class="steps">
+          <li>指出侧栏、输入框、模型控制、权限控制和设置入口。</li>
+          <li>先回答“是否加入项目”，再单独回答“这次 Codex 对话在哪里运行”。</li>
+          <li>确认当前没有误选真实工作文件夹、Worktree 或 Cloud。</li>
+          <li>确认权限显示 Ask for approval。</li>
+        </ol>
+        <p><strong>通过标准：</strong>四项都能确认，而且不会把“项目”和“运行位置”混成同一个选择。找不到某个区域时先查<a href="https://learn.chatgpt.com/docs/projects">项目与对话</a>、<a href="https://learn.chatgpt.com/docs/environments/modes">运行环境</a>、<a href="https://learn.chatgpt.com/docs/reference/settings">设置</a>或<a href="https://learn.chatgpt.com/docs/code-review?surface=app">审阅面板</a>的当前官方说明，不凭旧截图猜位置。</p>
       </section>
 
       <section id="s7" data-unit-id="CDX-M-0017">
         <h2><span class="sn">3.7</span>权限模式：先弄懂再动手</h2>
-        <p>这是本章最重要的一节。Codex 和普通聊天机器人最大的不同是：它<strong>可以替你动手</strong>——改文件、上网查资料、运行电脑上的程序。「权限模式」决定它做这些事之前要不要先问你。输入框下面那个选择器里通常有这几项：</p>
+        <p>权限不是一个简单的“能 / 不能”开关。<strong>沙盒</strong>规定 Codex 在不打断你的情况下能接触哪些文件和网络资源；<strong>审批</strong>规定它要越过边界时由谁决定是否继续。两者必须一起看，详见<a href="https://learn.chatgpt.com/docs/permission-modes">官方权限模式</a>与<a href="https://learn.chatgpt.com/docs/sandboxing">沙盒说明</a>。</p>
+
         <div class="table-wrap"><table>
-          <thead><tr><th>模式</th><th>它能做什么</th><th>适合谁</th></tr></thead>
+          <thead><tr><th>模式</th><th>实际边界</th><th>本课程规则</th></tr></thead>
           <tbody>
-            <tr><td><strong>Ask for approval</strong><br>（先问我）</td><td>默认模式。可以读写<em>你指定的那个文件夹</em>里的文件、运行常规操作；要上网、或要碰文件夹以外的东西时，<strong>先弹窗问你</strong>。</td><td><strong>本教程全程使用这个模式。</strong></td></tr>
-            <tr><td><strong>Approve for me</strong><br>（替我审批）</td><td>边界和上面一样，但越界请求改由一个 AI 审阅员自动审核，并显示风险等级。</td><td>熟练之后、处理低风险任务时可以考虑。新手不用。</td></tr>
-            <tr><td><strong>Full access</strong><br>（完全访问）</td><td>去掉沙盒（沙盒就是把它圈在你指定的那个文件夹里的安全范围）和审批：可以改电脑上任何文件、随时上网、不再问你。</td><td><strong>不要用。</strong>看到它就当它不存在。</td></tr>
+            <tr><td><strong>Ask for approval</strong><br>（请求审批）</td><td>官方推荐的大多数任务起点。Codex 可以在当前工作区读写并运行常规本地命令；使用命令访问网络或越出工作区边界时会暂停请求审批。具体行为还受本机配置和单位策略限制。</td><td><strong>本章和后续初学者练习都用它。</strong></td></tr>
+            <tr><td><strong>Approve for me</strong><br>（替我审批）</td><td>与 Ask for approval 保持相同沙盒边界，但把符合条件的越界请求交给自动审阅。审阅可能批准、拒绝、中止或超时，并可能显示风险等级；自动审阅还会使用额外模型调用。</td><td>初学阶段不用。它通常要在 Settings &gt; General 的 Permissions 中启用，也可能被单位策略禁用。</td></tr>
+            <tr><td><strong>Full access</strong><br>（完全访问）</td><td>移除 Codex 的本地沙盒限制并关闭审批，显著扩大文件和网络风险。它仍受操作系统账号权限、管理员策略以及 Browser、Computer Use、插件等各自控制约束，但这不等于安全。</td><td><strong>不要用于本教程练习。</strong>看到警告就取消并切回 Ask for approval。</td></tr>
           </tbody>
         </table></div>
-        <p>当 Codex 弹出审批请求时，通常可以选「允许一次」「本次对话都允许」「永久允许」。新手一律选<strong>允许一次</strong>，看清楚它要做什么再点。看不懂它要做什么，就点拒绝——拒绝永远不会造成损失。</p>
-        <aside class="callout stop" data-label="停一停"><strong>三条规矩，从今天起就遵守：</strong>
-          <ul>
-            <li>权限模式永远留在 <strong>Ask for approval</strong>。如果发现被改成了别的，改回来。</li>
-            <li>让它处理文件时，只给它一个<strong>专门新建的练习文件夹</strong>，不要把「桌面」「文档」整个交给它。</li>
-            <li>审批弹窗出现时，先读完再点。文字里出现「删除」「delete」「remove」「发送」「支付」这类词，一律先拒绝，回头想清楚。</li>
-          </ul>
-        </aside>
-        <h3>第一次打开某些文件夹时的系统提示</h3>
-        <p>macOS 在 Codex 第一次访问「桌面」「下载」等文件夹时，会弹出系统级的授权提示；Windows 也可能有类似的确认。这是操作系统在替你把关，属于正常现象。只对你准备用来练习的文件夹点允许；对「音乐」「照片」之类它没理由碰的文件夹，点不允许。</p>
+
+        <h3>看到审批弹窗时，按四步判断</h3>
+        <ol class="steps">
+          <li><strong>看动作。</strong>它到底要运行什么命令、打开什么网站、读写哪个路径或调用哪个外部工具？</li>
+          <li><strong>对目标。</strong>这个动作是不是你刚才明确要求的？目标是不是练习文件夹或你认可的网站、账号？</li>
+          <li><strong>选最小范围。</strong>若确实需要，在弹窗实际提供的选项中选择能继续任务的最小授权，例如只允许这一次。不同类型的审批不一定都有“本次对话”或持久允许选项。</li>
+          <li><strong>不懂就拒绝。</strong>拒绝会阻止当前被拦截的动作继续，但不会自动撤销 Codex 在此之前已经完成的工作区内修改，所以拒绝后仍要检查文件变化。</li>
+        </ol>
+
+        <aside class="callout stop" data-label="三条初学者规则"><ul>
+          <li>开始任务前确认 <strong>Ask for approval</strong>，不要假设它永远自动保持。</li>
+          <li>本机文件练习只使用专门新建的练习文件夹，不选择整个桌面、文档、下载或个人主目录。</li>
+          <li>审批中出现删除、覆盖、清空、发送、发布、支付、登录、密钥或扩大目录范围，而这些不在你的明确要求里，就先拒绝并停止任务。</li>
+        </ul></aside>
+
+        <h3>别把四种权限混在一起</h3>
+        <ul>
+          <li><strong>Codex 沙盒与审批：</strong>控制本地文件、命令和命令网络访问。</li>
+          <li><strong>操作系统权限：</strong>macOS 访问桌面、下载、音乐等目录时可能另行询问；Windows 的访问失败或系统提示要按 Windows 自身规则处理，不能照搬 Mac 步骤。</li>
+          <li><strong>Browser / Computer Use / 插件权限：</strong>可能另有网站、应用、账号和有副作用动作的审批；允许本地文件夹不等于允许这些工具。</li>
+          <li><strong>单位管理员策略：</strong>可能隐藏或禁用某种模式，也可能限制账号、模型和工具；个人设置不能绕过它。</li>
+        </ul>
+
+        <h3>本节验收</h3>
+        <p>不要为了测试而故意访问私人目录。只需确认权限选择器为 Ask for approval，并能回答：“工作区内的常规动作可能直接执行；越界请求应暂停；拒绝只阻止当前请求，我仍要检查此前变化。”答不出来就回看本节，暂不进入第一次文件任务。</p>
       </section>
 
       <section id="s8" data-unit-id="CDX-M-0018">
         <h2><span class="sn">3.8</span>装不上、登不进怎么办</h2>
+        <p>排错不要靠连续乱点。先记录<strong>操作系统与版本、设备芯片、ChatGPT 应用版本、账号/工作空间、登录方式、完整错误文字和出现时间</strong>，再从与你的现象最接近的一行开始。</p>
         <div class="table-wrap"><table>
-          <thead><tr><th>现象</th><th>先试这些</th></tr></thead>
+          <thead><tr><th>现象</th><th>检查与纠正</th><th>停止条件</th></tr></thead>
           <tbody>
-            <tr><td>下载页打不开或很慢</td><td>换一个网络试试；确认地址是 <code>chatgpt.com/download</code>，没有拼错。</td></tr>
-            <tr><td>Windows 的 Microsoft Store 打不开或安装失败</td><td>先在 Store 里随便安装一个别的免费应用，确认 Store 本身正常；重启电脑再试一次。</td></tr>
-            <tr><td>macOS 提示「无法打开，因为它来自身份不明的开发者」</td><td>先确认你是从官方地址下载的。如果是，这是 macOS 对新应用的通用拦截，在系统设置的「隐私与安全性」里通常能找到允许打开的选项（具体位置以你的 macOS 版本为准）。如果不是官方地址下载的，删掉重下。</td></tr>
-            <tr><td>登录时浏览器显示地区不支持（英文提示里含 <code>unsupported_country</code> 之类字样）</td><td>这表示你当前所在地区不在官方支持名单内。请看 3.1 的「停一停」——本教程不提供绕开方法。</td></tr>
-            <tr><td>登录成功，但左上角菜单里找不到 Codex</td><td>确认装的不是 Classic 版本；把应用更新到最新版（应用内通常有更新提示）；退出重新登录一次。</td></tr>
-            <tr><td>提示用量已达上限</td><td>不是故障。免费与付费套餐的额度不同，等提示里给出的时间过后再用，或到账号的用量页面查看。</td></tr>
+            <tr><td>下载页打不开、很慢或没有适配版本</td><td>确认完整地址是 <code>https://chatgpt.com/download/</code>；换一个正常网络后重试一次。没有适配版本时记录系统和芯片信息。</td><td>不要改用第三方镜像、网盘安装包或所谓绿色版。</td></tr>
+            <tr><td>Windows 安装失败</td><td>关闭安装器，重启电脑，从官方下载页重新进入 Microsoft 安装流程；保存错误代码。若只是安装问题，不需要先修改 PowerShell 执行策略。</td><td>要求关闭安全软件、运行陌生脚本、长期以管理员身份启动应用，或单位电脑需要管理员授权时先停止。</td></tr>
+            <tr><td>macOS 显示开发者无法验证、身份不明或安装包损坏</td><td>删除安装包，从官方下载页重新下载一次，并核对设备是否有适配版本。</td><td>不要绕过 Gatekeeper，不运行解除隔离、跳过签名验证的命令。</td></tr>
+            <tr><td>浏览器登录完成，却没有回到应用</td><td>确认流程由桌面应用发起；只保留一个登录页面，关闭重复页面后再试一次。记录浏览器与应用两边的完整提示。</td><td>不要把登录后用于返回应用的链接（回调链接）、验证码、密码、恢复码或 API Key 发给远程协助者。</td></tr>
+            <tr><td>已登录，但找不到 Codex</td><td>确认当前账号、工作空间、登录方式和应用版本；完整退出应用后重新打开。单位账号请让管理员确认 Codex、模型和本地客户端权限。</td><td>不要把切换账号、借用账号或改用 API Key 当成绕过单位策略的方法。</td></tr>
+            <tr><td>提示达到用量上限</td><td>这通常不是安装故障。打开账号内的 Codex usage 页面查看剩余额度和重置时间；限制会随套餐、模型和任务变化，周限制也可能适用。</td><td>不要相信第三方“解除限额”工具，也不要在不理解 API 计费时临时改用 API Key。</td></tr>
+            <tr><td>对话看起来卡住</td><td>先看 Codex 是否正在等待审批；有待审批项就读清后拒绝。若回复仍在运行，使用当前界面中与该回复直接相连、含义明确的停止或取消控件；确认内容不再追加、界面不再显示该轮仍在运行后，再用更短、更明确的请求新建对话。看不懂控件或无法确认已经停止时，保持不审批并求助，不要靠继续发消息测试。</td><td>不要因卡住就切到 Full access，也不要在不清楚状态时反复提交同一个有副作用的请求。</td></tr>
           </tbody>
         </table></div>
-        <p>都试过还不行，按<a href="{{link:ch10#s5}}">第 10 章 10.5</a> 的五要素把问题写清楚，去官方帮助中心（<code>help.openai.com</code>）求助。求助前把截图里的邮箱等个人信息打码。</p>
+
+        <h3>求助时一次说清楚</h3>
+        <ol class="steps">
+          <li>按<a href="{{link:ch10#s5}}">第 10 章 10.5</a>整理复现步骤，同时附上系统、芯片、应用版本、账号/工作空间类型和准确时间。</li>
+          <li>先查<a href="https://learn.chatgpt.com/docs/reference/troubleshooting">官方桌面应用排错页</a>；在应用输入框输入 <code>/</code> 时，若当前版本提供反馈入口，可按提示提交并保存会话 ID。</li>
+          <li>需要联系官方支持时，从官方文档或应用内帮助入口进入，不点击搜索广告中的“客服”。</li>
+          <li>分享截图、会话或日志前，遮住邮箱、姓名、单位、文件路径、项目名，并删除登录凭据（例如令牌和 Cookie）、验证码、API Key 和真实业务内容。</li>
+        </ol>
+        <p><strong>通过标准：</strong>你能保留原始错误文字，完成一次有顺序的排查，并在遇到安全或系统边界时停下来。排错目标是找到原因，不是“不惜代价让它运行”。</p>
       </section>
 
       <section class="summary" id="summary"><h2>本章小结</h2><ul>
-        <li>现在的 Codex 是「ChatGPT 桌面应用」左上角菜单里的一个视图；别装成 Classic，网页和手机上用不了。</li>
-        <li>只从 <code>chatgpt.com/download</code> 下载；登录只在浏览器里的官方页面输入密码。</li>
-        <li>界面五块：侧栏、输入框、模型/权限选择器、对话与审阅区、设置。</li>
-        <li>权限模式永远留在 Ask for approval；只给它专门的练习文件夹；审批弹窗读完再点，看不懂就拒绝。</li>
-        <li>地区不支持时不要绕，装不上就按 3.8 排查、按 10.5 求助。</li>
-      </ul></section>
+        <li>本章主路线只要求认准 ChatGPT 桌面应用中的 Codex；其他入口与开发术语不是基础路线的前提。</li>
+        <li>只从官方 HTTPS 下载入口开始；页面没有适配版本或系统出现高风险安全警告时就停止，不找第三方安装包、不绕过 Gatekeeper。</li>
+        <li>登录由应用发起；核对完整域名和身份提供方，绝不在对话或陌生弹窗中提交密码、验证码和 API Key。</li>
+        <li>界面可用五个区域认路，但具体名称与位置会变化；Git 审阅面板显示的也不一定全是 Codex 做的修改。</li>
+        <li>初学者使用 Ask for approval。沙盒、审批、操作系统权限以及 Browser、Computer Use、插件权限是不同层次。</li>
+        <li>拒绝越界请求会阻止该动作继续，但不会自动撤销此前修改；排错和审批之后都要检查已经发生的变化。</li>
+      </ul>
+        <aside class="goal"><strong>离章 go / no-go</strong><p>下面五项全部回答“是”才进入第 4 章：① ChatGPT 来自官方入口并能正常打开；② 你知道当前账号和工作空间；③ 当前产品显示 Codex；④ 第 3 章准备的空「Codex-练习」文件夹仍能找到；⑤ 权限显示 Ask for approval。任一项为“否”或“不确定”，就停在本章按 3.8 排查，不用 Full access 绕过。</p></aside>
+      </section>
 
       <details class="maint">
         <summary>维护者信息（读者可以忽略）</summary>
         <dl class="card">
-          <dt>章节聚合 ID / 状态</dt><dd>CDX-C-03｜draft（依据官方文档撰写，未实测）；旧占位 ID CDX-M-0301 仅用于迁移。</dd>
-          <dt>风险级别</dt><dd>高：含平台安装步骤、登录与权限设置；界面变化直接影响准确性。</dd>
-          <dt>来源与权利</dt><dd>自有原创；事实依据见第 11 章 11.2 所列官方页面（桌面应用文档、Windows 应用文档、登录文档、权限模式与沙盒文档、系统要求与支持地区帮助文章、2026-07-09 合并公告），查阅日期 2026-09-01。无第三方素材复制。</dd>
-          <dt>验证状态</dt><dd>unverified。计划：分别在 Windows 11 与 macOS 14+ 的当前版应用上逐步实测，记录版本号与每步截图（用验证记录模板）。3.4 第 3 步（拖入应用程序）与 3.7「系统提示」段为通用做法推断，实测时重点核对。</dd>
-          <dt>复核日期</dt><dd>撰写：2026-09-01；高风险，最晚复验 2026-10-01。</dd>
+          <dt>章节聚合 ID / 状态</dt><dd>CDX-C-03｜editorial-reviewed（已按当前官方文档完成独立编辑审校，仍待双平台真实设备验证）；旧占位 ID CDX-M-0301 仅用于迁移。</dd>
+          <dt>风险级别</dt><dd>高：含安装来源、身份验证、系统安全提示和权限设置；界面或平台支持变化会直接影响读者安全与可操作性。</dd>
+          <dt>来源与权利</dt><dd>自有原创。事实依据：<a href="https://learn.chatgpt.com/docs/app">桌面应用</a>、<a href="https://learn.chatgpt.com/docs/quickstart">快速入门</a>、<a href="https://learn.chatgpt.com/docs/windows/windows-app">Windows 应用</a>、<a href="https://learn.chatgpt.com/docs/auth">身份验证</a>、<a href="https://learn.chatgpt.com/docs/permission-modes">权限模式</a>、<a href="https://learn.chatgpt.com/docs/sandboxing">沙盒</a>、<a href="https://learn.chatgpt.com/docs/agent-approvals-security">审批与安全</a>、<a href="https://learn.chatgpt.com/docs/projects">项目与对话</a>、<a href="https://learn.chatgpt.com/docs/code-review?surface=app">代码审阅</a>、<a href="https://learn.chatgpt.com/docs/reference/settings">设置</a>、<a href="https://learn.chatgpt.com/docs/reference/troubleshooting">排错</a>、<a href="https://learn.chatgpt.com/docs/pricing">套餐与额度</a>、<a href="https://learn.chatgpt.com/docs/cloud">Codex Cloud</a>、<a href="https://learn.chatgpt.com/docs/remote">Remote</a>与<a href="https://learn.chatgpt.com/docs/changelog">更新记录</a>，复核日期 2026-09-04。无第三方素材复制。</dd>
+          <dt>验证状态</dt><dd>unverified。必须分别在当前 Windows 11 与当前受支持的 Apple Silicon Mac 上，从官方下载安装页开始完成安装、ChatGPT 登录、Codex 入口、Local 练习文件夹、Ask for approval 边界和排错路径实测，并记录系统版本、芯片、应用版本、登录方式、工作空间、准确按钮文字与证据截图。若要声明支持 Windows 10、Intel Mac 或某个最低系统版本，必须增加对应设备记录；未验证前不得恢复这些承诺。</dd>
+          <dt>复核日期</dt><dd>文档与独立编辑审校：2026-09-04，内容版本 0.4.0；验证状态继续为 unverified。高风险内容在界面、安装包、登录或权限文档变化时立即复核，最长不超过 30 天（2026-10-04）。</dd>
         </dl>
       </details>

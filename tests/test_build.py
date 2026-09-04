@@ -174,7 +174,7 @@ class BuildBaselineTests(unittest.TestCase):
             }
             self.assertEqual(forbidden, set())
 
-    def test_public_copy_labels_every_current_lesson_as_an_unverified_draft_seed(self):
+    def test_public_copy_reports_partial_editorial_progress_honestly(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"
             copy_repo(root)
@@ -184,23 +184,24 @@ class BuildBaselineTests(unittest.TestCase):
             readme = (root / "README.md").read_text(encoding="utf-8")
             chapter_eleven = (root / "ch11.html").read_text(encoding="utf-8")
             config = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
-            for public_copy in (index, readme):
-                self.assertIn("草稿种子", public_copy)
-                self.assertIn("不算完成课程", public_copy)
-                self.assertIn("尚未逐条复核或实测", public_copy)
-            self.assertNotIn("正文草稿已完成", index)
-            self.assertNotIn("11 章全部有正文", readme)
+            self.assertIn("正式审校 5 / 11 章", index)
+            self.assertIn("课程正在按内容单元逐条", index)
+            self.assertIn("课程正在按内容单元逐条", readme)
+            self.assertNotIn("11 章均有「草稿种子」", readme)
             self.assertIn("可选在线预览", readme)
             self.assertIn(f"教程当前是 {config['site']['version']} 版", chapter_eleven)
 
             registry = json.loads((root / "registry/framework-v1.json").read_text(encoding="utf-8"))
             manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-            self.assertEqual(registry["status"], "draft-seed-unverified")
+            self.assertEqual(registry["status"], "review-in-progress")
             self.assertEqual(registry["releaseGate"]["currentDecision"], "course-beta-in-development")
             self.assertFalse(registry["currentSeedContent"]["final"])
             self.assertFalse(registry["currentSeedContent"]["countsAsCompletedCourseContent"])
-            self.assertEqual(manifest["status"], "draft-seed-unverified")
-            self.assertEqual({chapter["status"] for chapter in config["chapters"].values()}, {"draft"})
+            self.assertEqual(manifest["status"], "review-in-progress")
+            self.assertEqual(
+                {chapter["status"] for chapter in config["chapters"].values()},
+                {"editorial-reviewed", "draft"},
+            )
 
     def test_offline_manifest_declares_only_files_that_are_inside_the_zip(self):
         archive = offline_archive(REPO)
@@ -289,9 +290,16 @@ class BuildBaselineTests(unittest.TestCase):
 
     def test_offline_zip_uses_stored_entries_for_cross_platform_determinism(self):
         archive = offline_archive(REPO)
+        config = json.loads((REPO / "src/chapters.json").read_text(encoding="utf-8"))
+        expected_time = (*[int(part) for part in config["site"]["date"].split("-")], 0, 0, 0)
         with zipfile.ZipFile(archive) as package:
-            compression_methods = {info.compress_type for info in package.infolist()}
+            infos = package.infolist()
+            compression_methods = {info.compress_type for info in infos}
         self.assertEqual(compression_methods, {zipfile.ZIP_STORED})
+        self.assertEqual([info.filename for info in infos], sorted(info.filename for info in infos))
+        self.assertEqual({info.create_system for info in infos}, {3})
+        self.assertEqual({info.external_attr >> 16 for info in infos}, {0o644})
+        self.assertEqual({info.date_time for info in infos}, {expected_time})
 
     def test_content_lifecycle_matches_the_formal_course_design(self):
         expected = [
@@ -322,7 +330,7 @@ class BuildBaselineTests(unittest.TestCase):
             root = Path(directory) / "repo"
             copy_repo(root)
             chapters = json.loads((root / "src/chapters.json").read_text(encoding="utf-8"))
-            chapters["chapters"]["ch01"]["status"] = "editorial-reviewed"
+            chapters["chapters"]["ch06"]["status"] = "editorial-reviewed"
             (root / "src/chapters.json").write_text(
                 json.dumps(chapters, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
@@ -331,7 +339,7 @@ class BuildBaselineTests(unittest.TestCase):
             modules = json.loads((root / "src/modules-v1.json").read_text(encoding="utf-8"))
             modules["status"] = "review-in-progress"
             for unit in modules["units"]:
-                if unit["chapterId"] == "ch01":
+                if unit["chapterId"] == "ch06":
                     unit["contentStatus"] = "editorial-reviewed"
                     unit["rights"] = "owned"
                     unit["lastReviewedDate"] = chapters["site"]["date"]
@@ -343,8 +351,8 @@ class BuildBaselineTests(unittest.TestCase):
             result = run_build(root)
             self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
             index = (root / "index.html").read_text(encoding="utf-8")
-            chapter = (root / "ch01.html").read_text(encoding="utf-8")
-            self.assertIn("正式审校 1 / 11 章", index)
+            chapter = (root / "ch06.html").read_text(encoding="utf-8")
+            self.assertIn("正式审校 6 / 11 章", index)
             self.assertIn('<span class="badge editorial-reviewed">已编辑审校</span>', chapter)
             check = subprocess.run(
                 [sys.executable, "src/check.py", "--strict", "--verify-generated"],

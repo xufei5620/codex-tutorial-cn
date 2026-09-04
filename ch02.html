@@ -21,11 +21,11 @@
     <nav aria-label="全部章节">
       <p class="part-label">第一部分 · 基础</p>
       <ol class="chapters">
-        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot draft" title="草稿"></span></a></li>
-        <li class="is-current"><a href="ch02.html" aria-current="page"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot draft" title="草稿"></span></a></li>
-        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot draft" title="草稿"></span></a></li>
-        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot draft" title="草稿"></span></a></li>
-        <li><a href="ch05.html"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
+        <li class="is-current"><a href="ch02.html" aria-current="page"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
+        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
+        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
+        <li><a href="ch05.html"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
       </ol>
       <p class="part-label">第二部分 · 扩展</p>
       <ol class="chapters">
@@ -41,17 +41,19 @@
       </ol>
       <a class="side-entry" href="prompts.html">行业提示词库</a>
     </nav>
-    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li></ul></div>
+    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li><li><span class="dot editorial-reviewed"></span>已编辑审校</li></ul></div>
   </aside>
   <main class="doc-main" id="content">
     <article class="chapter">
       <header class="chapter-head">
-        <p class="kicker">第 2 章 <span class="badge draft">草稿</span></p>
+        <p class="kicker">第 2 章 <span class="badge editorial-reviewed">已编辑审校</span></p>
         <h1>认识 AI 与 Codex</h1>
-        <ul class="meta"><li>预计阅读 5 分钟</li><li>适用平台：Windows / macOS</li><li>前提：读过第 1 章</li></ul>
+        <ul class="meta"><li>预计阅读 10 分钟 + 练习 5 分钟</li><li>适用平台：Windows / macOS</li><li>前提：读过第 1 章</li></ul>
       </header>
 
-      <aside class="goal"><strong>本章目标</strong><p>读完这一章，你能对 Codex 建立正确的预期：知道它擅长什么、在哪些地方不可靠、哪些任务适合放心交给它。预期对了，后面每一章都会顺利很多。</p></aside>
+      <aside class="goal"><strong>本章目标</strong><p>读完这一章，你能用自己的话说明 Codex 是什么，知道它能协助哪些工作、哪些结果必须核实，并能判断一项任务是否适合先交给它尝试。你还会学会给任务划范围、给重要动作留一道人工确认。</p></aside>
+
+      <aside class="callout note" data-label="练习方式"><p>本章所有练习都是静态阅读练习：请用纸笔或系统自带的记事本（Windows「记事本」或 macOS「文本编辑」）记录答案，不要把答案发送给 Codex，也不要提交姓名、账号、密码、验证码、真实客户资料等敏感信息。先写完，再展开「参考答案」。</p></aside>
 
       <nav class="section-nav" aria-label="本章内容"><p class="label">本章内容</p><ol>
         <li><a href="#s1">2.1 Codex 是什么</a></li>
@@ -61,115 +63,181 @@
         <li><a href="#s5">2.5 正确的心态</a></li>
       </ol></nav>
 
-      <section id="s1" data-unit-id="CDX-M-0006" data-content-status="draft" data-verification-state="unverified">
+      <section id="s1" data-unit-id="CDX-M-0006" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">2.1</span>Codex 是什么</h2>
-        <p>先说清楚两个词。<strong>AI</strong>，全称「人工智能」，是一类能读懂文字、也能写出文字的软件技术。<strong>Codex</strong> 是 OpenAI 用这项技术做的一款工具。它原本是一个独立的桌面应用，2026 年 7 月起并入了「ChatGPT 桌面应用」——现在你装好 ChatGPT，在左上角菜单里选 <strong>Codex</strong>，就是它（<a href="ch03.html">第 3 章</a>会一步步带你装）。</p>
-        <p>用起来很简单：你用平常说话的方式交代一件事，Codex 读你提供的文字和文件，按要求产出结果。结果可能是一段文字、一份表格、一份整理好的文档。到这里为止，它和你可能用过的聊天机器人差不多。</p>
-        <p>它多出来的那一块是：<strong>在你允许的范围内，它能替你动手。</strong>比如直接整理你电脑上某个文件夹里的几十个文件、上网查一件事、用你授权的日历或邮箱做点事、按时间表每周自动干一件活。「聊天」只是它的输入方式，「干活」才是它的目的。这也意味着它需要一套边界——<a href="ch03.html">第 3 章</a>的「权限模式」就是给它划边界用的。</p>
-        <p>你可以把它想象成一位<strong>读写能力很强、手脚也麻利、但刚来第一天的新同事</strong>。这位新同事有四个特点：</p>
+        <p>先分清两个词。<strong>AI</strong> 是「人工智能」的简称，范围很广；本教程主要讲其中的<strong>生成式 AI</strong>——它能根据你给出的文字、文件或图片，分析材料并生成新的内容。它生成得很像人写的，但「像真的」不等于「一定正确」。</p>
+        <p><strong>Codex</strong> 是 OpenAI 提供的 AI 智能体工具。这里的<strong>智能体</strong>，指的是它不只生成一段回答，还能在你允许的范围内调用工具、分步骤处理任务。Codex 尤其适合软件开发和需要技术细节的任务，也能协助研究、整理文件和制作内容。在 ChatGPT 桌面应用中，你可以从产品选择器进入 Codex；Codex 也有其他使用入口。<strong>本教程主要讲 Windows 和 macOS 上的 ChatGPT 桌面应用</strong>，其他入口只在确有需要时说明。<a href="ch03.html">第 3 章</a>会带你完成安装并找到入口。</p>
+        <details><summary>可选说明：CLI、IDE 和 Cloud 是什么</summary>
+          <ul>
+            <li><strong>CLI（命令行）：</strong>在终端窗口里输入文字命令来使用 Codex。</li>
+            <li><strong>IDE（编程编辑器）扩展：</strong>把 Codex 入口装进写代码的软件中。</li>
+            <li><strong>Cloud（云端）：</strong>让任务在远程环境中运行，而不是只在眼前这台电脑上运行。</li>
+          </ul>
+          <p>零基础读者现在只需认识这些名称，不需要安装或使用它们。</p>
+        </details>
+        <p>基本交互方式是用日常语言说明任务。你可以给出一段文字、一份文件或一个目标，让 Codex 解释、整理、起草或制作结果。和只回答问题的聊天工具相比，Codex 还可以在当前环境允许的范围内使用工具，例如读写工作文件、运行命令、搜索资料或调用已经连接的服务。</p>
+        <aside class="callout note" data-label="先记住"><p>不是每个人、每个平台都能看到完全相同的功能。能否使用某项能力，取决于套餐、平台、地区、功能发布进度、账号所属工作空间（例如团队或组织空间）的设置、已安装的插件（为 Codex 增加能力或连接服务的扩展）以及当前权限。看到本书中的能力示例时，不要把它理解成「我的账号现在一定有」。</p></aside>
+        <p>你可以把 Codex 想象成一位<strong>能力强、动作快，但刚加入团队的新同事</strong>。这个比喻有四个重点：</p>
         <ul>
-          <li>你交代清楚，它就干得又快又好；</li>
-          <li>你说得含糊，它就只能靠猜；</li>
-          <li>它完全不了解你没有告诉它的事；</li>
-          <li>它会动手，所以你得先告诉它哪些东西能碰、哪些不能碰。</li>
+          <li>任务越清楚，结果通常越容易检查，但清楚的要求也不能保证它永远不出错；</li>
+          <li>信息不足时，它可能按常见情况补全，所以要明确哪些地方不能猜；</li>
+          <li>它能使用的背景来自当前对话、你提供的文件，以及已启用且获准访问的项目、记忆或插件；不要假设它知道其他私人情况；</li>
+          <li>它可以动手，因此除了说清任务，还要选对工作范围、权限模式，并复核重要结果。</li>
         </ul>
-        <p>这个比喻会贯穿整套教程。</p>
+        <p>这个「新同事」比喻会贯穿整套教程：你负责目标、边界和最后决定，Codex 负责在边界内协助完成工作。</p>
       </section>
 
-      <section id="s2" data-unit-id="CDX-M-0007" data-content-status="draft" data-verification-state="unverified">
+      <section id="s2" data-unit-id="CDX-M-0007" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">2.2</span>它擅长什么</h2>
-        <p>下面这六类任务，是 Codex 最拿手的地方（例子均为虚构的蓝溪文具场景，蓝溪文具是本书用来练习的一家虚构文具店）。</p>
+        <p>下面六类是<strong>适合零基础用户首先尝试</strong>的任务。它们风险较低、结果容易检查，但这不代表 Codex 每次都会做对。例子都来自本书的虚构文具店「蓝溪文具」。</p>
         <div class="table-wrap"><table>
-          <thead><tr><th>能力</th><th>例子（均为虚构场景）</th></tr></thead>
+          <thead><tr><th>能力</th><th>虚构例子</th><th>你怎么检查</th></tr></thead>
           <tbody>
-            <tr><td><strong>整理</strong></td><td>把蓝溪文具三个月的杂乱进货记录，归类成一份清晰的清单。</td></tr>
-            <tr><td><strong>改写</strong></td><td>把一段生硬的退货说明改得客气易懂，或者压缩到 50 字以内。</td></tr>
-            <tr><td><strong>总结</strong></td><td>把一份很长的会议记录，浓缩成三条结论和一张待办表。</td></tr>
-            <tr><td><strong>起草</strong></td><td>按你给的要点，写出通知、文案、邮件的第一版。</td></tr>
-            <tr><td><strong>解释</strong></td><td>用大白话解释一份合同条款或一个陌生概念，还能「再讲得更简单一点」。</td></tr>
-            <tr><td><strong>按格式输出</strong></td><td>同样的内容，你要列表就给列表，要表格就给表格；也能直接生成文档、表格、演示文稿文件，在对话旁边预览。</td></tr>
+            <tr><td><strong>整理</strong></td><td>把三个月的虚构进货记录归类成清单。</td><td>逐项对照原始记录，检查有没有漏项或放错类别。</td></tr>
+            <tr><td><strong>改写</strong></td><td>把生硬的退货说明改得客气易懂，并控制在 80 字以内。</td><td>确认原意没变，再数一遍字数。</td></tr>
+            <tr><td><strong>总结</strong></td><td>把虚构会议记录浓缩成三条结论和一张待办表。</td><td>回看原文，确认结论有出处、负责人和日期没有写错。</td></tr>
+            <tr><td><strong>起草</strong></td><td>按给定要点写出通知、文案或邮件的第一版。</td><td>检查每个要点都出现，并确认没有凭空增加承诺。</td></tr>
+            <tr><td><strong>解释</strong></td><td>用大白话解释一个陌生概念，再举一个简单例子。</td><td>到可靠资料中核对关键定义；重要结论请懂行的人复核。</td></tr>
+            <tr><td><strong>按格式输出</strong></td><td>把同一份材料变成列表、表格，或制作成文档、表格、演示文稿等文件。</td><td>打开生成的文件，逐页、逐表或逐张幻灯片检查。</td></tr>
           </tbody>
         </table></div>
-        <p>看一下这六个例子的共同点：都有<strong>你提供的材料</strong>作依据，产出的都是<strong>文字类结果</strong>，而且做完之后<strong>你自己有能力检查对不对</strong>。这三个条件凑齐，就是 Codex 的主场。</p>
-        <h3>它还能「动手」做的事</h3>
-        <p>下面这些是 Codex 比普通聊天工具多出来的能力。本教程会在后面章节逐个教，现在只需要知道它们存在，并且<strong>每一项都要先经过你的允许</strong>：</p>
+        <p>这些例子的共同点是：<strong>有材料可依、有结果可查、出错后容易修改</strong>。这类任务很适合作为起点。Codex 的核心技术能力还包括理解代码库（一个项目的代码和相关文件）、修改代码、运行命令和测试、审查代码或 Pull Request（合并请求：把一组代码改动交给别人审阅，再决定是否并入正式版本）；即使你现在不写程序，也应该知道这正是 Codex 区别于普通聊天界面的重要部分。</p>
+        <p>在 ChatGPT 桌面应用中，生成的文档、演示文稿、表格、PDF 和部分 HTML 文件可以在对话旁预览。不同入口并不相同：例如命令行可以创建和编辑工作目录中的文件，但没有同样的可视预览界面。</p>
+        <h3>它还能调用工具做什么</h3>
+        <p>下面是常见的进阶能力。使用前先确认当前入口是否支持、所需插件或连接是否已经启用，以及权限范围是否合适。<strong>不要假设每项能力都可用，也不要假设系统每次都会再次弹窗询问。</strong></p>
         <div class="table-wrap"><table>
-          <thead><tr><th>能力</th><th>例子（虚构）</th><th>在哪里看</th></tr></thead>
+          <thead><tr><th>能力</th><th>虚构例子与边界</th><th>在哪里看</th></tr></thead>
           <tbody>
-            <tr><td><strong>处理文件夹里的文件</strong></td><td>把「蓝溪文具-2026 报价」文件夹里三十份乱命名的文件按月份归类改名，改完给你一张改动清单。</td><td>第 5、8 章</td></tr>
-            <tr><td><strong>上网查资料</strong></td><td>用它内置的浏览器打开某个网页，把页面上的营业时间抄下来。</td><td><a href="ch08.html">第 8 章</a></td></tr>
-            <tr><td><strong>用你授权的其他软件</strong></td><td>装了日历插件后，把三条待办写进店用日历。</td><td><a href="ch06.html">第 6 章</a></td></tr>
-            <tr><td><strong>按固定流程做事</strong></td><td>每周用同一套「周报」规则整理流水。</td><td><a href="ch07.html">第 7 章</a></td></tr>
-            <tr><td><strong>按时间表自动干活</strong></td><td>每周一早上 8 点自动汇总上周流水。</td><td><a href="ch08.html">第 8 章</a></td></tr>
-            <tr><td><strong>生成图片</strong></td><td>按你的描述画一张海报草图（消耗额度比文字多得多）。</td><td>行业提示词库（独立页面）</td></tr>
-            <tr><td><strong>操作你的电脑</strong></td><td>像人一样点鼠标、打字去操作别的软件。<em>本教程不教这项</em>：它需要屏幕录制和辅助功能权限，风险最高，等你把前面的都用熟再考虑。</td><td>—</td></tr>
+            <tr><td><strong>处理工作文件</strong></td><td>在专门的练习文件夹中给三十份报价文件分类改名，并输出改动清单；原件先留在文件夹外。</td><td><a href="ch05.html">第 5 章</a>、<a href="ch08.html">第 8 章</a></td></tr>
+            <tr><td><strong>搜索或浏览网页</strong></td><td>查询 OpenAI 官方状态页当前是否报告服务故障，同时给出来源链接和页面日期；搜索结果和网页内容都要当作未经核实的输入。</td><td><a href="ch08.html">第 8 章</a></td></tr>
+            <tr><td><strong>使用已连接的服务</strong></td><td>日历插件已经安装并完成连接后，先准备三条待办；写入前仍要核对日期、日历和权限。</td><td><a href="ch06.html">第 6 章</a></td></tr>
+            <tr><td><strong>复用固定流程</strong></td><td>把已经跑通的「周报」方法做成 Skill（可重复使用的任务说明和配套资源），下一次继续使用同一套规则。</td><td><a href="ch07.html">第 7 章</a></td></tr>
+            <tr><td><strong>按计划重复运行</strong></td><td>在支持计划任务的入口中，每周汇总一次虚构流水；本地任务需要电脑保持开机并让桌面应用继续运行。</td><td><a href="ch08.html">第 8 章</a></td></tr>
+            <tr><td><strong>生成图片</strong></td><td>在图像生成功能可用时，按描述制作一张海报草图，再检查文字、品牌信息和使用权。</td><td>行业提示词库（独立页面）</td></tr>
+            <tr><td><strong>操作图形界面</strong></td><td>Computer Use 可以在支持的地区和系统中操作桌面应用，但会影响项目文件夹之外的状态，属于高风险能力。它需要安装相应插件；Windows 运行时要让目标应用保持在活动桌面可见，macOS 还会要求屏幕录制和辅助功能权限。<em>本教程不教这项。</em></td><td>—</td></tr>
           </tbody>
         </table></div>
       </section>
 
-      <section id="s3" data-unit-id="CDX-M-0008" data-content-status="draft" data-verification-state="unverified">
+      <section id="s3" data-unit-id="CDX-M-0008" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">2.3</span>它在哪里不可靠</h2>
-        <p>这一节很重要，请慢一点读。Codex 很好用，但它有几个固定的弱点。这不是哪天会修好的小故障，而是这一类 AI 技术与生俱来的特点。先记住这些弱点，你才能用得放心。</p>
+        <p>这一节很重要，请慢一点读。下面是当前生成式 AI 和智能体常见的风险。产品会继续更新，但在没有可靠证据前，不要假设这些风险已经消失。正确做法不是害怕使用，而是让每个风险都有一道检查。</p>
 
-        <h3>弱点一：它可能一本正经地编造</h3>
-        <p>当它缺少信息时，往往不会老实说「我不知道」，而是生成一段看起来很可信、其实是编出来的内容。数字、日期、人名、出处，都可能是假的，但语气和真的一模一样。</p>
-        <aside class="callout note" data-label="对策"><p>凡是你提供的材料里没有的信息，一律当作它的猜测，用之前必须自己核实一遍。这句话会在本书里反复出现，因为它是最重要的一条。</p></aside>
+        <h3>风险一：内容看起来可信，也可能不完整或错误</h3>
+        <p>Codex 可能把错误的数字、日期、人名、出处或因果关系写得很流畅，也可能没有清楚标出自己不确定的部分。语气自信不是证据。</p>
+        <aside class="callout note" data-label="对策"><p>先把第一版当作草稿。准备使用或分享之前，核对重要的数字、名称、日期、引文和说法；没有可追溯依据的重要事实，先标成「待核实」。</p></aside>
 
-        <h3>弱点二：它不知道你没说的事</h3>
-        <p>它不了解你的公司、你的习惯、你上周做过什么——除非你在这次对话里亲口说过。它给出的建议，只是「一般情况下比较合理的做法」，不一定符合你的具体情况。</p>
-        <aside class="callout note" data-label="对策"><p>把它当成刚入职的新同事：背景信息你不说，它就不知道。凡是需要了解你的具体情况才能做好的任务，先把相关背景写进你的请求里。</p></aside>
+        <h3>风险二：它拿到的背景可能不完整</h3>
+        <p>Codex 的上下文（Codex 这次可用的背景信息）可能来自当前对话、项目、文件、记忆和已连接的插件，但只有可用且获准访问的内容才可能被使用。它不会自动知道你公司内部的规则、这次任务的例外或你没有提供的私人情况。</p>
+        <aside class="callout note" data-label="对策"><p>说明目标，并指出材料在哪里、哪一份是准的、哪些条件不能改。需要它查外部服务时，明确服务和查找目标；拿不到的资料让它列出来，不要让它自行补全。</p></aside>
 
-        <h3>弱点三：它的知识有截止时间</h3>
-        <p>它是用过去某个时间点前的资料「训练」出来的。「训练」就是让它反复阅读大量文字，从中学会怎么读、怎么写，跟人学习差不多。在那之后发生的事、最新的价格和政策，它可能不知道，也可能误以为还是旧的样子。</p>
-        <aside class="callout note" data-label="对策"><p>凡是时效性强的内容——价格、政策、近期消息——都要去官方渠道核对一遍，不要只信它给出的答案。</p></aside>
+        <h3>风险三：AI 已学到的知识和网上资料都不等于最新事实</h3>
+        <p>模型（生成回答的 AI 核心）自身的知识不保证实时。Web 搜索（在互联网上查找资料）可以帮助它取得较新的资料，但搜索结果、网页和连接服务里的内容仍可能过期、遗漏或错误。</p>
+        <aside class="callout note" data-label="对策"><p>价格、政策、产品功能和近期消息要指定官方来源，要求给出链接和资料日期，再打开原始页面核对。能联网只代表「能查」，不代表「查到的一定对」。</p></aside>
 
-        <h3>弱点四：同一个问题，两次回答可能不一样</h3>
-        <p>你把同一个问题问两遍，得到的回答可能有出入。这是正常现象，不代表哪一次「坏了」，也不代表哪一次「更对」。</p>
-        <aside class="callout note" data-label="对策"><p>不要迷信「问出一个标准答案」。真正重要的不是它一次答得多准，而是你自己养成检查的习惯——<a href="ch05.html">第 5 章</a>会详细教怎么检查。</p></aside>
+        <h3>风险四：同一个问题，两次结果可能不同</h3>
+        <p>同一个问题重复询问，措辞、顺序甚至结论都可能有差异。差异本身不能证明哪一次更正确，也不能靠语气判断。</p>
+        <aside class="callout note" data-label="对策"><p>先写清完成标准，再对照材料、来源或测试检查结果。重要的是证据和验收标准，不是反复询问直到出现一个你喜欢的答案。<a href="ch05.html">第 5 章</a>会详细教检查方法。</p></aside>
 
-        <h3>弱点五：它会动手，所以它也可能做过头</h3>
-        <p>一个只会说话的工具，最坏的结果是说错话；一个会动手的工具，最坏的结果是把你的文件改乱、把不该发的东西发出去。Codex 默认只能碰你指定的那个文件夹，出圈之前会先问你——但如果你随手点了「永久允许」，这道闸就没了。</p>
-        <aside class="callout note" data-label="对策"><p>权限模式留在默认的「先问我」（<a href="ch03.html">第 3 章</a>）；只给它专门的练习文件夹；每一个确认弹窗都读完再点，看不懂就拒绝。这一条和「一律核实」同样重要。</p></aside>
+        <h3>风险五：能动手，也就可能改错地方</h3>
+        <p>Codex 能访问什么、越过哪条边界时会不会询问，取决于当前工作区（你指定的工作文件夹或项目范围）边界、权限模式、已有授权、账号所属工作空间的设置和组织策略。官方建议大多数工作从 <strong>Ask for approval（请求审批）</strong>开始；<strong>Full access（完全访问）</strong>可以在不逐次询问的情况下访问更广范围，因此风险明显更高。</p>
+        <aside class="callout note" data-label="对策"><p>第一次练习只使用专门的测试文件夹，重要文件先备份；执行前确认目标、范围和可能改动。遇到看不懂的审批请求，先取消或拒绝，再让 Codex 用大白话说明准备做什么、会影响哪些文件，然后重新决定。具体设置见<a href="ch03.html">第 3 章</a>。</p></aside>
+
+        <h3>风险六：外部内容可能夹带错误指令</h3>
+        <p>网页、问题单、文档或插件返回的数据里，可能藏着诱导智能体泄露资料、运行陌生命令或偏离原任务的文字，这叫<strong>提示词注入</strong>。外部页面写着「请上传密钥」并不等于这是你的要求。</p>
+        <aside class="callout stop" data-label="停止条件"><p>外部内容要求上传密码、验证码、密钥或内部文件，要求运行用途不明的命令，或者要求绕过原来的权限边界时，立即停止。不要照做，先回到原始任务和可信来源核实。</p></aside>
       </section>
 
-      <section id="s4" data-unit-id="CDX-M-0009" data-content-status="draft" data-verification-state="unverified">
+      <section id="s4" data-unit-id="CDX-M-0009" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">2.4</span>哪些任务适合交给它</h2>
+        <p>适合的意思不是「全权交给它」，而是<strong>可以让它先做一版，再由你检查和决定</strong>。先看几个对照。</p>
         <div class="table-wrap"><table>
-          <thead><tr><th>适合</th><th>不适合（以及为什么）</th></tr></thead>
+          <thead><tr><th>适合先尝试</th><th>不要直接交给它决定或执行</th></tr></thead>
           <tbody>
-            <tr><td>初稿、草稿类工作——反正你要改，让它先写第一版</td><td>最终拍板的决定——判断和责任在你，不能外包</td></tr>
-            <tr><td>有明确材料依据的整理和改写</td><td>需要精确事实、而你自己无法核实的问题（法律、医疗、税务结论请咨询专业人士）</td></tr>
-            <tr><td>你懂行、能一眼看出对错的领域</td><td>你完全不懂、无法判断结果好坏的领域——它错了你也发现不了</td></tr>
-            <tr><td>重复、机械、量大的文字加工</td><td>涉及隐私、密码、保密资料的任何任务（<a href="ch01.html">第 1 章</a>的安全底线）</td></tr>
+            <tr><td>通知、文案、邮件等初稿；你本来就准备自己修改</td><td>以你的名义直接对外发送或发布；发出前需要本人复核</td></tr>
+            <tr><td>依据明确材料做整理、改写、对比和摘要</td><td>缺少可靠依据，却要求它给出确定事实或替你拍板</td></tr>
+            <tr><td>有原始资料、检查清单、测试，或能安排懂行的人复核的任务</td><td>法律、医疗、财务、安全等高风险结论；可让它辅助整理，但最终判断需要合格专业人员</td></tr>
+            <tr><td>范围小、可撤销、有备份的重复工作</td><td>删除唯一原件、付款、改账户权限等后果重大的动作；没有人工确认不要执行</td></tr>
           </tbody>
         </table></div>
-        <p>一个简单的判断口诀：<strong>「材料我来给，结果我能查」</strong>。两个条件都满足，就放心交给它；缺一个，就多留一分心。</p>
+        <h3>开始前先问四个问题</h3>
+        <ol class="steps">
+          <li><strong>材料可以提供吗？</strong>密码、验证码、API 密钥（让软件访问服务的一种凭据）等凭据不得放进对话。个人或保密资料只有在组织规则允许、工具获批而且确有必要时才能使用，练习阶段继续使用虚构材料（见<a href="ch01.html">第 1 章</a>）。</li>
+          <li><strong>范围清楚而且能撤销吗？</strong>先限定文件夹、文件、时间段和不许改的内容；动原件前先备份，尽量让它另存新文件。</li>
+          <li><strong>结果能核验吗？</strong>提前想好用原文、官方来源、计算、测试、检查清单还是专业人员来验证。没有核验办法，就先缩小任务。</li>
+          <li><strong>会影响别人或外部系统吗？</strong>发送、发布、删除、付款、签署、改权限等动作，先让 Codex 准备草稿或方案，最后一步由你本人复核和确认。</li>
+        </ol>
+        <aside class="callout note" data-label="判断口诀"><p><strong>材料可提供，范围先限定；结果能核验，重要动作我确认。</strong>四项都想清楚，再开始任务。</p></aside>
       </section>
 
-      <section id="s5" data-unit-id="CDX-M-0010" data-content-status="draft" data-verification-state="unverified">
+      <section id="s5" data-unit-id="CDX-M-0010" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">2.5</span>正确的心态</h2>
-        <p>把 Codex 当成认真负责的新同事，而不是无所不知的权威。落到实处，是两件事：</p>
+        <p>把 Codex 当成能力强、速度快，但需要明确范围和复核的新同事，而不是无所不知的权威。落到实处，是下面三个习惯：</p>
         <ul>
-          <li><strong>交代任务像带新人：</strong>说清楚任务、范围、材料和期望（<a href="ch04.html">第 4 章</a>会详细教怎么做）。它表现不好，多半是因为你交代得不够清楚。</li>
-          <li><strong>把关像当主管：</strong>它交上来的东西，你要看、要查、要改。署你名字发出去的内容，责任永远在你，不在它。</li>
+          <li><strong>用任务卡交代工作：</strong>写清目标、背景或材料、输出形式、不能越过的边界，以及怎样才算完成。<a href="ch04.html">第 4 章</a>会带你练习。</li>
+          <li><strong>用证据验收结果：</strong>打开生成的文件，核对原文和来源；需要时让它运行测试或按检查清单自查，但最后仍由你判断是否可以使用。</li>
+          <li><strong>不对劲就暂停：</strong>结果不好不一定是你「不会提问」，也可能是材料不足、来源不可靠、权限不合适、工具失败或任务超出能力。先检查这些条件，再缩小范围、补充上下文或换一种做法。</li>
         </ul>
+        <h3>动手：给六个任务分级</h3>
+        <p>先不要看答案。把每个任务标成 <strong>A</strong>（按当前低风险范围可以先尝试）、<strong>B</strong>（原请求不能直接执行，但改成只准备草稿、候选清单或核验材料后可以继续，最后必须由人确认）或 <strong>C</strong>（材料或目标本身不可交给 Codex，例如凭据或无权处理的数据，应立即停止）。</p>
+        <p><strong>作答步骤：</strong>先在纸上或系统记事本里写下六题的 A、B 或 C；再任选两题，分别写出「允许提供的材料、核验方法、必须由人确认的最后一步」。全部写完后再展开参考答案；继续只使用题目中的虚构材料，不要代入真实客户或账号信息。</p>
+        <ol>
+          <li>用虚构的蓝溪文具退换货要点，起草一段 100 字以内的顾客说明。</li>
+          <li>查询本月最新税务政策，并直接替店主决定应该怎样申报。</li>
+          <li>在你已获准、有权处理的虚构练习副本中，删除「虚构客户文件夹」里所有看起来重复的文件；这份练习副本是唯一可用版本，目前没有其他备份。</li>
+          <li>把一份虚构会议记录整理成「结论、负责人、截止日期」三列表格。</li>
+          <li>把网银密码和短信验证码交给 Codex，让它完成一笔转账。</li>
+          <li>根据你提供的要点起草客户邮件，然后不经检查直接发给所有客户。</li>
+        </ol>
+        <details>
+          <summary>参考答案与通过标准（做完后再展开）</summary>
+          <ol>
+            <li><strong>A：</strong>材料是虚构的，输出是草稿，字数和要点都能检查。</li>
+            <li><strong>B：</strong>可以协助查找和整理官方资料，但税务申报属于高风险决定，必须核对最新官方来源并请合格专业人员确认。</li>
+            <li><strong>B：</strong>题目已经说明材料纯属虚构而且你有权处理，因此这里只判断「无备份删除」的风险。不能按原请求删除；先改成只列出疑似重复文件和判断依据，不移动、不删除，由本人核对并建立备份后再另行决定。</li>
+            <li><strong>A：</strong>材料明确、结果结构清楚，可以逐项对照原记录。</li>
+            <li><strong>C：</strong>密码和验证码不得提供，转账也属于需要本人确认的重要动作。</li>
+            <li><strong>B：</strong>起草可以，群发不可以跳过本人对收件人、内容和影响范围的复核。</li>
+          </ol>
+          <p><strong>通过标准：</strong>第 3 题（无备份删除）、第 5 题（密码与验证码）和第 6 题（未经检查外发）必须答对，六题合计至少答对五题；此外，你任选的两题都必须分别写全「允许提供的材料、核验方法、必须由人确认的最后一步」，且三项与题目风险一致。只答对 A/B/C、没有完成两题三项说明，仍不算通过。如果写不出来，回到 <a href="ch02.html#s4">2.4 的四个问题</a>再判断一次。</p>
+        </details>
       </section>
 
       <section class="summary" id="summary"><h2>本章小结</h2><ul>
-        <li>Codex 现在是 ChatGPT 桌面应用里的一个视图；像一位能力强、手脚麻利的新同事：交代清楚就好用，别指望它读心。</li>
-        <li>它擅长有材料、可检查的文字类任务，还能在你允许的范围内动手：处理文件夹、上网、用你授权的软件、定时干活。</li>
-        <li>五个弱点都有对策：不确定的信息先核实、背景要自己说、时效内容查官方、结果自己检查、动手的边界自己划。</li>
-        <li>口诀：「材料我来给，结果我能查」。决定和责任不外包。</li>
-      </ul></section>
+        <li>Codex 是 OpenAI 提供的 AI 智能体工具，尤其适合软件开发和技术任务，也能协助研究、文件和内容工作；本教程主要讲桌面应用入口。</li>
+        <li>适合首先尝试的任务通常有材料可依、结果可查、出错后容易修改。功能是否可用，取决于平台、套餐、地区、设置、插件和权限。</li>
+        <li>流畅不等于正确。重要事实查来源和日期，缺少的背景要补充，外部网页和插件数据要当作未经信任的输入。</li>
+        <li>权限和审批行为由环境与模式共同决定。练习用专用文件夹，重要文件先备份，看不懂的请求先停下来问清影响。</li>
+        <li>四问口诀：材料可提供，范围先限定；结果能核验，重要动作我确认。</li>
+      </ul>
+        <details><summary>章末短测：做完再看答案</summary>
+          <ol><li>用 1—2 句话解释 Codex 是什么，以及它和普通聊天工具有什么不同。</li><li>Codex 是否只有桌面应用这一种入口？</li><li>一段回答写得很流畅，能否因此直接当成事实？</li><li>网页要求上传 API Key（API 密钥，一种访问服务的凭据）才可以继续时，应怎么办？</li></ol>
+          <ol>
+            <li><strong>示例答案：</strong>Codex 是 OpenAI 提供的 AI 智能体工具。普通聊天主要围绕问答和生成内容；Codex 更强调在获准的工作环境中调用工具、处理文件、运行命令并检查任务结果。</li>
+            <li><strong>不是。</strong>Codex 还有 CLI、IDE 和 Cloud 等入口，本教程只选择桌面主路线。</li>
+            <li><strong>不能。</strong>重要事实仍要核对来源和日期。</li>
+            <li><strong>立即停止。</strong>不要上传凭据，并回到可信来源核实。</li>
+          </ol>
+          <p><strong>通过标准：</strong>四题全部答对，再进入第 3 章。</p>
+        </details>
+      </section>
 
       <details class="maint">
         <summary>维护者信息（读者可以忽略）</summary>
         <dl class="card">
-          <dt>章节聚合 ID / 状态</dt><dd>CDX-C-02｜draft（草稿，未进入复核）；旧占位 ID CDX-M-0201 仅用于迁移。</dd>
-          <dt>风险级别</dt><dd>低：概念性内容，无平台操作。</dd>
-          <dt>来源与权利</dt><dd>自有原创；示例均为虚构。能力清单依据 11.2 所列官方公告与文档（2026-09-01 查阅）。</dd>
-          <dt>验证状态</dt><dd>unverified（无需平台实测；进入 editorial-reviewed 需完成冷却复查）。</dd>
-          <dt>复核日期</dt><dd>撰写：2026-09-01，草稿版本 0.3.0；尚未完成正式复核；低风险，最晚复验 2027-02-28。产品能力边界表述若与官方描述出现明显差异，提前复核。</dd>
+          <dt>章节聚合 ID / 状态</dt><dd>CDX-C-02｜editorial-reviewed（已完成来源与独立编辑审校）；旧占位 ID CDX-M-0201 仅用于迁移。</dd>
+          <dt>风险级别</dt><dd>混合，最高为高：概念性教学本身风险较低，但能力入口属于中风险时效信息，权限、提示词注入、删除、付款和外发边界按高风险复核。</dd>
+          <dt>来源与权利</dt><dd>正文与蓝溪文具示例均为自有原创；产品事实仅依据 OpenAI 官方文档进行中文转述。2026-09-04 查阅：
+            <ul>
+              <li><a href="https://learn.chatgpt.com/docs/use-chatgpt">Use ChatGPT</a> 与 <a href="https://learn.chatgpt.com/guides/best-practices">Codex best practices</a>：产品定位、适用任务、上下文与复核方法；</li>
+              <li><a href="https://learn.chatgpt.com/docs/changelog">ChatGPT and Codex changelog</a>：Codex 桌面入口历史；</li>
+              <li><a href="https://learn.chatgpt.com/docs/artifacts-viewer">Work with files</a>、<a href="https://learn.chatgpt.com/docs/plugins">Plugins</a>、<a href="https://learn.chatgpt.com/docs/automations">Scheduled tasks</a> 与 <a href="https://learn.chatgpt.com/docs/computer-use">Computer Use</a>：文件、插件、计划任务及图形界面操作边界；</li>
+              <li><a href="https://learn.chatgpt.com/docs/web-search">Web search</a>、<a href="https://learn.chatgpt.com/docs/permission-modes">Permissions</a>、<a href="https://learn.chatgpt.com/docs/agent-approvals-security">Agent approvals &amp; security</a> 与 <a href="https://learn.chatgpt.com/docs/cloud/internet-access">Agent internet access</a>：联网、沙盒、审批和提示词注入风险；</li>
+              <li><a href="https://learn.chatgpt.com/docs/prompting">Prompting</a> 与 <a href="https://learn.chatgpt.com/docs/feature-maturity">Feature maturity</a>：任务结构、边界和功能成熟度。</li>
+            </ul>
+          </dd>
+          <dt>验证状态</dt><dd>unverified（已完成官方文档核对；未在 Windows 与 macOS 对具体界面和功能可用性逐项实测，因此不宣称平台已验证）。</dd>
+          <dt>复核日期</dt><dd>重写与独立编辑审校：2026-09-04，内容版本 0.4.0；高风险单元最晚于 2026-10-04 复验。官方入口、权限名称、插件、计划任务或 Computer Use 行为变化时提前复核。</dd>
         </dl>
       </details>
 

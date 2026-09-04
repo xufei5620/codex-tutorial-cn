@@ -2,8 +2,8 @@
   "site": {
     "title": "Codex 中文入门教程",
     "tagline": "零基础・离线阅读",
-    "version": "0.3.0",
-    "date": "2026-09-03",
+    "version": "0.4.0",
+    "date": "2026-09-04",
     "repo": "https://github.com/xufei5620/codex-tutorial-cn"
   },
   "parts": [
@@ -45,31 +45,31 @@
       "num": 1,
       "title": "开始前：边界、安全与阅读方法",
       "desc": "这套教程讲什么、不讲什么，以及安全使用的三条底线。",
-      "status": "draft"
+      "status": "editorial-reviewed"
     },
     "ch02": {
       "num": 2,
       "title": "认识 AI 与 Codex",
       "desc": "它是什么、能做什么、在哪里不可靠，哪些任务适合交给它。",
-      "status": "draft"
+      "status": "editorial-reviewed"
     },
     "ch03": {
       "num": 3,
       "title": "安装、登录与界面",
       "desc": "Windows 与 macOS 的安装、账号登录、进入 Codex 和认识界面。",
-      "status": "draft"
+      "status": "editorial-reviewed"
     },
     "ch04": {
       "num": 4,
       "title": "第一次对话：把需求说清楚",
-      "desc": "用「任务・范围・材料・期望」四要素发出第一个请求。",
-      "status": "draft"
+      "desc": "把任务、范围、材料和期望当作检查表，完成第一次请求与受控修订。",
+      "status": "editorial-reviewed"
     },
     "ch05": {
       "num": 5,
       "title": "日常协作：检查、修改与回退",
-      "desc": "看懂结果、提出修改、用审阅面板和权限模式保留退路。",
-      "status": "draft"
+      "desc": "核对事实、提出修改、保存新版本，并判断继续、纠偏或重开对话。",
+      "status": "editorial-reviewed"
     },
     "ch06": {
       "num": 6,

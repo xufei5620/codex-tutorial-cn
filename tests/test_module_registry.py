@@ -195,22 +195,24 @@ class ModuleRegistryTests(unittest.TestCase):
         self.assertEqual([unit["id"] for unit in lessons], [f"CDX-M-{number:04d}" for number in range(1, 66)])
         self.assertEqual([unit["id"] for unit in prompts], PROMPT_IDS)
 
-    def test_phase_b_uses_a_new_artifact_identity(self):
+    def test_current_course_uses_the_phase_c_artifact_identity(self):
         config = json.loads((REPO / "src/chapters.json").read_text(encoding="utf-8"))
         catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
-        self.assertEqual(config["site"]["version"], "0.3.0")
-        self.assertEqual(config["site"]["date"], "2026-09-03")
-        self.assertEqual(catalog["contentVersion"], "0.3.0")
-        self.assertEqual(catalog["generatedDate"], "2026-09-03")
+        self.assertEqual(config["site"]["version"], "0.4.0")
+        self.assertEqual(config["site"]["date"], "2026-09-04")
+        self.assertEqual(catalog["contentVersion"], "0.4.0")
+        self.assertEqual(catalog["generatedDate"], "2026-09-04")
         chapter_eleven = (REPO / "src/content/ch11.html").read_text(encoding="utf-8")
-        self.assertIn("教程当前是 0.3.0 版", chapter_eleven)
-        self.assertIn("<td>0.3.0</td><td>2026-09-03</td>", chapter_eleven)
+        self.assertIn("教程当前是 0.4.0 版", chapter_eleven)
+        self.assertIn("<td>0.4.0</td><td>2026-09-04</td>", chapter_eleven)
 
-    def test_initial_catalog_preserves_draft_unverified_pending_state(self):
+    def test_unreviewed_catalog_units_preserve_draft_unverified_pending_state(self):
         catalog = json.loads(self.catalog_path.read_text(encoding="utf-8"))
         self.assertEqual(catalog["contentPipeline"], PIPELINE)
         self.assertEqual(catalog["verificationStates"], VERIFICATION_STATES)
         for unit in catalog["units"]:
+            if unit["id"] in {f"CDX-M-{number:04d}" for number in range(1, 31)}:
+                continue
             self.assertEqual(unit["contentStatus"], "draft", unit["id"])
             self.assertEqual(unit["verificationState"], "unverified", unit["id"])
             self.assertIsNone(unit["verificationDate"], unit["id"])
@@ -300,7 +302,7 @@ class ModuleRegistryTests(unittest.TestCase):
         self.assertTrue(list(validator.iter_errors(changed)))
 
         changed = json.loads(json.dumps(catalog))
-        changed["units"][0]["contentStatus"] = "editorial-reviewed"
+        changed["units"][0]["lastReviewedDate"] = None
         self.assertTrue(list(validator.iter_errors(changed)))
 
     def test_schema_requires_verified_cleared_evidence_before_stable(self):
@@ -1114,7 +1116,7 @@ class ModuleRegistryTests(unittest.TestCase):
             )
             chapter = (root / "ch01.html").read_text(encoding="utf-8")
             chapter = chapter.replace(
-                'data-unit-id="CDX-M-0001" data-content-status="draft" data-verification-state="unverified"',
+                'data-unit-id="CDX-M-0001" data-content-status="editorial-reviewed" data-verification-state="unverified"',
                 'data-unit-id="CDX-M-0001" data-content-status="retired" data-verification-state="unverified"',
                 1,
             )
@@ -1315,7 +1317,7 @@ class ModuleRegistryTests(unittest.TestCase):
                 path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
             chapter = (root / "ch03.html").read_text(encoding="utf-8")
             chapter = chapter.replace(
-                'data-unit-id="CDX-M-0013" data-content-status="draft" data-verification-state="unverified"',
+                'data-unit-id="CDX-M-0013" data-content-status="editorial-reviewed" data-verification-state="unverified"',
                 'data-unit-id="CDX-M-0013" data-content-status="verification" data-verification-state="verified"',
             )
             (root / "ch03.html").write_text(chapter, encoding="utf-8", newline="\n")

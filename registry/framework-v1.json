@@ -1,10 +1,10 @@
 {
   "frameworkVersion": "1.0.0",
-  "status": "draft-seed-unverified",
+  "status": "review-in-progress",
   "authority": {
     "canonicalSource": {
       "kind": "local-git",
-      "remoteRequired": false
+      "remoteRequired": true
     },
     "generatedArtifacts": {
       "htmlAndMetadataAreNormative": true,
@@ -12,7 +12,7 @@
       "notionIsAuthority": false
     },
     "github": {
-      "phase": "future-optional",
+      "phase": "active-development",
       "visibility": "public-only",
       "publishFrom": "approved-public-whitelist-tree",
       "includeFullLocalHistory": false,
@@ -72,31 +72,31 @@
     {
       "number": 1,
       "title": "开始前：边界、安全与阅读方法",
-      "status": "draft",
+      "status": "editorial-reviewed",
       "file": "ch01.html"
     },
     {
       "number": 2,
       "title": "认识 AI 与 Codex",
-      "status": "draft",
+      "status": "editorial-reviewed",
       "file": "ch02.html"
     },
     {
       "number": 3,
       "title": "安装、登录与界面",
-      "status": "draft",
+      "status": "editorial-reviewed",
       "file": "ch03.html"
     },
     {
       "number": 4,
       "title": "第一次对话：把需求说清楚",
-      "status": "draft",
+      "status": "editorial-reviewed",
       "file": "ch04.html"
     },
     {
       "number": 5,
       "title": "日常协作：检查、修改与回退",
-      "status": "draft",
+      "status": "editorial-reviewed",
       "file": "ch05.html"
     },
     {
@@ -352,13 +352,15 @@
     "publicActionsBeforeAcceptance": false
   },
   "currentSeedContent": {
-    "designation": "sample",
+    "designation": "partial-formal-course",
     "final": false,
     "countsAsCompletedCourseContent": false,
-    "reviewPolicy": "replace-or-approve-item-by-item-later"
+    "reviewPolicy": "chapters-1-5-reviewed-remainder-item-by-item"
   },
-  "contentVersion": "0.3.0",
-  "artifactVersion": "0.3.0",
-  "productNote": "2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），教程中的“Codex”指该应用左上角菜单中的 Codex 视图。",
-  "generatedDate": "2026-09-03"
+  "frameworkDefinitionStatus": "framework-review",
+  "catalogStatus": "review-in-progress",
+  "contentVersion": "0.4.0",
+  "artifactVersion": "0.4.0",
+  "productNote": "2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），教程中的“Codex”指从 ChatGPT 产品下拉菜单或当前版本提供的产品入口选择的 Codex。",
+  "generatedDate": "2026-09-04"
 }

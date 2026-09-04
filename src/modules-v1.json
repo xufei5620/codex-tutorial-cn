@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0.0",
   "catalogVersion": "1.0.0",
-  "contentVersion": "0.3.0",
-  "status": "draft-seed-unverified",
-  "generatedDate": "2026-09-03",
+  "contentVersion": "0.4.0",
+  "status": "review-in-progress",
+  "generatedDate": "2026-09-04",
   "contentPipeline": [
     "outline",
     "draft",
@@ -64,13 +64,32 @@
       "sourceAnchor": "s1",
       "publicPath": "ch01.html#s1",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "medium",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/quickstart",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/computer-use",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0002",
@@ -84,12 +103,22 @@
       "publicPath": "ch01.html#s2",
       "platforms": ["windows", "macos"],
       "risk": "low",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/quickstart",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0003",
@@ -102,13 +131,59 @@
       "sourceAnchor": "s3",
       "publicPath": "ch01.html#s3",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "high",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/agent-approvals-security",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/permission-modes",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/computer-use",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://help.openai.com/en/articles/7947663-chatgpt-supported-countries",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved-with-limitations"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0004",
@@ -122,12 +197,31 @@
       "publicPath": "ch01.html#s4",
       "platforms": ["windows", "macos"],
       "risk": "low",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/use-chatgpt",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0005",
@@ -140,13 +234,32 @@
       "sourceAnchor": "s5",
       "publicPath": "ch01.html#s5",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "medium",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/reference/troubleshooting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0006",
@@ -159,13 +272,23 @@
       "sourceAnchor": "s1",
       "publicPath": "ch02.html#s1",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "medium",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/use-chatgpt",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0007",
@@ -178,13 +301,59 @@
       "sourceAnchor": "s2",
       "publicPath": "ch02.html#s2",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "medium",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/features",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/artifacts-viewer",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/plugins",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/automations",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/computer-use",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0008",
@@ -197,13 +366,23 @@
       "sourceAnchor": "s3",
       "publicPath": "ch02.html#s3",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "high",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/agent-approvals-security",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0009",
@@ -216,13 +395,23 @@
       "sourceAnchor": "s4",
       "publicPath": "ch02.html#s4",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "high",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/use-chatgpt",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0010",
@@ -235,13 +424,23 @@
       "sourceAnchor": "s5",
       "publicPath": "ch02.html#s5",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "high",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/guides/best-practices",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0011",
@@ -255,12 +454,40 @@
       "publicPath": "ch03.html#s1",
       "platforms": ["windows", "macos"],
       "risk": "high",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/pricing",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/quickstart",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/auth",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0012",
@@ -274,12 +501,67 @@
       "publicPath": "ch03.html#s2",
       "platforms": ["windows", "macos"],
       "risk": "high",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/quickstart",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/changelog",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/cloud",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/remote",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/codex/cli",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/codex/ide",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0013",
@@ -293,12 +575,22 @@
       "publicPath": "ch03.html#s3",
       "platforms": ["windows"],
       "risk": "high",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/windows/windows-app",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0014",
@@ -312,12 +604,22 @@
       "publicPath": "ch03.html#s4",
       "platforms": ["macos"],
       "risk": "high",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/app",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0015",
@@ -331,12 +633,22 @@
       "publicPath": "ch03.html#s5",
       "platforms": ["windows", "macos"],
       "risk": "high",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/auth",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0016",
@@ -350,12 +662,49 @@
       "publicPath": "ch03.html#s6",
       "platforms": ["windows", "macos"],
       "risk": "high",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/projects",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/reference/settings",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/code-review?surface=app",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/environments/modes",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0017",
@@ -369,12 +718,40 @@
       "publicPath": "ch03.html#s7",
       "platforms": ["windows", "macos"],
       "risk": "high",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/permission-modes",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/sandboxing",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/agent-approvals-security",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0018",
@@ -388,12 +765,22 @@
       "publicPath": "ch03.html#s8",
       "platforms": ["windows", "macos"],
       "risk": "high",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/reference/troubleshooting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0019",
@@ -407,12 +794,22 @@
       "publicPath": "ch04.html#s1",
       "platforms": ["windows", "macos"],
       "risk": "low",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0020",
@@ -426,12 +823,22 @@
       "publicPath": "ch04.html#s2",
       "platforms": ["windows", "macos"],
       "risk": "low",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0021",
@@ -444,13 +851,50 @@
       "sourceAnchor": "s3",
       "publicPath": "ch04.html#s3",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "high",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/app",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/environments/modes",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/projects",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/permission-modes",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0022",
@@ -464,12 +908,22 @@
       "publicPath": "ch04.html#s4",
       "platforms": ["windows", "macos"],
       "risk": "low",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0023",
@@ -483,12 +937,22 @@
       "publicPath": "ch04.html#s5",
       "platforms": ["windows", "macos"],
       "risk": "low",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0024",
@@ -501,13 +965,32 @@
       "sourceAnchor": "s6",
       "publicPath": "ch04.html#s6",
       "platforms": ["windows", "macos"],
-      "risk": "low",
-      "contentStatus": "draft",
+      "risk": "high",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/agent-approvals-security",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved-with-limitations"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0025",
@@ -521,12 +1004,31 @@
       "publicPath": "ch05.html#s1",
       "platforms": ["windows", "macos"],
       "risk": "medium",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/use-chatgpt",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0026",
@@ -540,12 +1042,22 @@
       "publicPath": "ch05.html#s2",
       "platforms": ["windows", "macos"],
       "risk": "medium",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0027",
@@ -559,12 +1071,22 @@
       "publicPath": "ch05.html#s3",
       "platforms": ["windows", "macos"],
       "risk": "medium",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0028",
@@ -577,13 +1099,50 @@
       "sourceAnchor": "s4",
       "publicPath": "ch05.html#s4",
       "platforms": ["windows", "macos"],
-      "risk": "medium",
-      "contentStatus": "draft",
+      "risk": "high",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/code-review?surface=app",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/sandboxing",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/projects",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved-with-limitations"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0029",
@@ -597,12 +1156,31 @@
       "publicPath": "ch05.html#s5",
       "platforms": ["windows", "macos"],
       "risk": "medium",
-      "contentStatus": "draft",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/projects",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/prompting",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0030",
@@ -615,13 +1193,32 @@
       "sourceAnchor": "s6",
       "publicPath": "ch05.html#s6",
       "platforms": ["windows", "macos"],
-      "risk": "medium",
-      "contentStatus": "draft",
+      "risk": "high",
+      "contentStatus": "editorial-reviewed",
       "verificationState": "unverified",
       "verificationDate": null,
-      "sourceRefs": [],
-      "rights": "pending",
-      "lastReviewedDate": null
+      "sourceRefs": [
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/customization/memories",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        },
+        {
+          "author": "OpenAI",
+          "url": "https://learn.chatgpt.com/docs/agent-configuration/agents-md",
+          "license": "link-only reference; page content not redistributed",
+          "pinnedVersion": "accessed-2026-09-04",
+          "reviewDate": "2026-09-04",
+          "use": "fact-reference",
+          "reviewConclusion": "approved"
+        }
+      ],
+      "rights": "owned",
+      "lastReviewedDate": "2026-09-04"
     },
     {
       "id": "CDX-M-0031",

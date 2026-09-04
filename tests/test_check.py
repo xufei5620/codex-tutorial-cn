@@ -1,3 +1,5 @@
+import copy
+import hashlib
 import importlib.util
 import os
 from pathlib import Path
@@ -90,6 +92,30 @@ class CheckBaselineTests(unittest.TestCase):
             result = run_check(root)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn(b"manifest", result.stdout.lower())
+
+    def test_check_rejects_wrong_online_manifest_identity(self):
+        import json
+
+        wrong_values = {
+            "schemaVersion": "9.9.9",
+            "artifact": "wrong-artifact",
+            "entry": "missing.html",
+        }
+        for field, wrong_value in wrong_values.items():
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / "repo"
+                copy_repo(root)
+                path = root / "manifest.json"
+                manifest = json.loads(path.read_text(encoding="utf-8"))
+                manifest[field] = wrong_value
+                path.write_text(
+                    json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                result = run_check(root)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(f"online manifest {field}".encode(), result.stdout)
 
     def test_check_rejects_a_managed_file_omitted_from_the_manifest(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -190,6 +216,29 @@ class CheckBaselineTests(unittest.TestCase):
             result = run_check(root)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn(b"offline", result.stdout.lower())
+
+    def test_check_rejects_non_reproducible_zip_metadata(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            archive = next((root / "downloads").glob("*-offline.zip"))
+            replacement = archive.with_name("replacement.zip")
+            with zipfile.ZipFile(archive) as source, zipfile.ZipFile(replacement, "w") as target:
+                for index, info in enumerate(source.infolist()):
+                    copied = copy.copy(info)
+                    if index == 0:
+                        copied.external_attr = 0o100 << 16
+                    target.writestr(copied, source.read(info.filename))
+            replacement.replace(archive)
+            digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+            archive.with_name(archive.name + ".sha256").write_text(
+                f"{digest}  {archive.name}\n",
+                encoding="ascii",
+                newline="\n",
+            )
+            result = run_check(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"ZIP member mode is not reproducible 0644", result.stdout)
 
     def test_verify_generated_rejects_source_changes_that_were_not_built(self):
         with tempfile.TemporaryDirectory() as directory:
