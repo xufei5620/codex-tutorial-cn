@@ -119,6 +119,35 @@ class CheckBaselineTests(unittest.TestCase):
             self.assertIn(b"unknown publishable root entry", result.stdout.lower())
             self.assertIn(b"unlisted-public.txt", result.stdout)
 
+    def test_repository_safety_rejects_unexpected_private_artifacts(self):
+        for relative in (
+            "src/private.env",
+            "tests/private.txt",
+            "src/maintainer/private-note.txt",
+            "src/content/untracked-secret.exe",
+            ".venv/secret.env",
+            "src/__pycache__/secret.env",
+        ):
+            with self.subTest(relative=relative), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / "repo"
+                copy_repo(root)
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text("placeholder secret material\n", encoding="utf-8", newline="\n")
+                result = run_check(root)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(relative.replace("/", "\\").encode(), result.stdout.replace(b"/", b"\\"))
+
+    def test_repository_safety_ignores_runtime_bytecode_without_git_metadata(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            cache = root / "src/__pycache__/check.cpython-314.pyc"
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_bytes(b"runtime cache")
+            result = run_check(root)
+            self.assertEqual(result.returncode, 0, result.stdout.decode("utf-8", errors="replace"))
+
     def test_check_rejects_an_unknown_publishable_root_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"
@@ -229,6 +258,18 @@ class CheckBaselineTests(unittest.TestCase):
                 )
                 errors, _, _ = checker.check_site_tree(root)
                 self.assertTrue(errors, label)
+
+    def test_html_safety_check_rejects_duplicate_attribute_names(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "index.html").write_text(
+                '<!doctype html><html><body><section id="wrong" id="right"><h1>x</h1></section></body></html>\n',
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _, _ = checker.check_site_tree(root)
+            self.assertTrue(any("duplicate attribute" in error for error in errors), errors)
 
     def test_svg_asset_safety_check_rejects_remote_runtime_resources(self):
         checker = load_check_module()
@@ -432,12 +473,69 @@ class CheckBaselineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "index.html").write_text(
-                "<!doctype html><html><body><a href='HTTPS://example.invalid/docs'>docs</a></body></html>\n",
+                "<!doctype html><html><body><a href='HTTPS://example.com/docs'>docs</a></body></html>\n",
                 encoding="utf-8",
                 newline="\n",
             )
             errors, _, _ = checker.check_site_tree(root)
             self.assertFalse(errors, errors)
+
+    def test_external_navigation_rejects_non_public_or_credential_bearing_urls(self):
+        checker = load_check_module()
+        urls = (
+            "http://example.com/docs",
+            "https://127.1/docs",
+            "https://2130706433/docs",
+            "https://%6cocalhost/docs",
+            "https://example.com/docs?access_token=secret",
+        )
+        for url in urls:
+            with self.subTest(url=url), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "index.html").write_text(
+                    f"<!doctype html><html><body><a href='{url}'>docs</a></body></html>\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                errors, _, _ = checker.check_site_tree(root)
+                self.assertTrue(any("external navigation URL" in error for error in errors), errors)
+
+    def test_uppercase_css_and_svg_files_are_audited(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "assets").mkdir()
+            (root / "index.html").write_text(
+                "<!doctype html><html><body><p>safe</p></body></html>\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            (root / "assets/unsafe.CSS").write_text(
+                ".x { background: url('https://example.com/pixel.png'); }\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            (root / "assets/unsafe.SVG").write_text(
+                '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>\n',
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors, _, _ = checker.check_site_tree(root)
+            self.assertTrue(any("unsafe.CSS" in error for error in errors), errors)
+            self.assertTrue(any("unsafe.SVG" in error for error in errors), errors)
+
+    def test_binary_asset_extension_cannot_hide_plain_text(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "assets").mkdir()
+            (root / "assets/fake.png").write_text(
+                "not a PNG\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            errors = checker.check_public_text_safety(root, {"assets/fake.png"})
+            self.assertTrue(any("does not match" in error for error in errors), errors)
 
     def test_strict_mode_fails_when_jsonschema_is_unavailable(self):
         result = run_check(REPO, "--strict", no_site_packages=True)

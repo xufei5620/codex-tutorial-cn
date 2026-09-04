@@ -41,9 +41,10 @@
       "enum": [
         "framework-review",
         "draft-seed-unverified",
-        "reviewed",
-        "platform-verified",
-        "stable"
+        "review-in-progress",
+        "acceptance-ready",
+        "stable",
+        "retired"
       ]
     },
     "generatedDate": {
@@ -277,6 +278,7 @@
             "required": [
               "key",
               "title",
+              "idPrefix",
               "uniqueCardCount"
             ],
             "properties": {
@@ -286,6 +288,10 @@
               },
               "title": {
                 "type": "string"
+              },
+              "idPrefix": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
               },
               "uniqueCardCount": {
                 "type": "integer",
@@ -530,14 +536,23 @@
       ],
       "properties": {
         "currentDecision": {
-          "type": "string"
+          "enum": [
+            "course-beta-in-development",
+            "course-acceptance-pending",
+            "course-stable-approved",
+            "course-retired"
+          ]
         },
         "requiredBeforeStable": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
+          "const": [
+            "framework-user-approved",
+            "all-required-content-acceptance-ready",
+            "source-and-rights-clear",
+            "required-platform-verification-complete",
+            "offline-build-and-links-pass",
+            "accessibility-and-safety-gates-pass",
+            "release-artifacts-reproducible"
+          ]
         },
         "publicActionsBeforeAcceptance": {
           "const": false
@@ -556,10 +571,10 @@
           "type": "string"
         },
         "final": {
-          "const": false
+          "type": "boolean"
         },
         "countsAsCompletedCourseContent": {
-          "const": false
+          "type": "boolean"
         },
         "reviewPolicy": {
           "type": "string"
@@ -570,6 +585,53 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "stable"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseGate": {
+            "properties": {
+              "currentDecision": {
+                "const": "course-stable-approved"
+              }
+            }
+          },
+          "currentSeedContent": {
+            "required": [
+              "designation",
+              "final",
+              "countsAsCompletedCourseContent",
+              "reviewPolicy"
+            ],
+            "properties": {
+              "designation": {
+                "const": "formal-course"
+              },
+              "final": {
+                "const": true
+              },
+              "countsAsCompletedCourseContent": {
+                "const": true
+              },
+              "reviewPolicy": {
+                "const": "accepted-item-by-item"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "pipelineState": {
       "enum": [
@@ -604,9 +666,12 @@
           "enum": [
             "outline",
             "draft",
-            "reviewed",
-            "platform-verified",
-            "stable"
+            "source-and-rights-review",
+            "editorial-reviewed",
+            "verification",
+            "acceptance-ready",
+            "stable",
+            "retired"
           ]
         },
         "file": {

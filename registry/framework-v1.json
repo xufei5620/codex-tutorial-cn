@@ -197,30 +197,35 @@
       {
         "key": "prompt-common",
         "title": "跨行业通用",
+        "idPrefix": "COM",
         "uniqueCardCount": 6,
         "usesSharedFileCard": false
       },
       {
         "key": "prompt-ecommerce",
         "title": "电商与零售",
+        "idPrefix": "ECM",
         "uniqueCardCount": 5,
         "usesSharedFileCard": true
       },
       {
         "key": "prompt-food",
         "title": "餐饮与本地生活",
+        "idPrefix": "FOD",
         "uniqueCardCount": 5,
         "usesSharedFileCard": true
       },
       {
         "key": "prompt-media",
         "title": "传媒与内容创作",
+        "idPrefix": "MED",
         "uniqueCardCount": 5,
         "usesSharedFileCard": true
       },
       {
         "key": "prompt-education",
         "title": "教育与培训",
+        "idPrefix": "EDU",
         "uniqueCardCount": 5,
         "usesSharedFileCard": true
       }
@@ -352,8 +357,8 @@
     "countsAsCompletedCourseContent": false,
     "reviewPolicy": "replace-or-approve-item-by-item-later"
   },
-  "contentVersion": "0.2.1",
-  "artifactVersion": "0.2.1",
+  "contentVersion": "0.3.0",
+  "artifactVersion": "0.3.0",
   "productNote": "2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），教程中的“Codex”指该应用左上角菜单中的 Codex 视图。",
-  "generatedDate": "2026-09-02"
+  "generatedDate": "2026-09-03"
 }

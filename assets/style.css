@@ -55,9 +55,21 @@ li > ul, li > ol { margin: .3em 0; }
 .badge.draft { background: var(--good-bg); color: var(--good-ink); }
 .badge.outline { background: var(--grey-bg); color: var(--grey-ink); }
 .badge.plan { background: var(--plan-bg); color: var(--plan-ink); }
+.badge.source-and-rights-review { background: #fff0cf; color: #7a4b00; }
+.badge.editorial-reviewed { background: #e3ecfb; color: #28549a; }
+.badge.verification { background: #eee7fb; color: #65439a; }
+.badge.acceptance-ready { background: #dff2f1; color: #0a6668; }
+.badge.stable { background: #dcefe2; color: #176132; }
+.badge.retired { background: var(--grey-bg); color: var(--grey-ink); text-decoration: line-through; }
 .dot { display: inline-block; width: .6em; height: .6em; border-radius: 50%; flex-shrink: 0; }
 .dot.draft { background: var(--good-ink); }
 .dot.outline { background: transparent; border: 1.5px solid var(--line-2); }
+.dot.source-and-rights-review { background: #a56d12; }
+.dot.editorial-reviewed { background: #3f6fb6; }
+.dot.verification { background: #7958ab; }
+.dot.acceptance-ready { background: #168284; }
+.dot.stable { background: #23723e; }
+.dot.retired { background: var(--grey-ink); }
 
 /* ==========================================================================
    首页（目录页）

@@ -14,7 +14,7 @@
         <li><a href="#s5">11.5 发现错误怎么反馈</a></li>
       </ol></nav>
 
-      <section id="s1">
+      <section id="s1" data-unit-id="CDX-M-0061">
         <h2><span class="sn">11.1</span>术语表</h2>
         <p>英文条目在前（按字母），中文条目在后（按拼音）。每条只解释到「够用」为止，解释里出现的其他术语也都能在表里查到。</p>
         <div class="table-wrap"><table>
@@ -48,7 +48,7 @@
         </table></div>
       </section>
 
-      <section id="s2">
+      <section id="s2" data-unit-id="CDX-M-0062">
         <h2><span class="sn">11.2</span>来源清单</h2>
         <p>教程正文里关于产品的每一条事实，都来自下面这些官方页面（查阅日期 2026 年 9 月 1 日）。教程与官方页面不一致时，<strong>以官方页面为准</strong>。官方文档站有机器翻译的简体中文版，但英文原文更准确。下面的链接文字省略了 https:// 和页面标题后缀，点击即到完整地址。</p>
         <h3>公告</h3>
@@ -88,11 +88,12 @@
         <p class="meta">本教程未复制任何官方或第三方页面的文字、截图；全部正文为自有原创，示例为虚构。第三方博客与社区帖仅用于交叉印证，不作为规范依据。</p>
       </section>
 
-      <section id="s3">
+      <section id="s3" data-unit-id="CDX-M-0063">
         <h2><span class="sn">11.3</span>教程版本与更新记录</h2>
         <div class="table-wrap"><table>
           <thead><tr><th>版本</th><th>日期</th><th>变更</th></tr></thead>
           <tbody>
+            <tr><td>0.3.0</td><td>2026-09-03</td><td>建立正式课程模块目录：为 65 个编号小节和 6 张现有提示词卡分配永久单元 ID，新增双状态、来源权利与验证证据 Schema；11 个章末小结补稳定锚点；旧章级 ID 仅作迁移记录；修正提示词库 26 张唯一卡 / 30 个展示位的口径。所有单元仍为 draft + unverified + pending，不代表正文已复核或实测。</td></tr>
             <tr><td>0.2.1</td><td>2026-09-02</td><td>三轮审阅后的修订：删除或改写第 3、6、7 章中没有官方依据的界面细节（安装提示文案、PowerShell、Intel 机型年份、Sign in with ChatGPT 等），矛盾处统一；第 9 章示例文案只保留清单里有的卖点，让「三步检查」的示范自洽；第 8 章卡片链接直达对应卡片、定时任务补「停一停」；两张提示词卡的输出示例改为如实反映材料；第 1、2、5 章长句拆短；正文里的「第 N 章 / N.M」引用全部可点击；来源清单补齐公告与仓库链接。工程：新增 <code>src/check.py</code> 质检、登记表 schema 可校验、部署配置屏蔽内容源。</td></tr>
             <tr><td>0.2.0</td><td>2026-09-01</td><td>补齐第 3、6、7、11 章正文；根据官方文档修订第 1、2、4、5、8、9、10 章，加入桌面应用合并、权限模式、审阅面板、项目文件夹、定时任务、记忆等真实功能；新增地区可用性说明；来源清单改为逐条列出官方页面；站点改为多文件离线结构，每章一个页面。</td></tr>
             <tr><td>0.1.0</td><td>2026-09-01</td><td>框架 V1：11 章大纲、模板、登记表；第 1、2、4、5、8、9、10 章与 6 张通用提示词卡完成草稿。</td></tr>
@@ -100,7 +101,7 @@
         </table></div>
       </section>
 
-      <section id="s4">
+      <section id="s4" data-unit-id="CDX-M-0064">
         <h2><span class="sn">11.4</span>各章验证状态一览</h2>
         <p>「已写」表示正文可读；「已复核」表示另一位维护者冷却后通读过；「已实测」表示在真实电脑上按步骤走过并留有截图记录。三步都完成，目录里的标记才会从「草稿」变为完成。</p>
         <div class="table-wrap"><table>
@@ -122,21 +123,21 @@
         </table></div>
       </section>
 
-      <section id="s5">
+      <section id="s5" data-unit-id="CDX-M-0065">
         <h2><span class="sn">11.5</span>发现错误怎么反馈</h2>
         <p>软件界面更新很快，教程一定会有过时的地方。如果你发现某一步和屏幕上看到的不一样，请到教程的 GitHub 仓库提交一条 Issue（<a href="https://github.com/xufei5620/codex-tutorial-cn/issues">github.com/xufei5620/codex-tutorial-cn/issues</a>），用<a href="{{link:ch10#s5}}">第 10 章 10.5</a> 的五要素写清楚：你的系统、教程的哪一章哪一步、你看到了什么、教程说应该看到什么，最好附一张打过码的截图。没有 GitHub 账号也没关系，注册一个只需要邮箱。</p>
       </section>
 
-      <section class="summary"><h2>本章小结</h2><ul>
+      <section class="summary" id="summary"><h2>本章小结</h2><ul>
         <li>不认识的词查 11.1；想核实说法查 11.2 的官方链接，教程与官方不一致时以官方为准。</li>
-        <li>教程当前是 0.2.1 版：11 章均有草稿种子，但都还没有逐条复核或实测，不算完成课程。</li>
+        <li>教程当前是 0.3.0 版：11 章均有草稿种子，但都还没有逐条复核或实测，不算完成课程。</li>
         <li>发现错误请到 GitHub 仓库提 Issue，按五要素写清楚。</li>
       </ul></section>
 
       <details class="maint">
         <summary>维护者信息（读者可以忽略）</summary>
         <dl class="card">
-          <dt>模块 ID / 状态</dt><dd>CDX-M-1101｜draft</dd>
+          <dt>章节聚合 ID / 状态</dt><dd>CDX-C-11｜draft（草稿，未进入复核）；旧占位 ID CDX-M-1101 仅用于迁移。</dd>
           <dt>风险级别</dt><dd>中：来源链接会失效，术语随产品变化。</dd>
           <dt>来源与权利</dt><dd>自有原创；11.2 仅列出链接，不复制页面内容。</dd>
           <dt>验证状态</dt><dd>unverified。计划：每次复验时逐条打开 11.2 的链接确认仍可访问、内容未变；11.4 随各章实测同步更新。</dd>

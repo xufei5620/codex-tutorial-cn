@@ -2,8 +2,8 @@
   "site": {
     "title": "Codex 中文入门教程",
     "tagline": "零基础・离线阅读",
-    "version": "0.2.1",
-    "date": "2026-09-02",
+    "version": "0.3.0",
+    "date": "2026-09-03",
     "repo": "https://github.com/xufei5620/codex-tutorial-cn"
   },
   "parts": [

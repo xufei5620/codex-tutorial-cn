@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0.0",
   "artifact": "codex-tutorial-cn-online",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "status": "draft-seed-unverified",
-  "generatedDate": "2026-09-02",
+  "generatedDate": "2026-09-03",
   "entry": "index.html",
   "files": [
     {
@@ -13,8 +13,8 @@
     },
     {
       "path": "README.md",
-      "size": 3318,
-      "sha256": "86a5b38bbe5cdd86b232af54e6c9cf1c3b3f2e21c2792691bead289e4e6b3617"
+      "size": 3509,
+      "sha256": "19d178a919b5f9b1a1f9d0747fb4e9fc7f8f700f36bdd92f3389d728605282a0"
     },
     {
       "path": "assets/favicon.svg",
@@ -23,63 +23,63 @@
     },
     {
       "path": "assets/style.css",
-      "size": 18021,
-      "sha256": "83828f16fe9b598a87b174e4d794eb74d20171899c0ac80081de3490a575982a"
+      "size": 18721,
+      "sha256": "b7e161db34d6f0ebd0ac33c7aea7223b2367f2b33cee7dcf5e44dbce2adf87d5"
     },
     {
       "path": "ch01.html",
-      "size": 12156,
-      "sha256": "4c5c066057c0bf9e4fd3830ecd8f5266bcab4ce74b37ff6eda0dcac085b8bc86"
+      "size": 12668,
+      "sha256": "a0bcad3b777164b5d8b8e42cccb0d3a23cf1ea7363b4a4f7d64f807537b8b804"
     },
     {
       "path": "ch02.html",
-      "size": 17225,
-      "sha256": "337a17498dfae994fdce28d8581bc2175aa7e4109ffd2e4f5768fd026606015a"
+      "size": 17736,
+      "sha256": "cad71f3437940b631ca8fde16ea568023e552cd846dfd69385aed84b1864c4fa"
     },
     {
       "path": "ch03.html",
-      "size": 23992,
-      "sha256": "b07d7e2658dc4841da64c333b5f4a1eac1040935afbb6611e09ddf780cc88065"
+      "size": 24725,
+      "sha256": "c653133fb2fc831f1704bf180ed2686d0054e1b862ded2a1c231675cbcc82492"
     },
     {
       "path": "ch04.html",
-      "size": 15100,
-      "sha256": "778a5cf219a33d1b15d315d40f6272c671498c78a883f90f31f1d965ffc7df47"
+      "size": 15702,
+      "sha256": "222eb301675169efc499fcfec9c0e20723608e22cced7c47d5523a60d480ebde"
     },
     {
       "path": "ch05.html",
-      "size": 14926,
-      "sha256": "35c384d5676d504ec4e9aa2731bf2d36223f2c128d541377c0bed6fda6137e64"
+      "size": 15518,
+      "sha256": "b44585bae2b7eaf12aa44414e023d2c74a681a35f363b7cb85c78f5439a4d1fa"
     },
     {
       "path": "ch06.html",
-      "size": 19116,
-      "sha256": "342a29c0f52e3e1acd6724c1f90202d5b2f4217b54ae29aaad2855fc71bc0ad3"
+      "size": 19667,
+      "sha256": "12135fbef6918aa09f95879002f0152a378c23c3a7476cee10a6db60cf4c6778"
     },
     {
       "path": "ch07.html",
-      "size": 18192,
-      "sha256": "0ba1e4eaf387081f8477c493d41379f6ac42b8c9540e648d54c227bd16913b66"
+      "size": 18743,
+      "sha256": "0ce15cea6fd1b1d8f306deea6001c395518ea2368a50cc29551d91d3dab3ae9d"
     },
     {
       "path": "ch08.html",
-      "size": 24248,
-      "sha256": "b9685e260ba421ebed1f84061bca46d9686583b212ea40dcce5d599d2d904211"
+      "size": 25022,
+      "sha256": "d7a2d96d4aa7a40658efbce32b0ac4cc8e6da05127ee1bafdd4de3819d2551fa"
     },
     {
       "path": "ch09.html",
-      "size": 19792,
-      "sha256": "9848d9854ebc5e8e51923711633386ed3d9a91580a41490ffb95a67eac3f12ae"
+      "size": 20303,
+      "sha256": "95066cead54a63af52673d3a650cbc18364a0ea1ff7d8dd245aabf6d7b390b22"
     },
     {
       "path": "ch10.html",
-      "size": 16630,
-      "sha256": "7371874a47d3605eb8b81142126a09e50dfaf10a1f9a749faeb76e367299b82b"
+      "size": 17131,
+      "sha256": "48f67c0ec08e148877837fc1265e5f87e2d5c26ad1dddae7ffff47b61b69cf4d"
     },
     {
       "path": "ch11.html",
-      "size": 22833,
-      "sha256": "63e2ede3d4141a914917a68fdfb3aa6440c535c877d65099589be9a1137a98dd"
+      "size": 23777,
+      "sha256": "5e39f7d86e4d348c6fd91cae74856c561f0d1e936a22d6a888fdb94b4105b409"
     },
     {
       "path": "deploy/Caddyfile",
@@ -113,28 +113,33 @@
     },
     {
       "path": "index.html",
-      "size": 8170,
-      "sha256": "0e663c7932a43f7e88144f99f3edd5b508ba82860e72f4165deac559875e96e6"
+      "size": 8211,
+      "sha256": "38d15c4b694e8ab4a4cffef26a4db642d2d5bcb61d6f7ea62a1d5c7f219fad53"
     },
     {
       "path": "maintenance-release.html",
-      "size": 7338,
-      "sha256": "acea9cf0dbb99afeb67db12af5d775e651262b561477c4ccfc5efdd3f4d53964"
+      "size": 8591,
+      "sha256": "4a3ccbd9b77a8c5cfba5bbdba9d299ddd0e24cf5b5872601e65a08cd4bb992c4"
     },
     {
       "path": "notion-workflow.html",
-      "size": 5877,
-      "sha256": "e25ab3e99520439edf7ed1cc02056b04b7bc64e5ae3506dfbaeed3ddb65398d3"
+      "size": 5959,
+      "sha256": "e6446b617de05e075d1663da88e2659df54dd3f7805ab1bbd4432f5619fd588d"
     },
     {
       "path": "prompts.html",
-      "size": 34345,
-      "sha256": "dc1dcb2109772858c1bb6e7315ecded268b2babc3d8a5b4e330305561c5269d2"
+      "size": 35594,
+      "sha256": "a187cdbdc061307346b63275af539f54f58396bbf11f0a889367e62db1e3ff0a"
     },
     {
       "path": "registry/framework-v1.json",
-      "size": 8716,
-      "sha256": "832362bdbe53f2ee8d5aebd1480ec6e0f65ee2e7e3ff7bb1ee98c77330fd57dc"
+      "size": 8851,
+      "sha256": "0ab8d6e7c4d4ddf23e9b610ac6744075c34adde7f6ff51a2995fd425de0bc90f"
+    },
+    {
+      "path": "registry/modules-v1.json",
+      "size": 40514,
+      "sha256": "6c2688448cb04f1f49504ed2f675667b97b01fc701fe503ec187d9e29a6e9a52"
     },
     {
       "path": "robots.txt",
@@ -143,8 +148,13 @@
     },
     {
       "path": "schemas/framework-v1.schema.json",
-      "size": 14612,
-      "sha256": "4746fd17db3cde4b3a407a3513d2523817c8610d41e12affa2697bc8408a979f"
+      "size": 16348,
+      "sha256": "618f64a7a5aad3758752982aa91047395402af95fae6c9f27885b2eda6fb17cc"
+    },
+    {
+      "path": "schemas/modules-v1.schema.json",
+      "size": 25926,
+      "sha256": "0d58800f93b0173dc32f4a93d54322f9ef4076dacebbc00ce60795080457beb6"
     },
     {
       "path": "source-research.html",
@@ -168,8 +178,8 @@
     },
     {
       "path": "templates/module-template.html",
-      "size": 2673,
-      "sha256": "a7dee0826a706ce6f717691812c7d55a271fdbd7da8120f3d44744c5982ae998"
+      "size": 3826,
+      "sha256": "13b47733bc1c40b2ae58c18b2acd1237e935c090f11e20cea831617e0223c75c"
     },
     {
       "path": "templates/plugin-template.html",
@@ -178,8 +188,8 @@
     },
     {
       "path": "templates/prompt-card-template.html",
-      "size": 2375,
-      "sha256": "ff999abc9bc65d3cb7c2d4d320677f57341eb4041ccc77dc72f17e5f0054e17d"
+      "size": 3539,
+      "sha256": "b903d2b405f36c4647d72efe18255226fccf77140dfe662679ca3aeff6160dac"
     },
     {
       "path": "templates/skill-template.html",
@@ -193,8 +203,8 @@
     },
     {
       "path": "templates/verification-template.html",
-      "size": 2857,
-      "sha256": "794d78fcd94803bcb8ed0ff8a83708defabc416e6e74247280e4e0249dbbad18"
+      "size": 3474,
+      "sha256": "73aa1e8848f9b6727b5ebe75bde4585e0c95315c48ccfd44b3b52b73c4275f91"
     }
   ]
 }

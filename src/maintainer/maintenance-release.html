@@ -23,22 +23,25 @@
     <p class="lede">框架先稳定，课程以后逐条补。每个模块独立通过同一条生命周期，避免“目录看起来完整、正文其实未验证”。</p>
   </header>
 
-  <aside class="notice"><strong>发布原则：</strong>先完成一个可审计模块，再扩展下一个。未到 <code>release-ready</code> 的内容只能处于私有维护层，不能因为章节目录已有位置就被当作已发布课程。</aside>
+  <aside class="notice"><strong>发布原则：</strong>先完成一个可审计模块，再扩展下一个。没有通过对应发布门禁的内容，不能因为章节目录已有位置就被当作已完成课程。</aside>
 
   <section>
     <h2>单条课程的状态机</h2>
-    <p class="flow"><code>outline</code> → <code>draft</code> → <code>reviewed</code> → <code>platform-verified</code> → <code>release-ready</code></p>
+    <p class="flow"><code>outline</code> → <code>draft</code> → <code>source-and-rights-review</code> → <code>editorial-reviewed</code> → <code>verification</code> → <code>acceptance-ready</code> → <code>stable</code> → <code>retired</code></p>
     <table>
       <thead><tr><th>状态</th><th>完成条件</th><th>不允许的捷径</th></tr></thead>
       <tbody>
         <tr><td><code>outline</code></td><td>确定模块 ID、读者目标、边界、前提、来源候选和验证计划。</td><td>不能把目录标题当作教学内容。</td></tr>
         <tr><td><code>draft</code></td><td>完成可离线阅读的 HTML：步骤、预期、风险、检查、修正、来源和版本信息齐全。</td><td>不能用“待补图”“以后验证”代替必需内容。</td></tr>
-        <tr><td><code>reviewed</code></td><td>另一次检查确认新手能理解、术语被解释、链接/许可/隐私边界正确。</td><td>作者自评不等于审阅。</td></tr>
-        <tr><td><code>platform-verified</code></td><td>按声明的平台、浏览器和产品版本复现步骤，记录实际结果与限制。</td><td>官方文档、截图或另一平台的成功不能替代实测。</td></tr>
-        <tr><td><code>release-ready</code></td><td>构建、链接、许可、安全、可访问性和发行清单全部通过；无阻断风险。</td><td>不能跳过清单或手改构建产物。</td></tr>
+        <tr><td><code>source-and-rights-review</code></td><td>逐条确认事实来源、引用范围、许可证、示例归属与公开权利。</td><td>章级来源清单不能自动替代单元级复核。</td></tr>
+        <tr><td><code>editorial-reviewed</code></td><td>另一次检查确认新手能理解、术语被解释、步骤与安全停止点完整。</td><td>作者自评不等于审阅，也不能冒充平台实测。</td></tr>
+        <tr><td><code>verification</code></td><td>按声明的平台和产品版本执行可控步骤，记录实际结果、证据与限制。</td><td>官方文档、截图或另一平台的成功不能替代声明的平台证据。</td></tr>
+        <tr><td><code>acceptance-ready</code></td><td>内容、来源、权利、安全、可访问性、构建与发行清单均达到候选门槛。</td><td>不能跳过清单或手改构建产物。</td></tr>
+        <tr><td><code>stable</code></td><td>所需人工验收完成，必经路径的验证证据有效，正式发行物已冻结。</td><td>Beta、草稿或仅单平台结果不能标为稳定版。</td></tr>
+        <tr><td><code>retired</code></td><td>内容已撤下并保留原因、影响范围、替代项和必要墓碑记录。</td><td>不能静默删除已发布身份或复用旧 ID。</td></tr>
       </tbody>
     </table>
-    <h3>单人维护时 <code>reviewed</code> 的替代规则</h3>
+    <h3>单人维护时 <code>editorial-reviewed</code> 的替代规则</h3>
     <p>没有第二位审阅人时，按以下方式满足"另一次检查"，并在模块的维护者信息中留下记录（日期 + 采用的方式）：</p>
     <ul>
       <li><strong>冷却复查：</strong>草稿完成后至少间隔 24 小时，以读者视角按固定清单逐项重读：新手能否照做、术语是否都解释过、链接/许可/隐私边界是否正确、有没有未验证的断言。</li>
@@ -52,9 +55,10 @@
       <li>语义 HTML 正文及永久模块 ID。</li>
       <li>明确的目标、前提、步骤、预期结果、检查方法、一次修正闭环和风险提醒。</li>
       <li>来源、固定版本/日期、许可证与使用方式；自有示例与第三方素材分开登记。</li>
-      <li>模块 × 平台 × 浏览器 × 产品/扩展版本的验证记录，以及六种公开验证状态之一。</li>
+      <li>模块 × 平台 × 系统/浏览器 × 产品/扩展版本的验证记录；每条记录还要写观察结果、限制说明、证据 ID、复验日期，以及六种公开验证状态之一。</li>
       <li>若涉及插件或 Skill：安装、权限/数据、基础使用、更新、停用/移除和残留检查。</li>
     </ul>
+    <p>提示词目录中的 <code>collectionKeys</code> 记录唯一卡片的主归属，<code>placementCollectionKeys</code> 记录它实际出现的入口。共享文件整理卡只计 1 张唯一卡，但必须在 5 个集合各有一个展示位；稳定版必须同时闭合 26 张唯一卡与 30 个展示位。</p>
   </section>
 
   <section>
@@ -84,10 +88,10 @@
 
   <section>
     <h2>进度追踪：以 Git 登记表为准</h2>
-    <p>当前阶段不启用 Notion 台账。各章与各卡片的状态以 <code>src/chapters.json</code>（构建时写入 <code>registry/framework-v1.json</code>）和各页面顶部的状态标记为唯一事实来源。Notion 工作流（见 <a href="notion-workflow.html">notion-workflow.html</a>）保留为未来多人协作时的扩展方案。</p>
+    <p>当前阶段不启用 Notion 台账。章节导航以 <code>src/chapters.json</code> 为准；65 个课程模块与现有提示词卡的身份、内容状态、验证状态和证据字段以 <code>src/modules-v1.json</code> 为准，构建后公开为 <code>registry/modules-v1.json</code>。Notion 工作流（见 <a href="notion-workflow.html">notion-workflow.html</a>）只保留为未来多人协作时的单向投影方案。</p>
   </section>
 
-  <footer><p>维护框架，不是课程正文。最后更新：2026-09-01。</p></footer>
+  <footer><p>维护框架，不是课程正文。最后更新：2026-09-03。</p></footer>
 </main>
 </body>
 </html>

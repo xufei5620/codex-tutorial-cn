@@ -23,7 +23,7 @@
     <p class="lede">Notion 是私有维护控制台，不是教程的第二个权威源。它帮助收集素材、反馈和复验任务；真正可发布的内容只能从 Git 中生成。</p>
   </header>
 
-  <aside class="notice"><strong>状态：当前阶段暂缓启用（2026-09-01 决定）。</strong>单人维护阶段不建 Notion 台账，进度以 <code>src/chapters.json</code> 与各页面状态标记为唯一事实来源，避免维护两套会互相漂移的状态。本页保留为未来多人协作时的启用方案；届时仍遵守下述边界。</aside>
+  <aside class="notice"><strong>状态：当前阶段暂缓启用（2026-09-01 决定）。</strong>单人维护阶段不建 Notion 台账：章节导航以 <code>src/chapters.json</code> 为准，内容单元身份与双状态以 <code>src/modules-v1.json</code> 为准，并构建为公开只读的 <code>registry/modules-v1.json</code>。本页保留为未来多人协作时的启用方案；届时仍不得维护第二套事实源。</aside>
   <aside class="notice"><strong>边界：</strong>本框架不要求读者拥有 Notion，也不把私有反馈、原始截图、环境日志或未清权素材同步到公开页面。公开 Notion 仅在用户验收后，作为 Git 已发布版本的单向可读投影。</aside>
 
   <section>
@@ -37,7 +37,7 @@
     <table>
       <thead><tr><th>数据库</th><th>用途</th><th>最小字段</th></tr></thead>
       <tbody>
-        <tr><td>课程模块</td><td>记录每一条以后要补的课程内容。</td><td>永久模块 ID、标题、所属章节、内容状态、Git 路径、平台、风险、复验日期、负责人</td></tr>
+        <tr><td>课程模块</td><td>投影每一个已登记内容单元；不在 Notion 新建正式身份。</td><td>永久单元 ID、标题、所属章节、内容状态、验证状态、公开路径、平台、风险、最近复核日期</td></tr>
         <tr><td>素材与来源</td><td>登记官方文档、GitHub 项目、图片、提示词方法和授权条件。</td><td>来源名称、URL、固定版本或 commit、许可证、使用方式、审查结论、权利状态、登记日期</td></tr>
         <tr><td>反馈</td><td>收集读者问题，避免把原始隐私信息写入课程。</td><td>教程版本、模块 ID、问题描述、平台、产品版本、脱敏附件、处理状态、关联任务</td></tr>
         <tr><td>复验与发布任务</td><td>管理“谁在什么环境复验了什么”。</td><td>任务 ID、模块 ID、环境、步骤、预期、实际、证据位置、验证状态、到期日、阻断级别</td></tr>
@@ -48,8 +48,8 @@
 
   <section>
     <h2>内容状态与 Git 的关系</h2>
-    <p>Notion 的看板只显示工作状态；Git 中的 HTML、元数据、测试和发行清单才是可复现的事实。建议状态使用：<code>想法</code>、<code>待研究</code>、<code>可写作</code>、<code>已写入 Git</code>、<code>待复验</code>、<code>待发布</code>、<code>已撤回</code>。</p>
-    <p>进入“已写入 Git”前，Notion 中的草稿不能视为课程；进入“待发布”前，Git 中的页面也不能视为已对外承诺。每条卡片都链接其永久模块 ID 和 Git 路径，而不是复制一份正文。</p>
+    <p>Notion 的看板只显示工作状态；Git 中的 HTML、<code>src/modules-v1.json</code>、测试和发行清单才是可复现的事实。内容生产状态与产品验证状态必须作为两个字段投影，不能由看板列名互相推导或自动提升。</p>
+    <p>Notion 中的草稿不能视为课程，公开投影也不能反向覆盖 Git。每条卡片只链接永久单元 ID 与公开路径，不复制一份正文；需要修改时回到 Git，经构建生成新的 <code>registry/modules-v1.json</code>。</p>
   </section>
 
   <section>
@@ -69,7 +69,7 @@
     <p>读者反馈只需提供教程版本、模块 ID 和问题描述。处理人先脱敏，再判断它是内容错误、平台差异、失效来源、可访问性问题还是新需求；随后创建关联维护任务。可复现的问题要写入 Git 修复和验证记录，不能只在 Notion 卡片里标“已解决”。</p>
   </section>
 
-  <footer><p>维护框架，不是课程正文。最后更新：2026-09-01。</p></footer>
+  <footer><p>维护框架，不是课程正文。最后更新：2026-09-03。</p></footer>
 </main>
 </body>
 </html>

@@ -64,17 +64,17 @@
     }
   },
   "chapters": [
-    {"number": 1, "title": "导读与使用说明", "status": "outline"},
-    {"number": 2, "title": "认识 AI 与 Codex", "status": "outline"},
-    {"number": 3, "title": "安装、账号与界面", "status": "outline"},
-    {"number": 4, "title": "基础使用方法", "status": "outline"},
-    {"number": 5, "title": "项目、文件与权限", "status": "outline"},
-    {"number": 6, "title": "插件", "status": "outline"},
-    {"number": 7, "title": "Skills", "status": "outline"},
-    {"number": 8, "title": "实际使用与工作场景", "status": "outline"},
-    {"number": 9, "title": "完整案例", "status": "outline"},
-    {"number": 10, "title": "故障排查", "status": "outline"},
-    {"number": 11, "title": "参考附录", "status": "outline"}
+    {"number": 1, "title": "开始前：边界、安全与阅读方法", "status": "draft"},
+    {"number": 2, "title": "认识 AI 与 Codex", "status": "draft"},
+    {"number": 3, "title": "安装、登录与界面", "status": "draft"},
+    {"number": 4, "title": "第一次对话：把需求说清楚", "status": "draft"},
+    {"number": 5, "title": "日常协作：检查、修改与回退", "status": "draft"},
+    {"number": 6, "title": "插件", "status": "draft"},
+    {"number": 7, "title": "Skill", "status": "draft"},
+    {"number": 8, "title": "常见任务场景", "status": "draft"},
+    {"number": 9, "title": "完整虚构案例", "status": "draft"},
+    {"number": 10, "title": "排错、安全与求助", "status": "draft"},
+    {"number": 11, "title": "参考与维护", "status": "draft"}
   ],
   "extensionCatalog": {
     "directoryRules": {
@@ -126,11 +126,11 @@
   "promptLibrary": {
     "navigation": "independent-not-chapter-12",
     "collections": [
-      {"key": "prompt-common", "title": "跨行业通用", "uniqueCardCount": 6, "usesSharedFileCard": false},
-      {"key": "prompt-ecommerce", "title": "电商与零售", "uniqueCardCount": 5, "usesSharedFileCard": true},
-      {"key": "prompt-food", "title": "餐饮与本地生活", "uniqueCardCount": 5, "usesSharedFileCard": true},
-      {"key": "prompt-media", "title": "传媒与内容创作", "uniqueCardCount": 5, "usesSharedFileCard": true},
-      {"key": "prompt-education", "title": "教育与培训", "uniqueCardCount": 5, "usesSharedFileCard": true}
+      {"key": "prompt-common", "title": "跨行业通用", "idPrefix": "COM", "uniqueCardCount": 6, "usesSharedFileCard": false},
+      {"key": "prompt-ecommerce", "title": "电商与零售", "idPrefix": "ECM", "uniqueCardCount": 5, "usesSharedFileCard": true},
+      {"key": "prompt-food", "title": "餐饮与本地生活", "idPrefix": "FOD", "uniqueCardCount": 5, "usesSharedFileCard": true},
+      {"key": "prompt-media", "title": "传媒与内容创作", "idPrefix": "MED", "uniqueCardCount": 5, "usesSharedFileCard": true},
+      {"key": "prompt-education", "title": "教育与培训", "idPrefix": "EDU", "uniqueCardCount": 5, "usesSharedFileCard": true}
     ],
     "taskKeys": [
       "communication",

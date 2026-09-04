@@ -6,7 +6,7 @@
 
 **可选在线预览：** 如需把同一批生成页面放到服务器，再看 [deploy/DEPLOY.md](deploy/DEPLOY.md)。在线部署不是课程完成或正式发布的必要条件。
 
-**当前版本：** 0.2.1（2026-09-02）。11 章均有「草稿种子」，但不算完成课程；内容依据官方文档撰写，尚未逐条复核或实测。
+**当前版本：** 0.3.0（2026-09-03）。11 章均有「草稿种子」，但不算完成课程；内容依据官方文档撰写，尚未逐条复核或实测。
 
 > 2026 年 7 月 9 日起，Codex 桌面应用已并入「ChatGPT 桌面应用」（macOS / Windows）。本教程所说的 Codex，指该应用左上角菜单里的 **Codex** 视图。
 
@@ -34,6 +34,7 @@
 - `deploy/` —— 服务器部署配置与说明
 - `src/` —— **内容源与构建脚本**：改内容请改 `src/content/*.html` 与 `src/chapters.json`，然后运行 `python3 src/build.py` 重新生成以上全部页面（不要直接改根目录的 HTML，会被覆盖）；`python3 src/check.py` 做发布前检查
 - `templates/`、`specs/`、`schemas/`、`registry/`、`maintenance-release.html`、`source-research.html`、`notion-workflow.html` —— 维护者资料
+- [`registry/modules-v1.json`](registry/modules-v1.json) / [`schemas/modules-v1.schema.json`](schemas/modules-v1.schema.json) —— 71 个当前内容单元的双状态目录与校验规则
 - `manifest.json`、`SHA256SUMS.txt` —— 文件清单与校验和
 
 ## 维护约定
