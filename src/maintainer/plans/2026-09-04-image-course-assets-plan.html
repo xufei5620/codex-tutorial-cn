@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>图文课程资产系统实施计划</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.7; }
+    body { max-width: 1000px; margin: 0 auto; padding: 2rem 1.25rem 4rem; color: #183238; background: #f7faf9; }
+    h1, h2, h3 { color: #084a51; line-height: 1.25; }
+    section { background: #fff; border: 1px solid #dbe8e5; border-radius: .75rem; padding: 1rem 1.25rem; margin: 1rem 0; }
+    code, pre { background: #eef5f3; border-radius: .3rem; }
+    code { padding: .1rem .3rem; }
+    pre { overflow-x: auto; padding: 1rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #dbe8e5; padding: .5rem; text-align: left; vertical-align: top; }
+    th { background: #edf6f4; }
+    .meta { color: #526b70; }
+    .gate { border-left: .35rem solid #0b7778; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="meta">实施计划｜2026-09-04｜基线：PR #10 的 Phase C｜设计规格：<code>src/maintainer/specs/2026-09-04-image-course-assets-design.html</code></p>
+    <h1>图文课程资产系统实施计划</h1>
+    <p><strong>Goal：</strong>在不破坏现有 HTML-first 教程、离线 ZIP、GitHub 和 ChatGPT Sites 的前提下，加入可追溯、可访问、可维护的图片资产管线，并先为第 1–5 章放入两张自有概念图。</p>
+    <p><strong>Architecture：</strong>以 <code>src/media-v1.json</code> 作为图片资产登记表，以 <code>data-media-id</code> 和 <code>{{media:...}}</code> 将正文与资产绑定；构建器解析媒体宏、复制本地资产、更新 manifest/SHA256/ZIP，检查器拒绝未登记、无版权状态、缺少 alt 或远程图片。界面截图、示意图和行业 Prompt 效果图分开管理，Notion 只做投影，Sites 使用同一份生成静态目录。</p>
+    <p><strong>Tech Stack：</strong>现有 Python 标准库构建器与检查器、JSON Schema、语义化 HTML、SVG/PNG/WebP 静态资源；不新增 JavaScript、数据库、上传服务或运行时依赖。</p>
+    <p><strong>Spec：</strong><code>src/maintainer/specs/2026-09-04-image-course-assets-design.html</code></p>
+
+    <section class="gate" id="constraints">
+      <h2>全局约束</h2>
+      <ul>
+        <li>源图片只放 <code>src/media/</code>；生成图片只出现在 <code>assets/media/</code>，不手改根目录生成页面。</li>
+        <li>图片 ID 使用 <code>IMG-&lt;用途&gt;-&lt;四位序号&gt;</code>，例如 <code>IMG-C01-0001</code> 和 <code>IMG-PROMPT-0001</code>；同一 ID 不得重复。</li>
+        <li>所有正文图片使用相对路径；禁止远程图片 URL、数据中含凭据的图片和路径越界。</li>
+        <li>每张图必须有非空 <code>alt</code>、图注、<code>rights</code>、<code>sourceType</code> 和 <code>verificationState</code>；版权或来源不清时不得发布。</li>
+        <li>界面截图只有在记录平台、应用版本、截取日期并保留 <code>unverified</code> 时才能进入实测前版本；示意图必须写明“示意图”或“生成示例”。</li>
+        <li>没有图片时，现有 0.4.0 正文、链接、manifest、ZIP 和 Sites 内容保持字节级兼容；新增图片后在线、离线和 Sites 的相对路径一致。</li>
+        <li>所有图片都必须进入公开白名单；不提交真实客户资料、密码、验证码、API Key、私人路径或未经授权的 GitHub 素材。</li>
+      </ul>
+    </section>
+
+    <section id="files">
+      <h2>文件边界与接口</h2>
+      <table>
+        <thead><tr><th>文件</th><th>职责</th><th>本计划中的接口</th></tr></thead>
+        <tbody>
+          <tr><td><code>src/media-v1.json</code></td><td>资产登记、来源/版权/验证状态、媒体路径</td><td><code>contentVersion</code>、<code>generatedDate</code>、<code>status</code>、<code>assets[]</code></td></tr>
+          <tr><td><code>src/maintainer/schemas/media-v1.schema.json</code></td><td>登记表结构门禁</td><td>由 <code>jsonschema.Draft202012Validator</code> 校验</td></tr>
+          <tr><td><code>src/build.py</code></td><td>解析媒体宏、复制资源、生成 manifest/SHA256/ZIP</td><td><code>load_media_catalog()</code>、<code>resolve_media_macro(text, media_by_id)</code>、<code>copy_media_assets(catalog)</code></td></tr>
+          <tr><td><code>src/check.py</code></td><td>源目录、HTML、媒体引用和生成物安全检查</td><td><code>check_media_catalog(root, strict)</code>、<code>check_media_references(root, catalog, strict)</code></td></tr>
+          <tr><td><code>src/content/ch01.html</code>、<code>ch02.html</code></td><td>首批自有概念图的教学正文</td><td><code>&lt;figure class="course-figure" data-media-id="..."&gt;</code></td></tr>
+          <tr><td><code>src/maintainer/notion-workflow.html</code></td><td>Notion 投影与图片台账说明</td><td>使用媒体 ID 回链 GitHub 来源，不把 Notion 设为权威</td></tr>
+          <tr><td><code>tests/test_media_registry.py</code></td><td>媒体登记和宏解析合同测试</td><td>新建文件；覆盖成功、重复 ID、缺字段、越界路径和远程 URL</td></tr>
+          <tr><td><code>tests/test_build.py</code>、<code>tests/test_check.py</code>、<code>tests/test_foundation_course.py</code></td><td>构建、发布和读者页面回归</td><td>扩展现有测试，不删除 0.4.0 基线合同</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="task-1">
+      <h2>Task 1：建立媒体登记表与 Schema</h2>
+      <p><strong>Files：</strong>创建 <code>src/media-v1.json</code>、<code>src/maintainer/schemas/media-v1.schema.json</code>、<code>tests/test_media_registry.py</code>；修改 <code>src/check.py</code> 的 Schema 加载入口。</p>
+      <p><strong>Interfaces：</strong><code>media-v1.json</code> 的每个资产必须包含 <code>id</code>、<code>kind</code>、<code>path</code>、<code>mediaType</code>、<code>alt</code>、<code>caption</code>、<code>sourceType</code>、<code>sourceUrl</code>、<code>license</code>、<code>rights</code>、<code>verificationState</code>、<code>verificationDate</code> 和 <code>lastReviewedDate</code>；截图额外包含 <code>platform</code> 与 <code>observedProductVersion</code>，效果图额外包含 <code>industry</code> 与 <code>promptId</code>。</p>
+      <ol>
+        <li>[ ] 先在 <code>tests/test_media_registry.py</code> 写验证合法资产、重复 ID、缺 alt、缺 rights、非法 mediaType 和路径越界的失败测试。</li>
+        <li>[ ] 运行 <code>python -m unittest tests.test_media_registry -v</code>，确认新测试在登记表/校验逻辑尚未存在时失败。</li>
+        <li>[ ] 写 Schema：允许 <code>image/png</code>、<code>image/webp</code>、<code>image/svg+xml</code>；<code>rights</code> 只能是 <code>owned</code>、<code>licensed</code>、<code>pending</code>；<code>verificationState</code> 只能是 <code>verified</code>、<code>unverified</code>、<code>not-applicable</code>；<code>sourceUrl</code> 可为 null，但不允许含账号、令牌或本地绝对路径。</li>
+        <li>[ ] 将空资产登记表接入当前检查器，确认版本、日期和公开目录检查仍通过。</li>
+        <li>[ ] 运行 <code>python -m unittest tests.test_media_registry -v</code> 和 <code>git diff --check</code>，确认合同测试通过。</li>
+        <li>[ ] 提交：<code>git add src/media-v1.json src/maintainer/schemas/media-v1.schema.json src/check.py tests/test_media_registry.py &amp;&amp; git commit -m "feat: add media asset registry"</code>。</li>
+      </ol>
+    </section>
+
+    <section id="task-2">
+      <h2>Task 2：解析媒体宏并接入发布门禁</h2>
+      <p><strong>Files：</strong>修改 <code>src/build.py</code>、<code>src/check.py</code>、<code>tests/test_build.py</code>、<code>tests/test_check.py</code>；创建 <code>src/media/</code> 下的媒体目录。</p>
+      <p><strong>Interfaces：</strong><code>resolve_media_macro(text, media_by_id)</code> 将唯一的 <code>{{media:IMG-...}}</code> 替换为登记表中的相对路径；未知 ID、重复 ID、宏路径与登记表不一致、远程 URL 或未登记文件都返回可读检查错误并让严格模式失败。</p>
+      <ol>
+        <li>[ ] 写失败测试：已登记媒体宏应生成 <code>assets/media/...</code>；未知宏、远程 <code>src</code>、缺失资产和未登记资产应被拒绝。</li>
+        <li>[ ] 运行 <code>python -m unittest tests.test_build tests.test_check -v</code>，确认新断言先失败。</li>
+        <li>[ ] 在构建器加载登记表，解析正文媒体宏，将 <code>src/media/</code> 中登记的文件复制到根目录 <code>assets/media/</code>，并加入在线 manifest、<code>SHA256SUMS.txt</code> 和离线 ZIP。</li>
+        <li>[ ] 在检查器中增加 <code>check_media_catalog(root, strict)</code> 和 <code>check_media_references(root, catalog, strict)</code>；检查相对路径、允许格式、非符号链接、登记闭合、alt/图注和版权状态。</li>
+        <li>[ ] 为无媒体的 0.4.0 树运行两次构建，确认没有图片时根生成物不发生非预期变化；再用测试媒体确认 manifest、ZIP 和 SHA256 条目闭合。</li>
+        <li>[ ] 运行 <code>python -m unittest tests.test_build tests.test_check -v</code>、<code>python src/check.py --strict --verify-generated</code> 和 <code>git diff --check</code>。</li>
+        <li>[ ] 提交：<code>git add src/build.py src/check.py tests/test_build.py tests/test_check.py &amp;&amp; git commit -m "feat: validate and publish local media"</code>。</li>
+      </ol>
+    </section>
+
+    <section id="task-3">
+      <h2>Task 3：加入首批自有概念图与可访问图文组件</h2>
+      <p><strong>Files：</strong>创建 <code>src/media/course/ch01/codex-safety-loop.svg</code>、<code>src/media/course/ch02/codex-boundary-map.svg</code>；修改 <code>src/media-v1.json</code>、<code>src/content/ch01.html</code>、<code>src/content/ch02.html</code> 和生成 CSS 所在的 <code>src/build.py</code>。</p>
+      <p><strong>内容：</strong>第一张图表达“描述 → 限定 → 执行 → 检查 → 纠正/停止”；第二张图表达“材料、范围、结果、人工确认”四个边界。两张图均为本项目自绘 SVG，不描述未实测的固定 UI，也不包含真实品牌或个人资料。</p>
+      <ol>
+        <li>[ ] 先创建两张 SVG，使用清晰的文字节点和高对比颜色；不要把 SVG 外链到字体、脚本或远程图片。</li>
+        <li>[ ] 为两张图登记 <code>IMG-C01-0001</code> 与 <code>IMG-C02-0001</code>，<code>sourceType=owned-diagram</code>、<code>rights=owned</code>、<code>verificationState=not-applicable</code>，并写出零基础读者能理解的 alt 和图注。</li>
+        <li>[ ] 在 ch01/ch02 对应小节加入 <code>figure</code>，保留正文文字作为不看图也能完成课程的主说明；图片使用 <code>loading="lazy"</code>、宽高和相对媒体宏。</li>
+        <li>[ ] 在生成 CSS 中加入窄屏可缩放、图注可读、键盘聚焦不受影响的 <code>.course-figure</code> 样式；不改变已有正文颜色和断点。</li>
+        <li>[ ] 在 <code>tests/test_foundation_course.py</code> 增加每张图必须有登记 ID、alt、图注和“示意图/自有绘制”来源说明的断言。</li>
+        <li>[ ] 运行 <code>python src/build.py</code>、<code>python -m unittest discover -s tests -q</code>、<code>python src/check.py --strict --verify-generated</code> 和 <code>git diff --check</code>。</li>
+        <li>[ ] 提交：<code>git add src/media src/media-v1.json src/content/ch01.html src/content/ch02.html src/build.py tests/test_foundation_course.py &amp;&amp; git commit -m "feat: add accessible foundation diagrams"</code>。</li>
+      </ol>
+    </section>
+
+    <section id="task-4">
+      <h2>Task 4：同步 Notion 投影与 Prompt 效果图约定</h2>
+      <p><strong>Files：</strong>修改 <code>src/maintainer/notion-workflow.html</code>、<code>src/content/ch11.html</code>；创建 <code>src/maintainer/prompt-image-guide.html</code>，不加入未经授权的效果图或空的媒体占位文件。</p>
+      <ol>
+        <li>[ ] 在 Notion 工作流中写清图片数据库字段：媒体 ID、行业、Prompt ID、图片 URL/附件、来源、版权状态、验证状态、GitHub 路径和最后复核日期。</li>
+        <li>[ ] 明确 Notion 图片可上传或嵌入，但每条记录必须保留媒体 ID 和 GitHub 来源；Notion 修改不自动回写课程源码。</li>
+        <li>[ ] 在 ch11 的来源/维护说明中加入图片资产登记入口、版权停止条件和效果图“生成示例”标签规则。</li>
+        <li>[ ] 在 <code>src/maintainer/prompt-image-guide.html</code> 中为 <code>ecommerce</code>、<code>education</code>、<code>marketing</code>、<code>design</code>、<code>office</code> 建立行业映射，写清后续效果图文件名格式 <code>IMG-PROMPT-&lt;行业&gt;-&lt;四位序号&gt;</code> 与 Prompt ID 绑定方式；不要创建空的伪效果图。</li>
+        <li>[ ] 运行 <code>python src/build.py</code>、<code>python -m unittest discover -s tests -q</code>、严格检查和差异检查。</li>
+        <li>[ ] 提交：<code>git add src/maintainer/notion-workflow.html src/content/ch11.html src/maintainer/prompt-image-guide.html &amp;&amp; git commit -m "docs: define image and notion projection workflow"</code>。</li>
+      </ol>
+    </section>
+
+    <section id="task-5">
+      <h2>Task 5：跨平台验证、Sites 更新与交付</h2>
+      <p><strong>Files：</strong>构建生成的根页面、<code>manifest.json</code>、<code>SHA256SUMS.txt</code>、<code>registry/</code> 和 <code>downloads/</code>；维护 <code>README.md</code> 中的图片阅读说明。不手改生成文件。</p>
+      <ol>
+        <li>[ ] 在 Windows 运行两次构建、完整单测、<code>python src/check.py --strict --verify-generated</code> 和 <code>git diff --check</code>；记录 HTML 数量、链接数、媒体文件数和离线 ZIP SHA-256。</li>
+        <li>[ ] 在 Ubuntu/WSL 对同一提交运行完整单测、构建和严格检查；比较 ZIP SHA-256 与 Windows 完全一致。</li>
+        <li>[ ] 检查离线 ZIP：所有正文引用的媒体都在包内，图片与 HTML 使用相对路径，包内不含远程媒体 URL、测试私密文件或未登记资产。</li>
+        <li>[ ] 将图片基础设施和两张概念图推送到 <code>codex/image-course-assets</code>，创建基于 PR #10 的 Draft PR；PR 说明“真实界面截图仍需设备实测，首批图片是自有示意图”。</li>
+        <li>[ ] 用 Sites 的同一静态输出目录打包、保存新版本，再核对仅所有者访问；确认新版本的章节路由、图片加载和离线副本一致后部署私有生产版本。</li>
+        <li>[ ] 交付 GitHub PR、设计规格、部署站点和验证记录；不自动改为公开访问，不自动合并。</li>
+      </ol>
+    </section>
+
+    <section class="gate" id="final-gate">
+      <h2>最终完成门槛</h2>
+      <p>只有当媒体登记、宏解析、来源/版权、安全检查、两张概念图、Notion 投影说明、在线/离线/Sites 路径和 Windows/Ubuntu 重复构建全部通过时，才把本阶段标记为完成。界面截图和行业 Prompt 效果图仍按规格进入后续阶段，不能用自绘概念图替代真实产品实测。</p>
+    </section>
+  </main>
+</body>
+</html>
