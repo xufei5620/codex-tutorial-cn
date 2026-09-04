@@ -122,6 +122,20 @@ LOCKED_CHAPTER_RISK = {
     "ch10": "medium",
     "ch11": "medium",
 }
+LOCKED_UNIT_RISK = {
+    "CDX-M-0001": "medium",
+    "CDX-M-0003": "high",
+    "CDX-M-0005": "medium",
+    "CDX-M-0006": "medium",
+    "CDX-M-0007": "medium",
+    "CDX-M-0008": "high",
+    "CDX-M-0009": "high",
+    "CDX-M-0010": "high",
+    "CDX-M-0021": "high",
+    "CDX-M-0024": "high",
+    "CDX-M-0028": "high",
+    "CDX-M-0030": "high",
+}
 LOCKED_PROMPT_TASKS = {
     "PRM-COM-0001": "communication",
     "PRM-COM-0002": "document-report",
@@ -938,7 +952,14 @@ def check_repository_tree(root: Path, chapter_config: dict) -> list[str]:
     errors = []
     allowed = managed_public_paths(root, chapter_config) | MANAGED_METADATA | expected_download_paths(chapter_config)
     allowed.update({".dockerignore", ".gitattributes", ".gitignore", "requirements-dev.txt"})
-    allowed.update({"tests/test_build.py", "tests/test_check.py", "tests/test_module_registry.py"})
+    allowed.update(
+        {
+            "tests/test_build.py",
+            "tests/test_check.py",
+            "tests/test_foundation_course.py",
+            "tests/test_module_registry.py",
+        }
+    )
     allowed.add(".github/workflows/quality.yml")
     source_patterns = [
         r"src/(?:build\.py|chapters\.json|check\.py|modules-v1\.json|preview\.html)",
@@ -972,6 +993,8 @@ def check_repository_tree(root: Path, chapter_config: dict) -> list[str]:
         relative_path = Path(relative)
         path = root.joinpath(*relative_path.parts)
         if relative == ".git":
+            continue
+        if not path.exists() and not path.is_symlink():
             continue
         if (git_result is None or git_result.returncode != 0) and "__pycache__" in relative_path.parts and path.suffix.lower() == ".pyc":
             continue
@@ -1018,6 +1041,14 @@ def check_manifest(root: Path, expected_paths: set[str]) -> list[str]:
         sums = checksum_records((root / "SHA256SUMS.txt").read_text(encoding="utf-8"))
     except Exception as error:
         return [f"manifest/checksum cannot be read: {error}"]
+    expected_identity = {
+        "schemaVersion": "1.0.0",
+        "artifact": "codex-tutorial-cn-online",
+        "entry": "index.html",
+    }
+    for field, expected in expected_identity.items():
+        if manifest.get(field) != expected:
+            errors.append(f"online manifest {field} differs from the release identity")
     records = manifest.get("files")
     if not isinstance(records, list):
         return ["manifest files must be an array"]
@@ -1300,8 +1331,8 @@ def check_module_registry(
             }
             if record is None or any(record.get(key) != value for key, value in expected_identity.items()):
                 errors.append(f"{unit_id}: permanent identity differs from the locked v1 allocation")
-            elif record.get("risk") != LOCKED_CHAPTER_RISK[chapter_id]:
-                errors.append(f"{unit_id}: risk differs from the locked chapter baseline")
+            elif record.get("risk") != LOCKED_UNIT_RISK.get(unit_id, LOCKED_CHAPTER_RISK[chapter_id]):
+                errors.append(f"{unit_id}: risk differs from the locked unit baseline")
             else:
                 expected_platforms = (
                     ["windows"]
@@ -1337,6 +1368,13 @@ def check_module_registry(
             errors.append("module verification states differ from framework registry")
         if registry.get("status") != framework.get("status"):
             errors.append("module catalog status differs from framework registry")
+        if framework.get("catalogStatus") != registry.get("status"):
+            errors.append("framework registry catalogStatus differs from module catalog")
+        source_framework_path = root / "src" / "maintainer" / "framework-v1.json"
+        if source_framework_path.exists():
+            source_framework = json_loads_strict(source_framework_path.read_text(encoding="utf-8"))
+            if framework.get("frameworkDefinitionStatus") != source_framework.get("status"):
+                errors.append("generated framework registry lost the framework definition status")
         pipeline_index = {status: index for index, status in enumerate(registry["contentPipeline"])}
         framework_chapters = {f"ch{item['number']:02d}": item for item in framework["chapters"]}
         for chapter_id in LOCKED_LESSON_COUNTS:
@@ -1650,11 +1688,16 @@ def check_offline_zip(root: Path, chapter_config: dict, strict: bool) -> list[st
             infos = package.infolist()
             names = [info.filename for info in infos]
             can_extract = True
+            date_parts = [int(part) for part in chapter_config["site"]["date"].split("-")]
+            expected_zip_time = (*date_parts, 0, 0, 0)
             if len(infos) > 512:
                 errors.append("ZIP contains too many members")
                 can_extract = False
             if len(names) != len(set(names)):
                 errors.append("ZIP contains duplicate paths")
+                can_extract = False
+            if names != sorted(names):
+                errors.append("ZIP members are not in reproducible sorted order")
                 can_extract = False
             portable_keys = []
             expanded_size = 0
@@ -1676,6 +1719,15 @@ def check_offline_zip(root: Path, chapter_config: dict, strict: bool) -> list[st
                 file_type = stat.S_IFMT(unix_mode)
                 if info.create_system == 3 and file_type not in {0, stat.S_IFREG}:
                     errors.append(f"ZIP contains a non-regular file: {name}")
+                    can_extract = False
+                if info.create_system != 3:
+                    errors.append(f"ZIP member does not use reproducible Unix metadata: {name}")
+                    can_extract = False
+                if unix_mode != 0o644:
+                    errors.append(f"ZIP member mode is not reproducible 0644: {name}")
+                    can_extract = False
+                if info.date_time != expected_zip_time:
+                    errors.append(f"ZIP member timestamp differs from the release date: {name}")
                     can_extract = False
                 if info.compress_type != zipfile.ZIP_STORED:
                     errors.append(f"ZIP member is not stored reproducibly: {name}")

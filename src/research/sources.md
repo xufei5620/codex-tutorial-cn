@@ -1,4 +1,4 @@
-# 来源清单（2026-09-01 查阅）
+# 来源清单（最近复核：2026-09-04）
 
 ## 官方
 - OpenAI 公告：Introducing the Codex app（2026-02-02，3 月更新 Windows）https://openai.com/index/introducing-the-codex-app/
@@ -14,17 +14,22 @@
 - 帮助中心：Admin controls, security and compliance for plugins and apps https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-for-plugins-and-apps
 - 帮助中心：macOS 系统要求 https://help.openai.com/en/articles/9395554-what-are-the-system-requirements-for-the-chatgpt-macos-app
 - 帮助中心：ChatGPT supported countries https://help.openai.com/en/articles/7947663-chatgpt-supported-countries
-- 文档：桌面应用 https://learn.chatgpt.com/codex/app （简中机器翻译：https://learn.chatgpt.com/zh-Hans/docs/app）
-- 文档：Windows 应用 https://learn.chatgpt.com/codex/windows/windows-app
+- 文档总览 https://learn.chatgpt.com/docs ；工作建议 https://learn.chatgpt.com/guides/best-practices
+- 文档：快速入门 https://learn.chatgpt.com/docs/quickstart ；桌面应用 https://learn.chatgpt.com/docs/app
+- 文档：使用 ChatGPT https://learn.chatgpt.com/docs/use-chatgpt ；功能 https://learn.chatgpt.com/docs/features ；提示写法 https://learn.chatgpt.com/docs/prompting ；文件预览 https://learn.chatgpt.com/docs/artifacts-viewer
+- 文档：Windows 应用 https://learn.chatgpt.com/docs/windows/windows-app
 - 文档：登录 https://learn.chatgpt.com/docs/auth
-- 文档：权限模式 https://learn.chatgpt.com/codex/permission-modes ；沙盒 https://learn.chatgpt.com/codex/sandboxing
-- 文档：项目 https://learn.chatgpt.com/codex/projects ；本地环境 https://learn.chatgpt.com/codex/environments/local-environment
-- 文档：定时任务 https://learn.chatgpt.com/codex/automations
-- 文档：记忆 https://learn.chatgpt.com/codex/customization/memories
-- 文档：Computer Use https://learn.chatgpt.com/codex/computer-use ；浏览器 https://learn.chatgpt.com/codex/browser ；图片生成 https://learn.chatgpt.com/codex/image-generation
-- 文档：插件 https://learn.chatgpt.com/codex/plugins ；https://learn.chatgpt.com/docs/plugins
-- 文档：Skills https://learn.chatgpt.com/codex/skills ；创建 Skill https://learn.chatgpt.com/codex/build-skills ；Skills 与插件 https://learn.chatgpt.com/codex/skills-and-plugins
-- 文档：设置 https://learn.chatgpt.com/codex/reference/settings ；排错 https://learn.chatgpt.com/codex/reference/troubleshooting ；定价与额度 https://learn.chatgpt.com/codex/pricing ；更新记录 https://learn.chatgpt.com/docs/whats-new
+- 文档：权限模式 https://learn.chatgpt.com/docs/permission-modes ；沙盒 https://learn.chatgpt.com/docs/sandboxing ；审批与安全 https://learn.chatgpt.com/docs/agent-approvals-security
+- 文档：项目 https://learn.chatgpt.com/docs/projects ；运行环境 https://learn.chatgpt.com/docs/environments/modes ；代码审阅 https://learn.chatgpt.com/docs/code-review?surface=app
+- 文档：Codex Cloud https://learn.chatgpt.com/docs/cloud ；Remote https://learn.chatgpt.com/docs/remote
+- 文档：Codex CLI https://learn.chatgpt.com/docs/codex/cli ；IDE 扩展 https://learn.chatgpt.com/docs/codex/ide
+- 文档：定时任务 https://learn.chatgpt.com/docs/automations
+- 文档：记忆 https://learn.chatgpt.com/docs/customization/memories
+- 文档：Computer Use https://learn.chatgpt.com/docs/computer-use ；浏览器 https://learn.chatgpt.com/docs/browser ；图片生成 https://learn.chatgpt.com/docs/image-generation
+- 文档：插件 https://learn.chatgpt.com/docs/plugins
+- 文档：Skills https://learn.chatgpt.com/docs/skills ；创建 Skill https://learn.chatgpt.com/docs/build-skills ；Skills 与插件 https://learn.chatgpt.com/docs/skills-and-plugins
+- 文档：项目规则 AGENTS.md https://learn.chatgpt.com/docs/agent-configuration/agents-md
+- 文档：设置 https://learn.chatgpt.com/docs/reference/settings ；排错 https://learn.chatgpt.com/docs/reference/troubleshooting ；定价与额度 https://learn.chatgpt.com/docs/pricing ；更新记录 https://learn.chatgpt.com/docs/changelog
 - 下载页 https://chatgpt.com/download/
 - 用量查询页（需登录）https://chatgpt.com/codex/settings/usage
 - 服务状态页 https://status.openai.com

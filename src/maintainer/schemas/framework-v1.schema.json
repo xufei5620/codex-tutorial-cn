@@ -9,6 +9,8 @@
     "contentVersion",
     "artifactVersion",
     "status",
+    "frameworkDefinitionStatus",
+    "catalogStatus",
     "authority",
     "audience",
     "platforms",
@@ -40,6 +42,27 @@
     "status": {
       "enum": [
         "framework-review",
+        "draft-seed-unverified",
+        "review-in-progress",
+        "acceptance-ready",
+        "stable",
+        "retired"
+      ]
+    },
+    "frameworkDefinitionStatus": {
+      "description": "Lifecycle of the framework definition before the generated registry projects the catalog status into the legacy status field.",
+      "enum": [
+        "framework-review",
+        "draft-seed-unverified",
+        "review-in-progress",
+        "acceptance-ready",
+        "stable",
+        "retired"
+      ]
+    },
+    "catalogStatus": {
+      "description": "Current content catalog lifecycle projected into a generated framework registry.",
+      "enum": [
         "draft-seed-unverified",
         "review-in-progress",
         "acceptance-ready",

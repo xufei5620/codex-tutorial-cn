@@ -696,12 +696,16 @@ def build_site():
         copy_public_path(src, dst)
     # 登记表
     os.makedirs(os.path.join(SITE, 'registry'))
+    reg['frameworkDefinitionStatus'] = reg['status']
+    reg['catalogStatus'] = MODULES_CFG['status']
     reg['contentVersion'] = cfg['site']['version']
     reg['artifactVersion'] = cfg['site']['version']
+    # Keep the legacy cross-registry `status` projection for compatibility while
+    # preserving the framework definition's own lifecycle in a separate field.
     reg['status'] = MODULES_CFG['status']
     reg['chapters'] = [{'number': CH[c]['num'], 'title': CH[c]['title'], 'status': CH[c]['status'], 'file': c + '.html'} for c in ORDER]
     reg['productNote'] = ('2026-07-09 起 Codex 桌面应用并入 ChatGPT 桌面应用（macOS/Windows），'
-                          '教程中的“Codex”指该应用左上角菜单中的 Codex 视图。')
+                          '教程中的“Codex”指从 ChatGPT 产品下拉菜单或当前版本提供的产品入口选择的 Codex。')
     reg['generatedDate'] = cfg['site']['date']
     write_json(os.path.join(SITE, 'registry', 'framework-v1.json'), reg)
     copy_public_file(os.path.join(ROOT, 'modules-v1.json'), os.path.join(SITE, 'registry', 'modules-v1.json'))
@@ -769,7 +773,7 @@ def readme():
 
 **当前版本：** {cfg['site']['version']}（{cfg['site']['date']}）。{release_note}
 
-> 2026 年 7 月 9 日起，Codex 桌面应用已并入「ChatGPT 桌面应用」（macOS / Windows）。本教程所说的 Codex，指该应用左上角菜单里的 **Codex** 视图。
+> 2026 年 7 月 9 日起，Codex 桌面应用已并入「ChatGPT 桌面应用」（macOS / Windows）。本教程所说的 Codex，指从 ChatGPT 产品下拉菜单或当前版本提供的产品入口选择的 **Codex**。
 
 | 章 | 标题 | 状态 |
 |---|---|---|

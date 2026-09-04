@@ -290,9 +290,16 @@ class BuildBaselineTests(unittest.TestCase):
 
     def test_offline_zip_uses_stored_entries_for_cross_platform_determinism(self):
         archive = offline_archive(REPO)
+        config = json.loads((REPO / "src/chapters.json").read_text(encoding="utf-8"))
+        expected_time = (*[int(part) for part in config["site"]["date"].split("-")], 0, 0, 0)
         with zipfile.ZipFile(archive) as package:
-            compression_methods = {info.compress_type for info in package.infolist()}
+            infos = package.infolist()
+            compression_methods = {info.compress_type for info in infos}
         self.assertEqual(compression_methods, {zipfile.ZIP_STORED})
+        self.assertEqual([info.filename for info in infos], sorted(info.filename for info in infos))
+        self.assertEqual({info.create_system for info in infos}, {3})
+        self.assertEqual({info.external_attr >> 16 for info in infos}, {0o644})
+        self.assertEqual({info.date_time for info in infos}, {expected_time})
 
     def test_content_lifecycle_matches_the_formal_course_design(self):
         expected = [

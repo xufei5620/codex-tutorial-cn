@@ -4,7 +4,7 @@
   "authority": {
     "canonicalSource": {
       "kind": "local-git",
-      "remoteRequired": false
+      "remoteRequired": true
     },
     "generatedArtifacts": {
       "htmlAndMetadataAreNormative": true,
@@ -12,7 +12,7 @@
       "notionIsAuthority": false
     },
     "github": {
-      "phase": "future-optional",
+      "phase": "active-development",
       "visibility": "public-only",
       "publishFrom": "approved-public-whitelist-tree",
       "includeFullLocalHistory": false,
@@ -64,11 +64,11 @@
     }
   },
   "chapters": [
-    {"number": 1, "title": "开始前：边界、安全与阅读方法", "status": "draft"},
-    {"number": 2, "title": "认识 AI 与 Codex", "status": "draft"},
-    {"number": 3, "title": "安装、登录与界面", "status": "draft"},
-    {"number": 4, "title": "第一次对话：把需求说清楚", "status": "draft"},
-    {"number": 5, "title": "日常协作：检查、修改与回退", "status": "draft"},
+    {"number": 1, "title": "开始前：边界、安全与阅读方法", "status": "editorial-reviewed"},
+    {"number": 2, "title": "认识 AI 与 Codex", "status": "editorial-reviewed"},
+    {"number": 3, "title": "安装、登录与界面", "status": "editorial-reviewed"},
+    {"number": 4, "title": "第一次对话：把需求说清楚", "status": "editorial-reviewed"},
+    {"number": 5, "title": "日常协作：检查、修改与回退", "status": "editorial-reviewed"},
     {"number": 6, "title": "插件", "status": "draft"},
     {"number": 7, "title": "Skill", "status": "draft"},
     {"number": 8, "title": "常见任务场景", "status": "draft"},
@@ -246,9 +246,9 @@
     "publicActionsBeforeAcceptance": false
   },
   "currentSeedContent": {
-    "designation": "sample",
+    "designation": "partial-formal-course",
     "final": false,
     "countsAsCompletedCourseContent": false,
-    "reviewPolicy": "replace-or-approve-item-by-item-later"
+    "reviewPolicy": "chapters-1-5-reviewed-remainder-item-by-item"
   }
 }
