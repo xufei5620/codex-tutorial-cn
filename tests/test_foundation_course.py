@@ -244,10 +244,89 @@ class FoundationCourseTests(unittest.TestCase):
                 self.assertRegex(figure, r'height="\d+"')
                 self.assertIn(asset["caption"], figure)
 
+    def test_process_diagram_connectors_land_on_the_next_stage(self):
+        diagrams = {
+            "ch03": (
+                "codex-desktop-route.svg",
+                "M813 204V266",
+                "M797 266L829 266L813 284Z",
+                "<rect x=\"120\" y=\"282\" width=\"720\"",
+            ),
+            "ch04": (
+                "codex-first-request-loop.svg",
+                "M501 336V354H247V366",
+                "M231 366L263 366L247 384Z",
+                "",
+            ),
+            "ch05": (
+                "codex-recovery-handoff.svg",
+                "M825 196V240H284V258",
+                "M268 258L300 258L284 276Z",
+                "",
+            ),
+        }
+        for chapter, (filename, first_connector, second_connector, target_box) in diagrams.items():
+            with self.subTest(chapter=chapter):
+                source = (REPO / "src/media/course" / chapter / filename).read_text(encoding="utf-8")
+                self.assertRegex(source, rf'<path d="{re.escape(first_connector)}"[^>]*fill="none"')
+                self.assertRegex(source, rf'<path d="{re.escape(second_connector)}"[^>]*fill="[^"]+"')
+                if target_box:
+                    self.assertIn(target_box, source)
+
         style = (REPO / "src/content/style.css").read_text(encoding="utf-8")
         self.assertIn(".course-figure", style)
         self.assertIn(".course-figure img", style)
         self.assertIn(".course-figure figcaption", style)
+
+    def test_chapters_three_through_five_register_and_embed_owned_process_diagrams_accessibly(self):
+        catalog = json.loads((REPO / "src/media-v1.json").read_text(encoding="utf-8"))
+        assets = {asset["id"]: asset for asset in catalog["assets"]}
+        expected = {
+            "IMG-C03-0001": {
+                "chapter": "ch03",
+                "path": "assets/media/course/ch03/codex-desktop-route.svg",
+                "labels": ("官方入口", "ChatGPT", "登录", "Codex", "权限"),
+            },
+            "IMG-C04-0001": {
+                "chapter": "ch04",
+                "path": "assets/media/course/ch04/codex-first-request-loop.svg",
+                "labels": ("任务", "范围", "材料", "期望", "发送前检查", "完整复检"),
+            },
+            "IMG-C05-0001": {
+                "chapter": "ch05",
+                "path": "assets/media/course/ch05/codex-recovery-handoff.svg",
+                "labels": ("停止", "确认结束", "拒绝审批", "检查文件", "备份恢复", "交接卡"),
+            },
+        }
+        for asset_id, rule in expected.items():
+            with self.subTest(asset_id=asset_id):
+                asset = assets.get(asset_id)
+                self.assertIsNotNone(asset, asset_id)
+                self.assertEqual(asset["kind"], "concept-diagram")
+                self.assertEqual(asset["path"], rule["path"])
+                self.assertEqual(asset["mediaType"], "image/svg+xml")
+                self.assertEqual(asset["sourceType"], "owned-diagram")
+                self.assertEqual(asset["rights"], "owned")
+                self.assertEqual(asset["verificationState"], "not-applicable")
+                self.assertIsNone(asset["sourceUrl"])
+                self.assertRegex(asset["alt"], r"示意图")
+                self.assertRegex(asset["caption"], r"示意图|自有绘制")
+                self.assertIn("不是固定版本的界面截图", asset["caption"])
+                diagram = (REPO / "src/media" / Path(rule["path"].removeprefix("assets/media/"))).read_text(
+                    encoding="utf-8"
+                )
+                self.assertIn("<svg", diagram)
+                for label in rule["labels"]:
+                    self.assertIn(label, diagram)
+
+                source = (REPO / f"src/content/{rule['chapter']}.html").read_text(encoding="utf-8")
+                figure = self._figure(source, asset_id)
+                self.assertIn(f'src="{{{{media:{asset_id}}}}}"', figure)
+                self.assertIn(f'alt="{asset["alt"]}"', figure)
+                self.assertIn('loading="lazy"', figure)
+                self.assertRegex(figure, r'width="\d+"')
+                self.assertRegex(figure, r'height="\d+"')
+                self.assertIn(asset["caption"], figure)
 
     def test_dangerous_or_obsolete_absolute_promises_are_removed(self):
         combined = "\n".join(

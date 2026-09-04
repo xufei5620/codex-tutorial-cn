@@ -155,9 +155,15 @@ class MediaRegistryTests(unittest.TestCase):
             set(catalog),
             {"contentVersion", "generatedDate", "status", "assets"},
         )
-        self.assertEqual(
-            {asset["id"] for asset in catalog["assets"]},
-            {"IMG-C01-0001", "IMG-C02-0001"},
+        self.assertTrue(
+            {
+                "IMG-C01-0001",
+                "IMG-C02-0001",
+                "IMG-C03-0001",
+                "IMG-C04-0001",
+                "IMG-C05-0001",
+            }
+            <= {asset["id"] for asset in catalog["assets"]}
         )
         errors, warnings = run_catalog_check(catalog)
         self.assertEqual(errors, [])

@@ -32,6 +32,51 @@
       "verificationState": "not-applicable",
       "verificationDate": null,
       "lastReviewedDate": "2026-09-04"
+    },
+    {
+      "id": "IMG-C03-0001",
+      "kind": "concept-diagram",
+      "path": "assets/media/course/ch03/codex-desktop-route.svg",
+      "mediaType": "image/svg+xml",
+      "alt": "Codex 桌面应用进入路线示意图：官方入口、ChatGPT、登录、Codex 和权限。",
+      "caption": "自有绘制示意图：先认清官方入口、登录、Codex 和权限，再开始操作。它不是固定版本的界面截图。",
+      "sourceType": "owned-diagram",
+      "sourceUrl": null,
+      "license": "owned",
+      "rights": "owned",
+      "verificationState": "not-applicable",
+      "verificationDate": null,
+      "lastReviewedDate": "2026-09-04"
+    },
+    {
+      "id": "IMG-C04-0001",
+      "kind": "concept-diagram",
+      "path": "assets/media/course/ch04/codex-first-request-loop.svg",
+      "mediaType": "image/svg+xml",
+      "alt": "Codex 第一次请求流程示意图：任务、范围、材料、期望、发送前检查、结果和完整复检。",
+      "caption": "自有绘制示意图：先写清任务、范围、材料和期望，再检查结果；它不是固定版本的界面截图。",
+      "sourceType": "owned-diagram",
+      "sourceUrl": null,
+      "license": "owned",
+      "rights": "owned",
+      "verificationState": "not-applicable",
+      "verificationDate": null,
+      "lastReviewedDate": "2026-09-04"
+    },
+    {
+      "id": "IMG-C05-0001",
+      "kind": "concept-diagram",
+      "path": "assets/media/course/ch05/codex-recovery-handoff.svg",
+      "mediaType": "image/svg+xml",
+      "alt": "Codex 停止、检查与交接流程示意图：停止、确认结束、拒绝审批、检查文件、备份恢复和交接卡。",
+      "caption": "自有绘制示意图：先停止并检查现场，再用备份和交接卡恢复；真实界面控件仍需按当前版本实测。它不是固定版本的界面截图。",
+      "sourceType": "owned-diagram",
+      "sourceUrl": null,
+      "license": "owned",
+      "rights": "owned",
+      "verificationState": "not-applicable",
+      "verificationDate": null,
+      "lastReviewedDate": "2026-09-04"
     }
   ]
 }

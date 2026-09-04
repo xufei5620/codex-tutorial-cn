@@ -32,6 +32,21 @@
       "sha256": "c819403e6be9ef8e66e0a40e08a1a15c2edcde1df514ec709a00e0bb972991a6"
     },
     {
+      "path": "assets/media/course/ch03/codex-desktop-route.svg",
+      "size": 3209,
+      "sha256": "415b2d953e2a9b6af9386db36ce981f8ef39a30eeda9fe8b1895ecf176415fec"
+    },
+    {
+      "path": "assets/media/course/ch04/codex-first-request-loop.svg",
+      "size": 3838,
+      "sha256": "7c18a7f5e68e04281f68ec73293209aad60fd6f47183e79d7f52526a92035c23"
+    },
+    {
+      "path": "assets/media/course/ch05/codex-recovery-handoff.svg",
+      "size": 3889,
+      "sha256": "7a13e3e37ee53e246e6d2480e4564af32367033f6783fa4ef738c3896828a730"
+    },
+    {
       "path": "assets/style.css",
       "size": 19204,
       "sha256": "a3d32c89d73f513ad404037dc93b22727f5223e094c943437892e67265a50b84"
@@ -48,18 +63,18 @@
     },
     {
       "path": "ch03.html",
-      "size": 43759,
-      "sha256": "6efe1fc833915629948c956a29636b7a763a07bae03f4eafec76e7effddfc3d2"
+      "size": 44226,
+      "sha256": "306b46b5b469119c042fb4a9f61c435e38e66eac26da69cbdfd77883ccbe85a9"
     },
     {
       "path": "ch04.html",
-      "size": 38519,
-      "sha256": "7fde936f8bf2c97da8d5d83834e0ebb5088a6f46e4930c1adfad7bf195081192"
+      "size": 38999,
+      "sha256": "76fd8ea568e9f58c4614f33b9a6c78ad1567cd81390de332198ef41563927327"
     },
     {
       "path": "ch05.html",
-      "size": 45609,
-      "sha256": "41fcd048571e096bd6cdce59b641436b5dcba5efabfcec8babd5483db6985b6e"
+      "size": 46152,
+      "sha256": "77018af4f8d4d2f6a8bdf08c11b4000dd2deee705eda6dfbf78e5f6975178a5b"
     },
     {
       "path": "ch06.html",

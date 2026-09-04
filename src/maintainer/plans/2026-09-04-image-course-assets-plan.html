@@ -23,7 +23,7 @@
   <main>
     <p class="meta">实施计划｜2026-09-04｜基线：PR #10 的 Phase C｜设计规格：<code>src/maintainer/specs/2026-09-04-image-course-assets-design.html</code></p>
     <h1>图文课程资产系统实施计划</h1>
-    <p><strong>Goal：</strong>在不破坏现有 HTML-first 教程、离线 ZIP、GitHub 和 ChatGPT Sites 的前提下，加入可追溯、可访问、可维护的图片资产管线，并先为第 1–5 章放入两张自有概念图。</p>
+    <p><strong>Goal：</strong>在不破坏现有 HTML-first 教程、离线 ZIP、GitHub 和 ChatGPT Sites 的前提下，加入可追溯、可访问、可维护的图片资产管线，并为第 1–5 章提供自有概念图；真实产品截图仍须等设备实测或明确再分发授权后加入。</p>
     <p><strong>Architecture：</strong>以 <code>src/media-v1.json</code> 作为图片资产登记表，以 <code>data-media-id</code> 和 <code>{{media:...}}</code> 将正文与资产绑定；构建器解析媒体宏、复制本地资产、更新 manifest/SHA256/ZIP，检查器拒绝未登记、无版权状态、缺少 alt 或远程图片。界面截图、示意图和行业 Prompt 效果图分开管理，Notion 只做投影，Sites 使用同一份生成静态目录。</p>
     <p><strong>Tech Stack：</strong>现有 Python 标准库构建器与检查器、JSON Schema、语义化 HTML、SVG/PNG/WebP 静态资源；不新增 JavaScript、数据库、上传服务或运行时依赖。</p>
     <p><strong>Spec：</strong><code>src/maintainer/specs/2026-09-04-image-course-assets-design.html</code></p>
@@ -142,9 +142,21 @@
       </ol>
     </section>
 
+    <section id="task-7">
+      <h2>Task 7：扩展第 3–5 章的流程图文</h2>
+      <p><strong>触发：</strong>零基础读者需要在真实界面截图尚未取得前先有可理解的视觉路线；本任务只加入自有流程示意图，不把它们写成固定界面证据。</p>
+      <p><strong>Files：</strong>创建 <code>src/media/course/ch03/codex-desktop-route.svg</code>、<code>ch04/codex-first-request-loop.svg</code>、<code>ch05/codex-recovery-handoff.svg</code>；扩展 <code>src/media-v1.json</code>、第 3–5 章正文与回归测试；重新生成公开目录和离线 ZIP。</p>
+      <ol>
+        <li>[ ] 为第 3 章画出“官方入口 → ChatGPT → 登录 → Codex → 权限”认路图；为第 4 章画出“任务/范围/材料/期望 → 发送前检查 → 结果 → 完整复检”；为第 5 章画出“停止 → 确认结束 → 拒绝审批 → 检查文件 → 备份恢复 → 交接卡”。</li>
+        <li>[ ] 三张图登记为 <code>IMG-C03-0001</code>、<code>IMG-C04-0001</code>、<code>IMG-C05-0001</code>，使用自有绘制、可访问 SVG、说明性 alt 和图注，并明确“不是固定版本界面截图”。</li>
+        <li>[ ] 在对应章节用语义化 <code>figure</code> 嵌入；保留现有正文作为唯一操作依据，不提升尚未实测的界面状态。</li>
+        <li>[ ] 运行专项图文测试、完整单测、构建、严格检查、ZIP 检查和差异检查；真实 Windows/macOS 截图继续按后续采集清单处理。</li>
+      </ol>
+    </section>
+
     <section class="gate" id="final-gate">
       <h2>最终完成门槛</h2>
-      <p>只有当媒体登记、宏解析、来源/版权、安全检查（包括 pending 隔离、截图采集日期、Prompt 引用完整性和媒体类型/后缀一致性）、两张概念图、Notion 投影说明、在线/离线/Sites 路径和 Windows/Ubuntu 重复构建全部通过时，才把本阶段标记为完成。界面截图和行业 Prompt 效果图仍按规格进入后续阶段，不能用自绘概念图替代真实产品实测。</p>
+      <p>只有当媒体登记、宏解析、来源/版权、安全检查（包括 pending 隔离、截图采集日期、Prompt 引用完整性和媒体类型/后缀一致性）、第 1–5 章五张自有概念图、Notion 投影说明、在线/离线/Sites 路径和 Windows/Ubuntu 重复构建全部通过时，才把本阶段标记为完成。真实界面截图和行业 Prompt 效果图仍按规格进入后续阶段，不能用自绘概念图替代真实产品实测。</p>
     </section>
 
     <!-- Machine-readable task briefs for the subagent-driven execution skill.
@@ -197,6 +209,14 @@ Files: modify src/build.py, src/check.py, src/maintainer/schemas/media-v1.schema
 Implement all four acceptance fixes: (1) rights=pending records remain source-only; macros referencing them fail, and pending assets are excluded from generated assets/media, manifests, checksums, and the offline ZIP; (2) ui-screenshot requires captureDate, with docs distinguishing actual capture date from lastReviewedDate; (3) use uppercase executable media-ID segments while keeping lowercase industry field values, and require every prompt-effect promptId to resolve to an existing prompt-card in src/modules-v1.json before publication; (4) enforce .png/image/png, .webp/image/webp, and .svg/image/svg+xml correspondence. Update prompt-image-guide examples to use the executable convention and existing prompt IDs, without creating fake effect images.
 
 TDD steps: add focused negative tests for pending macro/copy/check/ZIP exclusion, missing screenshot captureDate, unknown promptId, and mediaType/path mismatch; run the focused tests to capture RED; implement the smallest fail-closed changes; run focused tests, the full unittest suite, python src/build.py, python src/check.py --strict --verify-generated, and git diff --check. Commit with subject fix: harden media publication contracts. Write the detailed report to the SDD report path supplied by the controller.
+
+# Task 7: 扩展第 3–5 章的流程图文
+
+Files: create src/media/course/ch03/codex-desktop-route.svg, src/media/course/ch04/codex-first-request-loop.svg, and src/media/course/ch05/codex-recovery-handoff.svg; extend src/media-v1.json, src/content/ch03.html, src/content/ch04.html, src/content/ch05.html, tests/test_foundation_course.py, and tests/test_media_registry.py; regenerate the public tree and offline ZIP. Do not call Sites tools.
+
+Add three self-owned, accessible SVG process diagrams: chapter 3 official entry → ChatGPT → login → Codex → permissions; chapter 4 task/scope/materials/expectation → pre-send check → result → full recheck; chapter 5 stop → confirm finished → reject approval → inspect files → backup/restore → handoff card. Register IMG-C03-0001, IMG-C04-0001, and IMG-C05-0001 as owned concept diagrams with descriptive alt/captions that say they are not fixed-version UI screenshots. Embed semantic figures using media macros while retaining prose as the only operational authority.
+
+TDD steps: add focused figure/catalog tests and run them to capture RED; add only the SVGs, catalog records, and figure embeds needed to pass; run the focused tests, full unittest suite, python src/build.py, python src/check.py --strict --verify-generated, and git diff --check. Commit with subject `feat: add chapter three to five process diagrams`. Write the detailed report to the SDD report path supplied by the controller.
     </script>
   </main>
 </body>

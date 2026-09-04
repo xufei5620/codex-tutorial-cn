@@ -75,7 +75,7 @@ def run_build(root: Path) -> subprocess.CompletedProcess:
 
 def media_asset_record() -> dict[str, object]:
     return {
-        "id": "IMG-C03-0001",
+        "id": "IMG-TEST-0001",
         "kind": "ui-screenshot",
         "path": "assets/media/course/ch03/codex-entry-windows.png",
         "mediaType": "image/png",
