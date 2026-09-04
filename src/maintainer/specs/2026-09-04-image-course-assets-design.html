@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>图文课程资产系统设计 v1</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.7; }
+    body { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 4rem; color: #183238; background: #f7faf9; }
+    h1, h2 { color: #084a51; line-height: 1.25; }
+    section { background: #fff; border: 1px solid #dbe8e5; border-radius: .75rem; padding: 1rem 1.25rem; margin: 1rem 0; }
+    code, pre { background: #eef5f3; border-radius: .3rem; }
+    code { padding: .1rem .3rem; }
+    pre { overflow-x: auto; padding: 1rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #dbe8e5; padding: .5rem; text-align: left; vertical-align: top; }
+    th { background: #edf6f4; }
+    .meta { color: #526b70; }
+    .decision { border-left: .35rem solid #0b7778; }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="meta">设计规格｜2026-09-04｜状态：待用户审阅</p>
+    <h1>图文课程资产系统 v1</h1>
+    <p>为 Codex 中文入门教程增加可维护、可离线、可追溯的图片能力。本文只确定结构和验收标准，不代表图片素材已经制作完成，也不把未实测的产品界面当成事实。</p>
+  </header>
+
+  <section class="decision" id="decision">
+    <h2>1. 设计决策</h2>
+    <p>采用“图片资产登记表 + HTML 语义嵌入 + 构建时复制”的两层方案：图片文件是资产，登记表是来源、版权、替代文字和验证状态的唯一维护入口；课程正文通过稳定的图片 ID 引用资产，生成后的在线页面、离线 ZIP、Sites 站点和 Notion 投影都使用同一份构建结果。</p>
+    <p>真实界面截图与示意图严格分开。截图只用于说明当前实际界面，必须记录平台、应用版本和验证状态；流程图、概念图和 Prompt 效果图可以是自有绘制或 AI 生成，但必须在图注中标明“示意图”或“生成示例”，不得冒充产品截图。</p>
+  </section>
+
+  <section id="audience">
+    <h2>2. 面向读者与使用场景</h2>
+    <ul>
+      <li>主要读者仍是第一次接触 AI 和 Codex 的零基础用户，图片的作用是降低理解和找按钮的成本，不是装饰。</li>
+      <li>第 1–2 章优先使用概念图和流程图；第 3–5 章在完成真实版本实测后再放界面截图；未实测前使用带明确警示的示意图或不放图。</li>
+      <li>行业 Prompt 库按行业目录保存效果图，读者可以只看提示词、只看效果图，或对照两者复盘。</li>
+      <li>所有静态页面在无网络环境中仍能显示本地图片；图片加载失败时，替代文字和图注仍能传达核心信息。</li>
+    </ul>
+  </section>
+
+  <section id="taxonomy">
+    <h2>3. 图片分类与目录</h2>
+    <p>源文件放在 <code>src/media/</code>，生成后复制到公开页面的 <code>assets/media/</code>。文件名使用小写英文、数字和连字符；目录表达用途，不把来源或版权信息藏在文件名里。</p>
+    <pre><code>src/media/
+├─ course/
+│  ├─ ch01/                 # 边界、安全、阅读方法
+│  ├─ ch02/                 # AI 与 Codex 概念图
+│  ├─ ch03/                 # 安装、登录、界面截图或示意图
+│  ├─ ch04/                 # 第一次请求流程图/截图
+│  └─ ch05/                 # 检查、回退、交接卡流程图/截图
+└─ prompts/
+   ├─ ecommerce/            # 电商
+   ├─ education/            # 教育
+   ├─ marketing/            # 营销
+   ├─ design/               # 设计
+   └─ office/               # 办公
+</code></pre>
+    <table>
+      <thead><tr><th>类型</th><th>用途</th><th>允许的来源</th><th>必须标注</th></tr></thead>
+      <tbody>
+        <tr><td>界面截图</td><td>告诉读者在哪里看、点什么</td><td>维护者实际截取、用户提供且获准使用、明确允许再分发的官方素材</td><td>平台、应用版本、截取日期、验证状态</td></tr>
+        <tr><td>流程图/概念图</td><td>解释权限层次、提示词结构和工作闭环</td><td>本项目自绘 SVG/PNG，或经记录的生成图片</td><td>“示意图”或“生成示例”、作者/生成方式</td></tr>
+        <tr><td>Prompt 效果图</td><td>展示同一提示词的视觉结果和可复盘差异</td><td>自有生成、获授权素材或脱敏虚构案例</td><td>行业、Prompt ID、模型/工具（若可公开）、版权状态</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="registry">
+    <h2>4. 资产登记表</h2>
+    <p>新增 <code>src/media-v1.json</code>。每个可发布图片都必须有唯一 ID；没有登记、版权状态为 pending 或缺少替代文字的图片不能进入正式页面。</p>
+    <pre><code>{
+  "contentVersion": "0.4.0",
+  "generatedDate": "2026-09-04",
+  "status": "draft",
+  "assets": [
+    {
+      "id": "IMG-C03-0001",
+      "kind": "ui-screenshot",
+      "path": "assets/media/course/ch03/codex-entry-windows.png",
+      "mediaType": "image/png",
+      "alt": "ChatGPT 桌面应用中选择 Codex 的实际界面，具体位置以当前版本为准",
+      "caption": "Windows 示例：从 ChatGPT 产品入口选择 Codex（界面截图，版本与日期见维护信息）。",
+      "sourceType": "maintainer-capture",
+      "sourceUrl": null,
+      "license": "owned",
+      "rights": "owned",
+      "platform": "windows",
+      "observedProductVersion": "记录实际版本",
+      "verificationState": "unverified",
+      "verificationDate": null,
+      "lastReviewedDate": "2026-09-04"
+    }
+  ]
+}</code></pre>
+    <p>字段含义：<code>kind</code> 区分截图、示意图和效果图；<code>sourceType</code> 说明素材如何取得；<code>rights</code> 控制能否发布；<code>verificationState</code> 与课程单元的产品实测状态分开；<code>sourceUrl</code> 只记录可公开核验的来源，不把本地私人路径或凭据写入登记表。</p>
+  </section>
+
+  <section id="embedding">
+    <h2>5. HTML 嵌入约定</h2>
+    <p>正文使用语义化 <code>figure</code>，并用稳定的 <code>data-media-id</code> 关联登记表。源码中的 <code>{{media:IMG-C03-0001}}</code> 由构建器解析为相对图片路径，禁止直接写外部图片 URL。</p>
+    <pre><code>&lt;figure class="course-figure" data-media-id="IMG-C03-0001"&gt;
+  &lt;img src="{{media:IMG-C03-0001}}"
+       alt="ChatGPT 桌面应用中选择 Codex 的实际界面，具体位置以当前版本为准"
+       loading="lazy" width="1600" height="900"&gt;
+  &lt;figcaption&gt;Windows 示例：从 ChatGPT 产品入口选择 Codex。界面截图，版本与日期见维护信息。&lt;/figcaption&gt;
+&lt;/figure&gt;</code></pre>
+    <ul>
+      <li>每张图必须有非空、描述性 <code>alt</code>；纯装饰图使用空替代文字并说明原因。</li>
+      <li>图注说明图片回答了什么问题；截图图注必须包含“截图”，示意图必须包含“示意图”或“生成示例”。</li>
+      <li>提供宽高，避免离线打开时页面跳动；使用响应式 CSS，正文图片在窄屏不超出页面。</li>
+      <li>不把图片中的文字作为唯一操作说明；关键步骤仍以 HTML 正文写出。</li>
+    </ul>
+  </section>
+
+  <section id="source-rights">
+    <h2>6. 来源、版权与事实边界</h2>
+    <ul>
+      <li>GitHub 上找到的教程、截图和效果图默认只是研究线索，不等于可以复制或再发布；使用前必须确认许可证、作者和再分发范围。</li>
+      <li>官方页面截图也不能自动视为可自由再分发。没有清楚授权时，优先使用链接、文字说明或自绘示意图。</li>
+      <li>真实产品截图必须与对应课程单元的 <code>verificationState</code> 和平台信息一致；截图过期后降级为示意/历史参考，不能继续作为当前操作证据。</li>
+      <li>AI 生成图片登记生成工具、日期和输入素材的权利状态；效果图中的品牌、人物、文字和标志使用虚构或已获授权内容。</li>
+      <li>登记表不保存 API Key、登录凭据、私人本地路径、客户资料或未经脱敏的截图。</li>
+    </ul>
+  </section>
+
+  <section id="build">
+    <h2>7. 构建、离线包与 Sites</h2>
+    <ol>
+      <li>构建器读取 <code>src/media-v1.json</code>，验证 ID 唯一、路径存在、格式允许、替代文字和版权字段完整。</li>
+      <li>构建器把登记的媒体复制到根目录 <code>assets/media/</code>，解析正文的媒体宏，并把图片加入在线 manifest、<code>SHA256SUMS.txt</code> 和离线 ZIP。</li>
+      <li>严格检查拒绝远程图片 URL、路径越界、符号链接、未登记图片、缺失图片和含凭据的元数据。</li>
+      <li>Sites 使用同一份生成目录；保存版本前验证图片与 HTML 一起进入静态输出，部署后再检查站点入口和章节路由。</li>
+      <li>Notion 只做阅读投影和资产台账视图，不能反向修改 GitHub 的来源登记；图片可上传到 Notion，但必须保留对应资产 ID。</li>
+    </ol>
+  </section>
+
+  <section id="rollout">
+    <h2>8. 分阶段交付</h2>
+    <table>
+      <thead><tr><th>阶段</th><th>交付内容</th><th>完成标准</th></tr></thead>
+      <tbody>
+        <tr><td>阶段 A：基础设施</td><td>登记表、JSON Schema、媒体宏、构建复制、离线 manifest、严格校验、CSS 图文组件</td><td>无图片时旧页面零漂移；加入一张测试图后在线、离线和 Sites 包路径一致</td></tr>
+        <tr><td>阶段 B：基础篇配图</td><td>第 1–5 章关键概念图和流程图；第 3–5 章只在真实设备复核后加入界面截图</td><td>每张图有 alt、图注、版权和验证记录；读者不看图也能完成步骤</td></tr>
+        <tr><td>阶段 C：行业效果图</td><td>按行业和 Prompt ID 补效果图，保留输入约束、输出示例和版权说明</td><td>效果图与提示词一一对应，可在离线包和 Sites 中打开，不泄露真实资料</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="non-goals">
+    <h2>9. 本次不做</h2>
+    <ul>
+      <li>不把教程改造成需要 JavaScript、数据库、登录或图片上传的 Web 应用。</li>
+      <li>不一次性制作所有章节和所有行业的图片；先完成资产系统和少量代表性图片。</li>
+      <li>不使用未经授权的 GitHub 教程截图、他人效果图或带真实敏感信息的用户截图。</li>
+      <li>不因有图片就降低正文的安全提示、来源核验或产品实测门槛。</li>
+    </ul>
+  </section>
+
+  <section id="acceptance">
+    <h2>10. 规格验收</h2>
+    <p>用户批准本规格后，下一步实现计划必须覆盖以下验收项：图片登记表和 Schema；媒体宏与 HTML 语义组件；构建、manifest、SHA256SUMS、ZIP 和 Sites 静态包；版权/来源/验证字段；Notion 投影约定；至少一张流程图和一张带完整元数据的测试图；Windows 与 Ubuntu/WSL 的重复构建检查；没有图片时现有页面、链接和正文保持一致。</p>
+  </section>
+</body>
+</html>
