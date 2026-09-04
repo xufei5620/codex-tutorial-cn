@@ -21,11 +21,11 @@
     <nav aria-label="全部章节">
       <p class="part-label">第一部分 · 基础</p>
       <ol class="chapters">
-        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot draft" title="草稿"></span></a></li>
-        <li><a href="ch02.html"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot draft" title="草稿"></span></a></li>
-        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot draft" title="草稿"></span></a></li>
-        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot draft" title="草稿"></span></a></li>
-        <li class="is-current"><a href="ch05.html" aria-current="page"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot draft" title="草稿"></span></a></li>
+        <li><a href="ch01.html"><span class="n">01</span><span class="t">开始前：边界、安全与阅读方法</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
+        <li><a href="ch02.html"><span class="n">02</span><span class="t">认识 AI 与 Codex</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
+        <li><a href="ch03.html"><span class="n">03</span><span class="t">安装、登录与界面</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
+        <li><a href="ch04.html"><span class="n">04</span><span class="t">第一次对话：把需求说清楚</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
+        <li class="is-current"><a href="ch05.html" aria-current="page"><span class="n">05</span><span class="t">日常协作：检查、修改与回退</span><span class="dot editorial-reviewed" title="已编辑审校"></span></a></li>
       </ol>
       <p class="part-label">第二部分 · 扩展</p>
       <ol class="chapters">
@@ -41,17 +41,19 @@
       </ol>
       <a class="side-entry" href="prompts.html">行业提示词库</a>
     </nav>
-    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li></ul></div>
+    <div class="side-foot"><ul class="legend"><li><span class="dot draft"></span>草稿</li><li><span class="dot editorial-reviewed"></span>已编辑审校</li></ul></div>
   </aside>
   <main class="doc-main" id="content">
     <article class="chapter">
       <header class="chapter-head">
-        <p class="kicker">第 5 章 <span class="badge draft">草稿</span></p>
+        <p class="kicker">第 5 章 <span class="badge editorial-reviewed">已编辑审校</span></p>
         <h1>日常协作：检查、修改与回退</h1>
-        <ul class="meta"><li>预计阅读 4 分钟</li><li>适用平台：Windows / macOS</li><li>前提：读过第 4 章，能发出一个四要素齐全的请求</li></ul>
+        <ul class="meta"><li>正文阅读约 20 分钟；动手练习约 20–30 分钟</li><li>适用平台：Windows / macOS</li><li>前提：读过第 4 章，能发出一个四要素齐全的请求</li></ul>
       </header>
 
-      <aside class="goal"><strong>本章目标</strong><p><a href="ch04.html">第 4 章</a>教你发出第一个请求；这一章教你把这件事变成可靠的日常习惯——每次都检查、有效地提修改、永远留退路。</p></aside>
+      <aside class="goal"><strong>本章目标</strong><p><a href="ch04.html">第 4 章</a>教你发出第一个请求；这一章把它变成一个能验收、能纠正、能回退的工作闭环。学完后，你将能核对一份输出、提出一次精确修改、保住原文件，并判断应该继续、插话纠偏、排队下一步还是新开对话。</p></aside>
+      <aside class="callout note" data-label="继续使用同一个实际练习名"><p>本章仍把第 3 章记录的最终项目和文件夹名称简称为「Codex-练习」。如果你的实际名称带「-02」或其他编号，下面每一处「Codex-练习」都应替换成那个实际名称；不要为了和示例文字完全一样而另建项目或文件夹。</p></aside>
+      <aside class="callout note" data-label="本章产品操作的验证范围"><p>事实分类和纸面练习已经完成编辑审校；Local 文件操作、停止控件、Steer / Queue、Search chats 和 Memories 的界面路径<strong>尚未完成 Windows 与 macOS 当前版本的跨平台实测</strong>。遇到与正文不同的控件或状态时，记录实际现象并停止该项操作，不为追求示例结果而试点高权限或真实资料。</p></aside>
 
       <nav class="section-nav" aria-label="本章内容"><p class="label">本章内容</p><ol>
         <li><a href="#s1">5.1 为什么不能照单全收</a></li>
@@ -62,93 +64,246 @@
         <li><a href="#s6">5.6 「记忆」功能：让它记住你，还是不记</a></li>
       </ol></nav>
 
-      <section id="s1" data-unit-id="CDX-M-0025" data-content-status="draft" data-verification-state="unverified">
+      <section id="s1" data-unit-id="CDX-M-0025" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">5.1</span>为什么不能照单全收</h2>
-        <p><a href="ch02.html">第 2 章</a>说过一个道理：Codex 有时会一本正经地编造内容，也完全不知道你没告诉它的事。所以最危险的用法，就是「它写什么，你就直接用什么」。</p>
-        <p>正确的做法是一个循环：<strong>你交代 → 它产出 → 你检查 → 你决定</strong>。检查完，你有三种选择：采用、让它改、或者放弃重来。</p>
-        <p>检查这一步永远不能省。通知发出去、报告交上去，署名的是你，不是 Codex。「是 AI 写错的」不是能拿来解释的理由。</p>
+        <p><a href="ch02.html">第 2 章</a>说过：Codex 可能误解材料、抄错数字，也可能补上你没有提供的内容。收到回复不等于任务完成；只有你核对并确认以后，它才是可以采用的结果。</p>
+        <p>从这一章开始，把下面这个顺序变成固定习惯：<strong>描述需求 → 确认范围与权限 → 执行 → 检查 → 修正或回退</strong>。最后一步通过，才进入发送、发布或交付。</p>
+
+        <h3>贯穿本章的虚构练习</h3>
+        <p>为了让每个人都能核对同一份答案，本章使用一份固定的虚构材料和一份人工编写的「待审草稿」。不要等待 Codex 自己出错；先练会发现错误，再处理自己的真实任务。</p>
+        <div class="callout example" data-label="原始材料：蓝溪文具开学季活动（完全虚构）">
+          <p class="q">品牌：蓝溪文具。
+活动时间：2026 年 9 月 10 日至 2026 年 9 月 15 日。
+晨雾 A5 笔记本：18 元一本。
+云纹便签：12 元一本。
+范围：只介绍产品、价格和活动日期；目前没有折扣活动。</p>
+        </div>
+        <div class="callout output" data-label="待审草稿：本章固定练习稿">
+          <p>蓝溪文具开学季活动火热开始！连续 6 天，晨雾 A5 笔记本只要 18 元，云纹便签只要 12 元。全场第四件半价，爆款限时抢购！</p>
+        </div>
+        <div class="callout example" data-label="练习 1：先做决定">
+          <p class="q">先不要修改文字。请在「直接采用、修改后采用、放弃重来」中选一个，并写出理由。然后圈出所有姓名或名称、数字、日期、优惠承诺和宣传结论。这个静态页面不能直接填写，请用纸笔或系统记事本记录答案；只使用上面的虚构材料，不要写入真实业务数据。</p>
+        </div>
+        <p><strong>可观察结果：</strong>选择「修改后采用」。能逐项圈出品牌、两个产品名、18 元、12 元和「连续 6 天」；还能发现草稿没有给出原材料中的完整日期。把「连续 6 天」作为推导时，要写明首尾两天都计算。「火热开始」「第四件半价」「爆款」「限时抢购」都是材料没有支持的促销或销量结论，不能直接发布。</p>
+        <aside class="callout note" data-label="如果你的结果不同"><p>无论你选了「直接采用」「放弃重来」，还是选择正确但漏圈项目，都回到原始材料逐项回答三问：每项事实的依据在哪里？结果是否满足原要求？它有没有多做或少说？补齐品牌、产品名、金额、完整日期和四处无依据宣传后，再重新选择；与上方可观察结果一致才继续。</p></aside>
+        <aside class="callout stop" data-label="停一停"><strong>停止条件：</strong>还没有完成核对，或内容将被发送、发布、付款、删除时，不要把草稿当成最终结果。OpenAI 的提示指南同样建议重要工作先要求最终检查，再由使用者亲自复核后使用或分享（<a href="https://learn.chatgpt.com/docs/prompting">官方说明</a>）。</aside>
       </section>
 
-      <section id="s2" data-unit-id="CDX-M-0026" data-content-status="draft" data-verification-state="unverified">
+      <section id="s2" data-unit-id="CDX-M-0026" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">5.2</span>核对事实：把内容分成三类</h2>
-        <p>检查一段输出时，先把里面的信息分成三类，再分别处理。</p>
+        <p>先找出可以判断真假的陈述，例如名称、数字、日期、承诺、引用和链接。普通修辞不一定是事实，但只要一句宣传会让读者误以为它是事实，也要核对。</p>
         <div class="table-wrap"><table>
           <thead><tr><th>类别</th><th>怎么识别</th><th>怎么处理</th></tr></thead>
           <tbody>
-            <tr><td><strong>材料里有的</strong></td><td>能在你提供的文字里找到出处</td><td>对一遍有没有抄错、改错，数字和名字要重点看</td></tr>
-            <tr><td><strong>合理推断的</strong></td><td>材料里没直说，但顺理成章，比如把「下周三」换算成具体日期</td><td>确认推断用的前提对不对</td></tr>
-            <tr><td><strong>凭空出现的</strong></td><td>材料里完全没提到的名字、数字、说法、出处</td><td>一律当作编造处理：要么删掉，要么自己核实后再用</td></tr>
+            <tr><td><strong>材料有直接依据</strong></td><td>能指出原材料里的具体句子或数字</td><td>逐字对照，重点检查名称、金额、数量和日期</td></tr>
+            <tr><td><strong>从材料推导</strong></td><td>材料没有直接写结论，但可以列出前提和计算过程</td><td>写明前提与算法；前提不明确就不要把推导当事实</td></tr>
+            <tr><td><strong>无材料依据</strong></td><td>原材料找不到，且无法从已有内容推出</td><td>删除、标为待核实，或找到可靠来源后再使用</td></tr>
           </tbody>
         </table></div>
-        <div class="callout example" data-label="练习（虚构材料）">
-          <p class="q">你给了蓝溪文具三款笔记本的价格，让 Codex 写一段促销文案。输出里出现了「全场第四件半价」——你根本没提过这个活动。这就属于「凭空出现的」，要立刻指出：「我没有提供这个活动，请删掉。」</p>
+        <aside class="callout note" data-label="两个容易混淆的地方"><p>「材料有直接依据」只说明输出忠实于材料，不保证材料在现实中一定正确；重要事实还要回到权威来源核实。「从材料推导」也不等于可以省略前提，例如 2026 年 9 月 10 日至 2026 年 9 月 15 日算 6 天，前提是首尾两天都计算。</p></aside>
+
+        <div class="callout example" data-label="练习 2：给六条陈述分类">
+          <ol>
+            <li>活动从 2026 年 9 月 10 日开始。</li>
+            <li>晨雾 A5 笔记本每本 18 元。</li>
+            <li>活动连续 6 天。</li>
+            <li>云纹便签每本 12 元。</li>
+            <li>全场第四件半价。</li>
+            <li>晨雾 A5 笔记本是爆款。</li>
+          </ol>
+          <p>给每条写下「类别、依据或推导过程、处理动作」。请继续用纸笔或系统记事本作答，不要把真实姓名、账号或业务资料放进练习记录。</p>
         </div>
+        <details>
+          <summary>完成后查看参考答案</summary>
+          <div class="table-wrap"><table>
+            <thead><tr><th>序号</th><th>类别</th><th>依据或推导</th><th>处理</th></tr></thead>
+            <tbody>
+              <tr><td>1、2、4</td><td>材料有直接依据</td><td>原文分别给出开始日期、18 元和 12 元</td><td>保留，并逐字核对日期、名称和价格</td></tr>
+              <tr><td>3</td><td>从材料推导</td><td>2026 年 9 月 10 日至 2026 年 9 月 15 日，首尾两天都计算：15 − 10 + 1 = 6</td><td>若活动规则没有说明计算口径，就改回明确的日期范围</td></tr>
+              <tr><td>5</td><td>无材料依据，而且与材料冲突</td><td>材料明确写着「目前没有折扣活动」</td><td>删除；若以后新增活动，必须先取得新的可靠材料</td></tr>
+              <tr><td>6</td><td>无材料依据</td><td>材料没有销量或热度数据</td><td>删除，或先找到可靠依据再写</td></tr>
+            </tbody>
+          </table></div>
+        </details>
+        <p><strong>可观察结果：</strong>六条都完成分类；有依据的能指出原文；推导项写出前提和算法；第 5 条标明与原材料冲突；第 5、6 条的处理动作都是删除或取得新依据后再写。</p>
+        <aside class="callout note" data-label="分错时怎么纠正"><p>依次问：「原文能直接找到吗？」「不能的话，推导过程是什么？」「两者都没有，为什么还能对外使用？」不要让 Codex 自己给自己作证，最后仍要亲自对照材料。</p></aside>
+        <aside class="callout stop" data-label="停一停"><strong>停止条件：</strong>来源缺失、彼此冲突、已经过期，或仍有无依据的姓名、数字、承诺和链接时，先停止交付。需要当前信息时，应要求使用当前来源并给出链接，之后再亲自打开来源核对（<a href="https://learn.chatgpt.com/docs/prompting">官方说明</a>）。</aside>
       </section>
 
-      <section id="s3" data-unit-id="CDX-M-0027" data-content-status="draft" data-verification-state="unverified">
+      <section id="s3" data-unit-id="CDX-M-0027" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">5.3</span>有效的修改请求</h2>
-        <p>结果不满意时，别只说「不好，重写」。它不知道哪里不好，重写往往更糟。有效的修改请求有三个特征。</p>
-        <ul>
-          <li><strong>具体：</strong>指着改。「第二段太啰嗦，压缩到两句」好过「简洁一点」。</li>
-          <li><strong>少量：</strong>一次提一两个点。改完检查，再提下一个。一口气提八个要求，经常顾此失彼。</li>
-          <li><strong>可核对：</strong>提的要求你自己能验证。「控制在 100 字以内」「保留所有价格数字」都是发回来一眼能查的。</li>
-        </ul>
+        <p>「不好，重写」没有指出问题，也没有说明哪些内容必须保留。对零基础读者，最稳妥的做法是先改影响最大的一个或两个问题：指出位置、说明改法、锁住不能动的内容，再写出验收条件。</p>
+        <div class="callout example" data-label="可复制的修改模板">
+          <p class="q">只修改：〖具体位置或当前版本〗。
+需要改成：〖一个或两个明确改动〗。
+必须保留：〖已经核对正确的名称、数字、日期或结构〗。
+不要改：〖不在本轮范围内的内容〗。
+完成后列出：改了什么、没改什么、仍需核实什么。</p>
+        </div>
         <ul class="compare">
-          <li class="bad">「感觉不太对，你再弄弄。」它不知道哪里不对，只能瞎猜，越猜越偏。</li>
-          <li class="good">「两处修改：① 开头别用『亲爱的顾客』，直接说事；② 最后加一句退换货提醒，用材料里原来的说法。」——具体到句子，一次只改两处。</li>
+          <li class="bad">「感觉不太对，你再弄弄。」——没有位置、改法或验收标准。</li>
+          <li class="good">「只根据原始材料修改待审稿：① 删除『火热开始』『第四件半价』『爆款』『限时抢购』；② 把『连续 6 天』改成『2026 年 9 月 10 日至 2026 年 9 月 15 日』。保留『蓝溪文具』、两个产品名和 18 元、12 元，不新增优惠、销量或库存结论。完成后返回完整新版并列出改动。」</li>
         </ul>
-        <p>如果改了三四轮反而越改越乱，别硬撑。把目前最好的一版复制出来，开一个新对话，带着这个版本和明确的要求重新开始（做法见 <a href="ch05.html#s5">5.5</a>）。</p>
+        <div class="callout example" data-label="练习 3：发出一次精确修改">
+          <p>Codex 看不到教程页面里没有放进当前对话的材料。把下面这段完整请求发给它：</p>
+          <p class="q">原始材料（完全虚构）：品牌是蓝溪文具；活动日期是 2026 年 9 月 10 日至 2026 年 9 月 15 日；晨雾 A5 笔记本 18 元；云纹便签 12 元。没有折扣、销量或库存结论。
+
+待审草稿：蓝溪文具开学季活动火热开始！连续 6 天，晨雾 A5 笔记本只要 18 元，云纹便签只要 12 元。全场第四件半价，爆款限时抢购！
+
+只根据原始材料修改待审草稿：删除「火热开始」「第四件半价」「爆款」「限时抢购」；把「连续 6 天」改成「2026 年 9 月 10 日至 2026 年 9 月 15 日」。保留「蓝溪文具」、两个产品名和 18 元、12 元，不新增事实。先返回完整修改版，再给一张三行核对表：「改了什么 / 保留了什么 / 仍需核实什么」。</p>
+        </div>
+        <p><strong>可观察结果：</strong>新稿不再出现「火热开始」「第四件半价」「爆款」「限时抢购」；「蓝溪文具」、两个产品名、18 元、12 元、2026 年 9 月 10 日至 2026 年 9 月 15 日仍在；没有新增优惠、销量或库存信息；回复末尾确实有「改了什么 / 保留了什么 / 仍需核实什么」三行核对表。</p>
+        <aside class="callout note" data-label="如果它多改了"><p>把上一版重新粘贴为当前材料，先只处理一处：「以下是上一版；这次只删除『第四件半价』，其他文字逐字不变。完成后只报告这一处改动。」改完核对，再做下一处。官方提示指南也建议用具体的后续消息改变结果，并把边界集中在最重要的一两项（<a href="https://learn.chatgpt.com/docs/prompting">官方说明</a>）。</p></aside>
+        <aside class="callout stop" data-label="停一停"><strong>停止条件：</strong>它开始处理错误文件、已确认的名称或数字消失、要求彼此冲突，或反复带回已否定内容时，停止追加修改。保存目前最好的一版，再按 <a href="ch05.html#s5">5.5</a> 的交接卡重开。</aside>
       </section>
 
-      <section id="s4" data-unit-id="CDX-M-0028" data-content-status="draft" data-verification-state="unverified">
+      <section id="s4" data-unit-id="CDX-M-0028" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">5.4</span>保留退路</h2>
-        <p>养成下面三个习惯，不管出什么问题，你都有后悔药可吃。</p>
+        <p>可靠的回退不是「相信总有撤销按钮」，而是在动手前就准备好一份能打开的原件。下面先学所有人都能用的文件做法，再了解 Git 项目的可选审阅功能。</p>
+        <aside class="callout stop" data-label="未完成跨平台实测"><strong>验证提醒：</strong>本节的文件写入、审批、停止与回退流程<strong>尚未完成 Windows 与 macOS 跨平台实测</strong>。界面文字和控件可能随版本变化；只用本章的虚构材料和专用练习文件夹，不要把下面步骤直接用于唯一原件或真实业务数据。</aside>
         <ol class="steps">
-          <li><strong>动文件前先复制一份。</strong>让 Codex 处理某个文件之前，自己先复制一份原件放在一边。这是最朴素、也最可靠的保险。</li>
-          <li><strong>要新文件，不要覆盖。</strong>交代任务时说清楚：「结果放在新文件里，不要改动原文件。」这样原件永远保持干净。</li>
-          <li><strong>版本留名。</strong>重要的内容多留几个版本，文件名里带上日期或序号，比如「促销文案-0901-第2版」。乱了随时能退回上一版。</li>
+          <li><strong>复用同一个专用练习文件夹。</strong>找到第 3、4 章已经使用的「Codex-练习」文件夹；只有确实尚未创建时才新建，不要再做一个同名或带“(2)”的文件夹。</li>
+          <li><strong>先确定外部备份目录，再做三个同名预检。</strong>推荐在实际练习文件夹的<strong>同一级</strong>新建专用目录「〖你的实际练习名〗-外部备份」，确保它不在 Local 选中的练习文件夹里面；若该目录已存在就先打开核对，不覆盖其中内容。然后用文件管理器分别检查：外部备份目录里的「蓝溪文具-原始材料-备份.txt」、实际练习文件夹里的「蓝溪文具-原始材料.txt」，以及输出候选名「蓝溪文具-促销文案-2026-09-04-v02.txt」。用纸笔或系统记事本写下每个文件的完整位置、名称和「存在 / 不存在」；不要只看搜索结果或最近文件列表。</li>
+          <li><strong>存在就绝不覆盖。</strong>只有名称和位置都一致时才打开比较：内容相同可在记录中明确写「复用现有文件，不写入」；内容不同就停止，不删除、重命名或覆盖它。备份或原始材料不同时，本次练习不再继续；输出 v02 不同时，先保留现场并停止本次尝试，再从 v03 开始逐个预检，选择<strong>下一个未使用的 vNN</strong>。如果 v02 内容与本章固定正文完全相同，可明确复用 v02，不再创建或修改文件。</li>
+          <li><strong>只创建缺少的原始材料和备份。</strong>把本章上方「原始材料」框内五行文字复制到纯文本文件：Windows 可用记事本；macOS 可用文本编辑并先选择“制作纯文本”或同义选项。先创建确认不存在的工作区外备份，打开核对品牌「蓝溪文具」、完整年份日期、两个产品名、价格和「目前没有折扣活动」；再只创建确认不存在的工作区内原始材料。已标记为「复用」的文件不重新保存。</li>
+          <li><strong>记下本次实际输出文件名。</strong>v02 不存在时，实际文件名就是「蓝溪文具-促销文案-2026-09-04-v02.txt」；如果按上一步选了其他 vNN，就写下那个完整名称。后面提示词和 5.5 交接卡出现的输出文件名都必须替换为这个实际名称，不得一处用 v02、另一处用其他版本。</li>
+          <li><strong>先确认项目归属，再确认 Local 运行位置。</strong>在 ChatGPT 桌面应用中选择 Codex，打开第 4 章使用的「Codex-练习」项目并新建一条 Codex 对话，先确认对话确实归属于该练习项目；再单独确认运行位置为 <strong>Local</strong>，并且只打开「Codex-练习」文件夹。当前界面若把两步放在同一流程中，也要分别核对“项目归属”和“Local + 文件夹”两个结果。任一项看不清就回到<a href="ch03.html#s6">3.6</a>，不要在无项目对话、其他项目或别的文件夹里试做。</li>
+          <li><strong>检查当前权限。</strong>新的 Local 对话使用输入框下方的 <strong>Ask for approval</strong>，不要使用 <strong>Full access</strong>。沙盒决定技术边界，审批决定何时停下来问你；二者不是同一个开关。</li>
+          <li><strong>先复述，后写入。</strong>新对话不会自动继承上一段练习的最终文字。把已验收正文和本次实际文件名都明确交给新对话，先要求它只复述并再次检查目标名是否已存在；你亲自核对无误后，才确认只创建新文件。</li>
+          <li><strong>打开三份文件核对。</strong>确认工作区外备份和工作区内原始材料仍能打开、内容没变；新输出只包含已经验收的正文。同时比对文件的修改时间和 Codex 报告的文件清单，确认没有其他文件被改动。</li>
         </ol>
-        <h3>Codex 自带的两道保险</h3>
-        <p>除了上面三个靠自己的习惯，Codex 本身还有两样东西帮你留退路：</p>
-        <ul>
-          <li><strong>沙盒：它只能碰你指定的那个文件夹。</strong>新建对话时选了 Local 并挑了一个文件夹，Codex 默认就只能读写那个文件夹里的东西，想碰外面的会先问你（<a href="ch03.html#s7">第 3 章 3.7</a>）。所以练习时永远新建一个专用文件夹，把要处理的文件<em>复制</em>进去，再把这个文件夹交给它——原件留在外面，它碰不到。</li>
-          <li><strong>审阅面板：改了什么，一行行给你看。</strong>它修改文件后，对话旁边会出现审阅面板（review panel），一般用颜色区分删掉的和加上的内容，并提供撤销（revert）。看到它改了你没让它改的地方，先在面板里撤销那一处（撤销能力的边界见下方说明）。</li>
-        </ul>
-        <aside class="callout note" data-label="说明"><p>审阅面板的「撤销」在有的情况下并不完整（官方文档主要针对程序员用的 Git 项目描述了撤销能力，普通文件夹的一键撤销没有明确说明）。所以「动文件前先复制一份」这个习惯不能因为有审阅面板就省掉——它是最后一道保险，不是第一道。</p></aside>
-        <aside class="callout stop" data-label="停一停"><strong>停止条件：</strong>如果 Codex 的建议涉及<strong>删除、覆盖、清空</strong>任何你没有备份的内容，先点拒绝。审批弹窗里出现「删除」「delete」「remove」字样，也先拒绝。做完备份再继续。没有备份的删除，没有后悔药。</aside>
+        <div class="callout example" data-label="练习 4：生成一个可回退的新版本">
+          <p>先完成上方同名预检。如果 v02 不存在，下方提示可原样使用；如果你记录的实际文件名是其他 vNN，发送前必须把提示中出现的文件名全部替换为实际文件名。</p>
+          <p class="q">当前工作位置应当是「Codex-练习」文件夹。读取「蓝溪文具-原始材料.txt」，核对下面正文里的活动日期、两个产品名和价格。核对一致后，准备把正文保存为新文件「蓝溪文具-促销文案-2026-09-04-v02.txt」。
+
+待保存正文：蓝溪文具开学季活动时间为 2026 年 9 月 10 日至 2026 年 9 月 15 日。晨雾 A5 笔记本 18 元，云纹便签 12 元。
+
+不要修改、移动、覆盖或删除任何已有文件。第一步只读取原始材料，确认「蓝溪文具」、完整日期、两个产品名和价格一致，检查完整目标文件名是否已存在，再复述当前工作位置、完整目标文件名、检查结果和待保存正文。不要写入；如果目标名已存在，只报告并停止；只有我确认后才创建新文件。完成后列出实际读取、创建、修改或删除的文件。</p>
+        </div>
+        <p>先核对它复述的品牌「蓝溪文具」、文件名、位置和正文。只有目标名仍不存在，并且所有内容都正确，才回复：「确认，只创建这个新文件。」如果它没有等待就开始写入，按下方中断流程处理。</p>
+        <p><strong>可观察结果：</strong>Codex 先正确复述「Codex-练习」、本次实际文件名、品牌「蓝溪文具」和固定正文。新建输出分支中，确认后只多出该实际输出，已经存在的备份和原始材料内容与修改时间不变；复用输出分支中，明确记录「输出内容相同，复用现有文件」，该输出没有被创建或修改。若备份或原始材料此前确实不存在，可按第 4 步创建并记录；任何已经存在的文件都不得被覆盖。无论哪个分支，提示词、实际文件和 5.5 交接卡都使用同一个完整文件名。</p>
+        <aside class="callout note" data-label="沙盒不是绝对保险"><p>在常见的 Ask for approval 配置下，Codex 可以在当前工作区内读取、编辑和运行常规命令；需要越过工作区边界或使用网络时会进入审批流程。权限配置可以改变，Full access 会移除沙盒限制。因此，把备份放在工作区外能降低风险，但仍要检查当前权限，并拒绝不符合预期的越界请求。详见 <a href="https://learn.chatgpt.com/docs/sandboxing">OpenAI 官方沙盒说明</a> 和<a href="ch03.html#s7">第 3 章 3.7</a>。</p></aside>
+
+        <h3>零基础停止与安全恢复</h3>
+        <ol class="steps">
+          <li><strong>先用当前界面的停止控制。</strong>如果 Codex 读错文件、未等确认就写入或准备越界，立即使用当前运行界面显示的「停止」「取消」或同类控件。控件名称、图标和位置可能随平台或版本不同；以当前界面为准，不要盲猜快捷键。</li>
+          <li><strong>确认真的已停止。</strong>等到回复不再追加新内容，并且当前界面显示活动轮次已经结束或已取消，再做检查。如果状态不清楚，不要继续发新命令。</li>
+          <li><strong>拒绝尚未处理的审批。</strong>如果界面仍有待审批的文件、网络或越界请求，选择拒绝或取消；不要因为已按停止就默认待审批请求也自动消失。</li>
+          <li><strong>检查已经发生了什么。</strong>当前版本若提供活动记录或变更列表，就用它核对读取记录；没有这类证据时，对“读过哪些文件”明确记为「无法确认」，不能从普通文件状态反推读取历史。无论是否提供记录，都要亲自检查实际文件夹，写下可证实的已修改、已创建和已删除文件；打开工作区外备份、工作区内原始材料和所有新输出，比对内容与修改时间。</li>
+          <li><strong>恢复后才重开。</strong>不要在慌乱中覆盖或删除现场。原始材料被改时，先将当前现场另存一份，再用已经打开验证的工作区外备份恢复，恢复后重新打开核对。如果只多出一个意外新文件，先保留并记录；只有确认它不含唯一内容、删除目标完全正确且有可用备份时，才由你亲自处理。最后选择下一个未使用的 vNN，把实际文件名写进 5.5 交接卡，在新 Local 对话中先做只读复述，等你确认后再继续。</li>
+        </ol>
+
+        <h3>可选：已经使用 Git 的项目</h3>
+        <p>审阅面板（review pane）不是普通文件夹都具备的一键后悔药。当前官方说明要求项目位于 <strong>Git 仓库</strong>中；面板显示仓库里的改动，包括 Codex、你本人或其他工具留下的未提交改动。它可以按全部、单个文件或单个修改区块执行 stage、unstage 或 revert。</p>
+        <aside class="callout stop" data-label="使用 Revert 前"><p><strong>Revert 的含义是丢弃所选改动。</strong>如果你还不知道 Git 是什么，先不要使用 Revert all；继续使用上面的「备份＋新文件」流程即可。已经使用 Git 时，也要先确认面板范围里没有自己的未保存改动。详见 <a href="https://learn.chatgpt.com/docs/code-review">OpenAI 官方代码审阅说明</a>。</p></aside>
+        <aside class="callout note" data-label="原件被覆盖时怎么纠正"><p>不要继续修改。按上方「停止 → 确认轮次结束 → 拒绝待审批 → 检查已读/改/建/删文件 → 备份恢复 → 新对话交接」的顺序处理，不要跳过现场检查。</p></aside>
+        <aside class="callout stop" data-label="停一停"><strong>停止条件：</strong>备份打不开、目标路径不清、准备删除/覆盖/清空内容、审批目标超出练习文件夹，或 Revert 范围包含无关改动时，先停止。不要把「没有弹窗」理解成「操作一定安全」。</aside>
       </section>
 
-      <section id="s5" data-unit-id="CDX-M-0029" data-content-status="draft" data-verification-state="unverified">
+      <section id="s5" data-unit-id="CDX-M-0029" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">5.5</span>对话的节奏：什么时候继续，什么时候重开</h2>
-        <ul>
-          <li><strong>继续当前对话：</strong>还在同一个任务上打磨——改措辞、调格式、补内容。上下文都在，越聊越顺手。</li>
-          <li><strong>开一个新对话：</strong>遇到下面任意一种情况：换了一件不相干的事；同一任务改了很多轮，它又把前面否定过的东西翻出来；对话太长，它开始「忘事」。重开时把最新版本和关键要求一起带过去，别指望它记得旧对话。</li>
-        </ul>
-        <p>侧栏的 <strong>Chats</strong> 里能找回以前的对话，顶部有搜索框。做完的对话可以归档（archive），归档的在 Settings 的 Archived Chats 里还能找回来。</p>
+        <p>决定下一句话发到哪里，不看对话有多长，而看「是否仍是同一个成果」「当前任务是否还在运行」「它使用的是不是最新版」。</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>选择</th><th>什么时候用</th><th>本章例子</th></tr></thead>
+          <tbody>
+            <tr><td><strong>继续当前对话</strong></td><td>上一轮已经完成，仍在修改同一份成果</td><td>把促销文案第一句再缩短，但保留已确认事实</td></tr>
+            <tr><td><strong>Steer（立即纠偏）</strong></td><td>Codex 仍在运行，新信息必须立刻改变当前方向，而且当前任务没有敏感越界或破坏性副作用</td><td>它正在生成 10 条纯文字标题，你立刻把方向改成「只保留 3 条，语气亲切」</td></tr>
+            <tr><td><strong>Queue（排队下一步）</strong></td><td>Codex 仍在运行，新要求应该等当前工作结束后再做</td><td>当前先完成文案，完成后再列三条标题</td></tr>
+            <tr><td><strong>新建对话</strong></td><td>目标已变，或当前对话反复使用旧版本、旧要求</td><td>从促销文案切换到库存统计；或它一直带回已删除的优惠</td></tr>
+          </tbody>
+        </table></div>
+        <p>在桌面应用中，Steer 会把消息加入当前运行，Queue 会把消息留到下一轮；可在 <strong>Settings → General → Follow-up behavior</strong> 设置默认行为。官方当前说明中，排队消息会出现在输入框上方，可在执行前编辑、重排、发送或删除；设置页也会显示当前用于临时切换行为的快捷键。具体文字、按钮和快捷键都以当前界面为准（<a href="https://learn.chatgpt.com/docs/prompting">官方说明</a>）。</p>
+        <aside class="callout note" data-label="Steer 和 Queue 的可观察结果"><p>选择 <strong>Steer</strong> 时，新消息应进入正在运行的这一轮，最终结果应体现立即纠偏后的要求；选择 <strong>Queue</strong> 时，当前轮继续，新消息应作为待执行消息出现在输入框上方，你可在它进入下一轮前编辑、重排、发送或删除。如果当前版本的界面与这些现象不一致，记录实际界面并停止测试，不要在真实文件上猜测。</p></aside>
+
+        <div class="callout example" data-label="练习 5：给五个场景选路">
+          <ol>
+            <li>回复已经完成，你只想把第一句缩短。</li>
+            <li>它还在生成 10 条纯文字标题，你现在只需要 3 条，并希望保持亲切语气。</li>
+            <li>它还在生成文案，你希望完成后再列标题。</li>
+            <li>你准备从促销文案改做一份完全不同的库存表。</li>
+            <li>它再次带回你已经否定的「第四件半价」，并引用旧版文件。</li>
+          </ol>
+          <p>先用纸笔或系统记事本记录五个答案；这部分只练判断，不必为了制造“运行中”状态而故意启动任务。</p>
+        </div>
+        <details>
+          <summary>完成后查看参考答案</summary>
+          <p>依次是：继续当前对话、Steer、Queue、新建对话、新建对话。若实际情况是读错文件、接触敏感资料或越出预期范围，不归入这个 Steer 例子：应先停止或中断，再检查已经读取、创建或修改了什么。</p>
+        </details>
+
+        <h3>重开时带一张交接卡</h3>
+        <div class="callout example" data-label="可复制的交接卡">
+          <p class="q">当前目标：〖这次只完成什么〗
+使用的最新版：〖文件名或粘贴当前版本〗
+必须保留：〖已确认内容〗
+已经否定：〖不要再次出现的内容〗
+下一步只做：〖一个动作〗
+先复述你将使用的文件和限制，等我确认后再修改。</p>
+        </div>
+        <div class="callout example" data-label="实际操作：填好交接卡并在新对话复现">
+          <p>先查看 5.4 写下的「本次实际输出文件名」。下方用 v02 演示；如果你实际创建或明确复用的是其他 vNN，先把交接卡中完整的「蓝溪文具-促销文案-2026-09-04-v02.txt」替换为你记录的实际完整文件名。然后回到第 4 个练习使用的「Codex-练习」项目，新建一条运行位置为 Local、文件夹仍是「Codex-练习」的 Codex 对话。把下面已填好的交接卡完整发送；这一步只读文件，不修改任何内容：</p>
+          <p class="q">当前目标：确认已验收文案能在新对话中准确交接。
+使用的最新版：蓝溪文具-促销文案-2026-09-04-v02.txt。
+必须保留：蓝溪文具；2026 年 9 月 10 日至 2026 年 9 月 15 日；晨雾 A5 笔记本 18 元；云纹便签 12 元。
+已经否定：火热开始、第四件半价、爆款、限时抢购，以及任何新优惠、销量或库存结论。
+下一步只做：读取该文件，复述你将使用的完整文件名、已确认事实和限制；不要修改任何文件。</p>
+        </div>
+        <p><strong>可观察结果：</strong>你在纸笔或记事本中的五个分类依次与参考答案一致；新 Local 对话收到交接卡后，在修改任何内容之前准确复述目标、与 5.4 一致的本次实际文件名、四项已确认事实和禁止内容。</p>
+        <aside class="callout note" data-label="找回与整理对话"><p>当前官方说明建议每个不同成果使用独立对话，同一项目仍可保留相关文件和项目说明。需要找旧对话时，从侧栏打开 <strong>Search chats</strong>；不要记忆本教程没有实测的固定快捷键。完成的对话可归档，恢复入口以当前 Settings 界面为准（<a href="https://learn.chatgpt.com/docs/projects">官方说明</a>）。</p></aside>
+        <aside class="callout note" data-label="选错时怎么纠正"><p>先问三件事：还是同一个成果吗？当前运行需要立即改变吗？手里有明确的最新版吗？没有最新版或说不清已确认/已否定内容时，先整理交接卡，不要急着重开。</p></aside>
+        <aside class="callout stop" data-label="停一停"><strong>停止条件：</strong>Codex 正在处理错误文件、你找不到最新版、目标和限制互相冲突，或不能判断当前消息会 Steer 还是 Queue 时，先停止当前操作并核对界面状态。</aside>
       </section>
 
-      <section id="s6" data-unit-id="CDX-M-0030" data-content-status="draft" data-verification-state="unverified">
+      <section id="s6" data-unit-id="CDX-M-0030" data-content-status="editorial-reviewed" data-verification-state="unverified">
         <h2><span class="sn">5.6</span>「记忆」功能：让它记住你，还是不记</h2>
-        <p>上一节说「别指望它记得旧对话」。不过 Codex 有一个可选的<strong>记忆（Memories）</strong>功能。打开后，它会把你的偏好（比如「这个人喜欢表格、不喜欢客套话」）记下来，以后的对话里自动用上。这个功能<strong>默认是关闭的</strong>，开关在 Settings → Personalization → Enable memories。部分地区暂不提供。</p>
-        <p>零基础阶段建议<strong>先不开</strong>，理由有两条：一是你还在练「把需求说清楚」，让它替你记反而练不出来；二是记忆存的是关于你的信息，多一个存放的地方就多一分要管理的东西。等你用熟了、清楚自己想让它记住什么，再开也不迟。开了以后，Settings 里的 Memories 页能查看和管理它记下的内容。</p>
+        <p>新建对话时，重要目标和当前版本仍应放进交接卡。不过，本地 Codex 还提供可选的<strong>记忆（Memories）</strong>：启用后，它可以把符合条件的历史对话整理成以后可能用到的本地记忆。记忆在后台生成，可能不会在对话结束后立即出现，也会跳过仍在进行或过短的会话。</p>
+        <p>本地 Codex Memories 与 ChatGPT 网页版的记忆不是同一套存储。当前官方说明中，本地记忆默认关闭；全局开关在 <strong>Settings → Personalization → Enable memories</strong>。在桌面应用的当前对话中，可用 <code>/memories</code> 分别控制「是否使用已有记忆」和「当前对话是否参与未来记忆生成」；聊天级选择不会改变全局设置（<a href="https://learn.chatgpt.com/docs/customization/memories">官方说明</a>）。</p>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>信息</th><th>放在哪里更合适</th><th>理由</th></tr></thead>
+          <tbody>
+            <tr><td>「我喜欢先给结论，再给表格」</td><td>可考虑作为稳定偏好</td><td>跨多个任务仍可能有用，而且不包含秘密</td></tr>
+            <tr><td>「本次活动是 2026 年 9 月 10 日至 2026 年 9 月 15 日」</td><td>当前请求、交接卡或项目材料</td><td>它只属于当前任务，过后可能失效</td></tr>
+            <tr><td>「改文件前必须先确认目标并保留原件」</td><td>当前请求或项目说明；技术项目可选写进 <code>AGENTS.md</code>（一个给 Codex 看的项目规则文件）</td><td>必须执行的规则不能只依赖记忆；<code>AGENTS.md</code> 不是本章基础练习的前提</td></tr>
+            <tr><td>密码、验证码、API Key、完整身份信息</td><td>不要放进记忆或普通提示词</td><td>它们是秘密或敏感信息</td></tr>
+          </tbody>
+        </table></div>
+        <aside class="callout note" data-label="课程建议，不是产品限制"><p>零基础练习阶段先保持记忆关闭，仍然每次写清目标、材料和限制。等你能明确说出「允许记住什么、绝不能记住什么」后，再决定是否开启。OpenAI 也建议把必须遵守的团队规则放在可选的 <code>AGENTS.md</code> 或版本化文档中，把记忆只当作辅助召回层；零基础读者不需要为了完成本章去创建 <code>AGENTS.md</code>（<a href="https://learn.chatgpt.com/docs/agent-configuration/agents-md">AGENTS.md 官方说明</a>）。</p></aside>
+
+        <div class="callout example" data-label="练习 6：只检查，不要求开启">
+          <ol>
+            <li>打开 Settings → Personalization，用纸笔或系统记事本记下 Enable memories 当前是开还是关；本练习不要求改变它。如果 Personalization 或 Enable memories 也不可见，记录「当前界面不可见」和你看到的菜单，然后停止配置；这是本练习的合法完成分支，不要为了交作业修改配置文件。</li>
+            <li>回到当前对话，输入 <code>/memories</code>，阅读当前对话可用的选项；如果命令不可用，记录你看到的情况，不要为了完成练习擅自改配置。</li>
+            <li>把上表四类信息分别标为「稳定偏好、当前任务、关键规则（写在当前请求或项目说明；技术项目可版本化）、绝不能记忆」。</li>
+            <li>按当前状态和你的选择，写一句决定：「我现在选择开启 / 保持开启 / 关闭 / 保持关闭，因为……；我允许的范围是……；绝不包含……。」这里只记录决定，不要求你改变开关。</li>
+            <li>在当前「Codex-练习」对话中发送这条安全规则：「本练习的关键规则：读取或修改文件前，先确认目标文件并保留原件。请只复述这条规则，不要修改文件。」不要把密码、密钥或真实资料放进消息。</li>
+          </ol>
+        </div>
+        <p><strong>可观察结果：</strong>如果控件可见，你能区分全局开关和聊天级选择，决定覆盖当前实际开关状态；如果不可见，你有清楚的现象记录，且没有擅自改配置。两种分支都不会把临时日期当长期偏好，不会把密码或密钥放进记忆；Codex 能从当前请求准确复述关键规则，而且没有修改文件。</p>
+        <aside class="callout note" data-label="记忆不合适时怎么纠正"><p>如果当前对话引用了不合适的旧信息，先在当前请求中写明「不使用上述旧信息；本次只以下面的新材料和交接卡为准」。然后使用当前界面实际可用的控制：<code>/memories</code> 可用时，停止本对话使用已有记忆；命令不可用但 Settings → Personalization 可见时，从全局开关停止使用，并重新打开一个对话检查；两个入口都不可见时，记录现象、停止配置，新建对话并使用明确交接卡，不要声称「记忆已关闭」。不要依赖记忆替代交接卡，也不要承诺未经当前界面实测的「一键删除某条记忆」步骤。</p></aside>
+        <aside class="callout stop" data-label="停一停"><strong>停止条件：</strong>准备输入密码、验证码、密钥、完整身份信息，或还说不清允许长期保存什么时，不要开启或继续配置记忆。能确认开关当前为关闭时就保持关闭；看不到开关、无法确认状态时，记录「状态无法确认」并停止配置。即使系统会尝试从生成的记忆字段中隐去秘密，也不应主动把秘密交给记忆。</aside>
       </section>
 
       <section class="summary" id="summary"><h2>本章小结</h2><ul>
-        <li>固定循环：你交代 → 它产出 → 你检查 → 你决定。检查这一步永远不能省。</li>
-        <li>三分法核对：材料里有的对一遍，推断的验前提，凭空出现的一律当编造。</li>
-        <li>修改请求要具体、少量、可核对；越改越乱就带最新版重开一个对话。</li>
-        <li>三个退路习惯：动文件前先备份、要新文件不覆盖、版本留名。加上 Codex 的两道保险：只给它专用文件夹（沙盒）、改动在审阅面板逐处看、逐处撤销。没有备份不要删除。</li>
-        <li>「记忆」默认关闭，零基础阶段先不开；开了以后记得定期看它记了什么。</li>
-      </ul></section>
+        <li>固定闭环：描述需求 → 确认范围与权限 → 执行 → 检查 → 修正或回退；通过后才交付。</li>
+        <li>事实三分法：有直接依据的逐字对照，从材料推导的写明前提，无材料依据的删除或待核实。</li>
+        <li>修改请求要指出位置、限定本轮改动、锁住必须保留的内容，并给出可核对的完成标准。</li>
+        <li>所有人都先用「可打开的备份＋新文件」保留退路；审阅面板和 Revert 只作为 Git 项目的可选能力。</li>
+        <li>上一轮已结束就继续；运行中需要立即改变用 Steer，下一步等待执行用 Queue；成果改变或上下文混乱就带交接卡新开对话。</li>
+        <li>本地 Memories 默认关闭，只适合经过选择的稳定信息；临时材料留在当前任务，关键规则写进请求或项目说明，秘密永远不要记忆。</li>
+      </ul>
+        <h3>章末验收</h3>
+        <p>当你同时做到以下六点，本章才算完成：六条事实分类全部正确；修改后没有无依据的优惠或销量结论；在正确的 Local 练习文件夹中按预检结果只创建一个新输出，或明确复用一个内容完全相同的已有输出，且任何原始材料和既有文件都未被覆盖；五个对话场景能正确区分继续、Steer、Queue 和新对话，并用已填交接卡在新 Local 对话完成一次只读复现；能说出一个必须停止的场景；能把稳定偏好、临时任务、项目规则和绝不能记忆的秘密正确分类，并把一条关键规则明确写入当前请求。</p>
+        <aside class="callout note" data-label="基础路线里程碑"><p>做到以上六点，你已经完成第 1–5 章的共同基础路线。第 6 章起是插件、Skill 和更多场景的可选扩展；当前版本这些章节仍标为草稿。你可以先停在这里，或只用虚构材料继续阅读，不把草稿步骤当成已验证操作。</p></aside>
+      </section>
 
       <details class="maint">
         <summary>维护者信息（读者可以忽略）</summary>
         <dl class="card">
-          <dt>章节聚合 ID / 状态</dt><dd>CDX-C-05｜draft（草稿，未进入复核）；旧占位 ID CDX-M-0501 仅用于迁移。</dd>
-          <dt>风险级别</dt><dd>中：5.4 与 5.6 涉及沙盒、审阅面板、记忆等产品特定行为。</dd>
-          <dt>来源与权利</dt><dd>自有原创；示例均为虚构（蓝溪文具）。产品行为依据 11.2 所列沙盒、本地环境、记忆文档（2026-09-01 查阅）。</dd>
-          <dt>验证状态</dt><dd>unverified。计划：实测普通（非 Git）文件夹中审阅面板的撤销行为并据此修订 5.4 的说明；核对 Memories 开关位置。</dd>
-          <dt>复核日期</dt><dd>撰写：2026-09-01，草稿版本 0.3.0；尚未完成正式复核；中风险，最晚复验 2026-11-30。</dd>
+          <dt>章节聚合 ID / 状态</dt><dd>CDX-C-05｜editorial-reviewed（已完成来源与独立编辑审校，尚未进入产品实测）；旧占位 ID CDX-M-0501 仅用于迁移。</dd>
+          <dt>风险级别</dt><dd>混合，最高为高：事实核对与对话节奏为中风险；5.4 的文件写入/Git 回退和 5.6 的凭据/记忆边界按高风险复核。</dd>
+          <dt>来源与权利</dt><dd>正文、练习和蓝溪文具材料均为自有原创虚构内容。产品行为仅依据 OpenAI 官方 HTTPS 页面：<a href="https://learn.chatgpt.com/docs/prompting">Prompting</a>、<a href="https://learn.chatgpt.com/docs/sandboxing">Sandbox</a>、<a href="https://learn.chatgpt.com/docs/code-review?surface=app">Code review</a>、<a href="https://learn.chatgpt.com/docs/projects">Projects and chats</a>、<a href="https://learn.chatgpt.com/docs/customization/memories">Memories</a>、<a href="https://learn.chatgpt.com/docs/agent-configuration/agents-md">AGENTS.md</a>；2026-09-04 查阅并用中文改写，未复制长段原文。</dd>
+          <dt>验证状态</dt><dd>unverified。计划：在 Windows 与 macOS 当前版桌面应用分别实测 Ask for approval、工作区内外行为、普通文件夹与 Git 仓库的审阅差异、Steer / Queue、Search chats、归档恢复、Settings → Personalization 与 /memories；全部使用一次性虚构文件并记录应用版本、系统版本、截图、观察结果和限制。</dd>
+          <dt>复核日期</dt><dd>初稿：2026-09-01；正式课结构重写与独立审校：2026-09-04，内容版本 0.4.0；高风险产品行为完成双平台实测前不得提升为已验证，最晚于 2026-10-04 复验。</dd>
         </dl>
       </details>
 
