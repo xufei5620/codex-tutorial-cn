@@ -74,6 +74,7 @@ MANAGED_ROOT_FILES = {
     "README.md",
     "index.html",
     "maintenance-release.html",
+    "prompt-image-guide.html",
     "notion-workflow.html",
     "robots.txt",
     "source-research.html",
@@ -83,12 +84,19 @@ MANAGED_METADATA = {"manifest.json", "SHA256SUMS.txt"}
 PUBLIC_TEXT_SUFFIXES = {".cfg", ".conf", ".css", ".htm", ".html", ".ini", ".json", ".md", ".sha256", ".svg", ".toml", ".txt", ".xhtml", ".xml", ".yaml", ".yml"}
 PUBLIC_TEXT_NAMES = {"Caddyfile", "Dockerfile"}
 PUBLIC_BINARY_SUFFIXES = {".avif", ".gif", ".ico", ".jpeg", ".jpg", ".png", ".webp"}
+MEDIA_TYPE_BY_SUFFIX = {
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".svg": "image/svg+xml",
+}
+PUBLISHABLE_MEDIA_RIGHTS = {"owned", "licensed"}
 DEVELOPER_ROOT_ENTRIES = {
     ".dockerignore",
     ".git",
     ".gitattributes",
     ".github",
     ".gitignore",
+    ".superpowers",
     ".venv",
     "__pycache__",
     "requirements-dev.txt",
@@ -241,6 +249,8 @@ def walk_strings(value):
 
 
 def private_path_label(value: str) -> str | None:
+    if value.startswith("^") or value.startswith("(?:") or value.startswith("(?i)"):
+        return None
     checks = (
         (r"(?<![A-Za-z])[A-Za-z]:(?:[\\/]|Users(?:[\\/]|$))", "drive path"),
         (r"(?:^|[^\\])\\\\[^\\\s]+[\\/]", "UNC path"),
@@ -957,19 +967,22 @@ def check_repository_tree(root: Path, chapter_config: dict) -> list[str]:
             "tests/test_build.py",
             "tests/test_check.py",
             "tests/test_foundation_course.py",
+            "tests/test_media_registry.py",
             "tests/test_module_registry.py",
         }
     )
     allowed.add(".github/workflows/quality.yml")
     source_patterns = [
         r"src/(?:build\.py|chapters\.json|check\.py|modules-v1\.json|preview\.html)",
+        r"src/media/[A-Za-z0-9._~!$&'()*+,;=@%/-]+\.(?:png|webp|svg)",
         r"src/content/(?:ch(?:0[1-9]|1[01])\.html|prompts\.html|style\.css)",
         r"src/deploy/(?:Caddyfile|DEPLOY\.md|Dockerfile|docker-compose\.yml|nginx(?:\.docker)?\.conf)",
         r"src/research/(?:notes|sources)\.md",
-        r"src/maintainer/(?:framework-v1\.json|maintenance-release\.html|notion-workflow\.html|source-research\.html)",
+        r"src/maintainer/(?:framework-v1\.json|maintenance-release\.html|notion-workflow\.html|prompt-image-guide\.html|source-research\.html)",
         r"src/maintainer/(?:plans|specs)/[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+\.html",
         r"src/maintainer/templates/(?:module|plugin|prompt-card|skill|source-review|verification)-template\.html",
-        r"src/maintainer/schemas/(?:framework|modules)-v1\.schema\.json",
+        r"src/maintainer/schemas/(?:framework|media|modules)-v1\.schema\.json",
+        r"src/media-v1\.json",
     ]
     has_git_metadata = (root / ".git").exists()
     git_result = None
@@ -993,6 +1006,8 @@ def check_repository_tree(root: Path, chapter_config: dict) -> list[str]:
         relative_path = Path(relative)
         path = root.joinpath(*relative_path.parts)
         if relative == ".git":
+            continue
+        if relative_path.parts and relative_path.parts[0] == ".superpowers":
             continue
         if not path.exists() and not path.is_symlink():
             continue
@@ -1096,6 +1111,185 @@ def check_registry(root: Path, strict: bool) -> tuple[list[str], list[str]]:
         jsonschema.Draft202012Validator(schema).validate(registry)
     except Exception as error:
         errors.append(f"registry schema validation failed: {getattr(error, 'message', error)}")
+    return errors, warnings
+
+
+def check_media_catalog(root: Path, strict: bool) -> tuple[list[str], list[str]]:
+    errors, warnings = [], []
+    catalog_path = root / "src/media-v1.json"
+    schema_path = root / "src/maintainer/schemas/media-v1.schema.json"
+    try:
+        catalog = json_loads_strict(catalog_path.read_text(encoding="utf-8"))
+        schema = json_loads_strict(schema_path.read_text(encoding="utf-8"))
+    except Exception as error:
+        return [f"media catalog/schema cannot be read: {error}"], warnings
+    if not isinstance(catalog, dict):
+        return ["media catalog root must be an object"], warnings
+
+    try:
+        import jsonschema
+    except ImportError:
+        message = "jsonschema is unavailable; media catalog schema was not validated"
+        (errors if strict else warnings).append(message)
+    else:
+        try:
+            jsonschema.Draft202012Validator.check_schema(schema)
+            validator = jsonschema.Draft202012Validator(
+                schema,
+                format_checker=jsonschema.FormatChecker(),
+            )
+            schema_errors = sorted(validator.iter_errors(catalog), key=lambda error: list(error.path))
+            for error in schema_errors:
+                location = "/".join(str(part) for part in error.path) or "$"
+                errors.append(f"media catalog schema error at {location}: {error.message}")
+        except Exception as error:
+            errors.append(f"media catalog schema validation failed: {getattr(error, 'message', error)}")
+
+    assets = catalog.get("assets")
+    if not isinstance(assets, list):
+        return errors + ["media catalog assets must be an array"], warnings
+    asset_records = [asset for asset in assets if isinstance(asset, dict)]
+    duplicate_ids = repeated([asset.get("id") for asset in asset_records])
+    if duplicate_ids:
+        errors.append(f"duplicate asset IDs: {duplicate_ids}")
+
+    prompt_card_ids: set[str] = set()
+    try:
+        modules = json_loads_strict((root / "src/modules-v1.json").read_text(encoding="utf-8"))
+        units = modules.get("units") if isinstance(modules, dict) else None
+        if not isinstance(units, list):
+            raise ValueError("modules-v1.json units must be an array")
+        prompt_card_ids = {
+            unit["id"]
+            for unit in units
+            if isinstance(unit, dict)
+            and unit.get("kind") == "prompt-card"
+            and isinstance(unit.get("id"), str)
+        }
+    except Exception as error:
+        errors.append(f"media promptId lookup cannot read modules-v1.json: {error}")
+
+    for asset in asset_records:
+        asset_id = asset.get("id", "<unknown>")
+        path = asset.get("path")
+        if isinstance(path, str):
+            if not safe_relative(path) or not path.startswith("assets/media/"):
+                errors.append(f"{asset_id}: path traversal or unsupported media path: {path}")
+            else:
+                source = root / "src" / "media" / Path(path.removeprefix("assets/media/"))
+                expected_media_type = MEDIA_TYPE_BY_SUFFIX.get(source.suffix.lower())
+                if expected_media_type and asset.get("mediaType") != expected_media_type:
+                    errors.append(
+                        f"{asset_id}: mediaType {asset.get('mediaType')!r} does not match path suffix {source.suffix.lower()}"
+                    )
+                if source.is_symlink():
+                    errors.append(f"{asset_id}: media source must not be a symbolic link")
+                elif not source.is_file():
+                    errors.append(f"{asset_id}: media source is missing: {source.as_posix()}")
+                elif source.suffix.lower() not in {".png", ".webp", ".svg"}:
+                    errors.append(f"{asset_id}: unsupported media source format: {source.name}")
+                elif source.suffix.lower() in PUBLIC_BINARY_SUFFIXES:
+                    if problem := binary_file_problem(source):
+                        errors.append(f"{asset_id}: {problem}")
+        source_url = asset.get("sourceUrl")
+        if isinstance(source_url, str):
+            if problem := source_url_problem(source_url):
+                errors.append(f"{asset_id}: sourceUrl {problem}")
+            elif label := private_path_label(source_url):
+                errors.append(f"{asset_id}: sourceUrl contains forbidden private {label}")
+        if asset.get("kind") == "prompt-effect":
+            prompt_id = asset.get("promptId")
+            if isinstance(prompt_id, str) and prompt_id not in prompt_card_ids:
+                errors.append(f"{asset_id}: unknown promptId: {prompt_id}")
+    return errors, warnings
+
+
+def check_media_references(
+    root: Path,
+    catalog: dict,
+    strict: bool,
+) -> tuple[list[str], list[str]]:
+    del strict
+    errors, warnings = [], []
+    assets = catalog.get("assets")
+    if not isinstance(assets, list):
+        return ["media catalog assets must be an array"], warnings
+
+    publishable_paths = {}
+    pending_paths = {}
+    for asset in assets:
+        if not isinstance(asset, dict):
+            continue
+        path = asset.get("path")
+        if isinstance(path, str) and safe_relative(path) and path.startswith("assets/media/"):
+            if asset.get("rights") in PUBLISHABLE_MEDIA_RIGHTS:
+                publishable_paths[path] = asset
+            else:
+                pending_paths[path] = asset
+
+    media_root = root / "assets" / "media"
+    present_paths = (
+        {
+            path.relative_to(root).as_posix()
+            for path in media_root.rglob("*")
+            if path.is_file()
+        }
+        if media_root.exists()
+        else set()
+    )
+    for relative in sorted(present_paths & set(pending_paths)):
+        errors.append(f"pending-rights media artifact: {relative}")
+    for relative in sorted(present_paths - set(publishable_paths) - set(pending_paths)):
+        errors.append(f"unregistered media artifact: {relative}")
+    for relative in sorted(set(publishable_paths) - present_paths):
+        errors.append(f"registered media artifact missing from generated output: {relative}")
+
+    root_resolved = root.resolve()
+
+    def check_reference(source_path: Path, source_relative: str, reference: str, context: str) -> None:
+        reference = html.unescape(reference).strip()
+        if not reference:
+            return
+        lower = reference.lower()
+        if lower.startswith(("http://", "https://", "//", "mailto:", "tel:", "data:")):
+            return
+        try:
+            parsed = urlsplit(reference)
+        except ValueError:
+            return
+        if parsed.scheme:
+            return
+        link_path = unquote(parsed.path)
+        if not link_path:
+            return
+        target = (root / link_path.lstrip("/")) if link_path.startswith("/") else (source_path.parent / link_path)
+        try:
+            resolved = target.resolve()
+            resolved.relative_to(root_resolved)
+        except ValueError:
+            return
+        if resolved.is_dir():
+            return
+        try:
+            relative = resolved.relative_to(root).as_posix()
+        except ValueError:
+            return
+        if relative.startswith("assets/media/"):
+            if relative in pending_paths:
+                errors.append(f"{source_relative}: pending-rights media reference in {context}: {reference}")
+            elif relative not in publishable_paths:
+                errors.append(f"{source_relative}: unregistered media reference in {context}: {reference}")
+
+    for path in public_html_files(root) + public_svg_files(root):
+        relative = path.relative_to(root).as_posix()
+        audit = parse_html(path)
+        for tag, attribute, reference in audit.references:
+            check_reference(path, relative, reference, f"{tag}[{attribute}]")
+
+    for path in public_css_files(root):
+        relative = path.relative_to(root).as_posix()
+        for reference in css_urls(path.read_text(encoding="utf-8")):
+            check_reference(path, relative, reference, "CSS resource")
     return errors, warnings
 
 
@@ -1816,6 +2010,13 @@ def check_offline_zip(root: Path, chapter_config: dict, strict: bool) -> list[st
                     )
                     errors.extend(link_errors)
                     errors.extend(check_public_text_safety(package_root, payload_paths | MANAGED_METADATA))
+                    try:
+                        media_catalog = json_loads_strict((root / "src/media-v1.json").read_text(encoding="utf-8"))
+                    except Exception as error:
+                        errors.append(f"offline media catalog cannot be read: {error}")
+                    else:
+                        media_errors, _ = check_media_references(package_root, media_catalog, strict)
+                        errors.extend(f"media: {message}" for message in media_errors)
                     module_errors, _ = check_module_registry(package_root, strict)
                     errors.extend(f"module catalog: {message}" for message in module_errors)
                     for relative in sorted(payload_paths - {"index.html"}):
@@ -1908,6 +2109,17 @@ def main() -> int:
     registry_errors, registry_warnings = check_registry(ROOT, arguments.strict)
     errors.extend(registry_errors)
     warnings.extend(registry_warnings)
+    media_errors, media_warnings = check_media_catalog(ROOT, arguments.strict)
+    errors.extend(media_errors)
+    warnings.extend(media_warnings)
+    try:
+        media_catalog = json_loads_strict((ROOT / "src/media-v1.json").read_text(encoding="utf-8"))
+    except Exception as error:
+        errors.append(f"media catalog cannot be read for reference checks: {error}")
+    else:
+        media_reference_errors, media_reference_warnings = check_media_references(ROOT, media_catalog, arguments.strict)
+        errors.extend(media_reference_errors)
+        warnings.extend(media_reference_warnings)
     module_errors, module_warnings = check_module_registry(ROOT, arguments.strict)
     errors.extend(f"modules: {message}" for message in module_errors)
     warnings.extend(f"modules: {message}" for message in module_warnings)

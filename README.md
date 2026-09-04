@@ -2,7 +2,7 @@
 
 写给第一次接触 AI 与 Codex 的中文读者的离线教程。不需要编程、命令行或 Git 基础。
 
-**怎么读：** 离线 HTML 是主要交付：下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。
+**怎么读：** 离线 HTML 是主要交付：下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。图示与课程图片也随 ZIP 保存在 `assets/media/`，无需联网加载。
 
 **可选在线预览：** 如需把同一批生成页面放到服务器，再看 [deploy/DEPLOY.md](deploy/DEPLOY.md)。在线部署不是课程完成或正式发布的必要条件。
 

@@ -214,6 +214,12 @@ tbody tr:last-child td { border-bottom: 0; }
 tbody tr:nth-child(even) td { background: #fafcfc; }
 td:first-child { font-weight: 600; }
 
+/* 课程配图 */
+.course-figure { margin: 1.2rem 0; padding: .95rem 1rem; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
+.course-figure img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--accent-tint); }
+.course-figure figcaption { margin-top: .75rem; color: var(--muted); font-size: .92rem; }
+@media (max-width: 560px) { .course-figure { padding: .8rem; } }
+
 /* 提示词卡 */
 .card-list { display: grid; gap: .6rem; margin: 1rem 0; padding: 0; list-style: none; }
 .card-list li { margin: 0; display: grid; grid-template-columns: auto 1fr auto; gap: .8rem; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: .6rem .9rem; font-size: .95rem; }

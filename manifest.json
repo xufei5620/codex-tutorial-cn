@@ -13,8 +13,8 @@
     },
     {
       "path": "README.md",
-      "size": 3556,
-      "sha256": "12ccd7c59d9beeceee24827155b48f6baf79170b73f3b398dc8b84410e4f24dd"
+      "size": 3637,
+      "sha256": "1f5e03d0004b066a62fdf389d43938d2c3ece9369a754b961e271eaee47cccfd"
     },
     {
       "path": "assets/favicon.svg",
@@ -22,34 +22,59 @@
       "sha256": "c88c4f3dbd95d3894284d6cb23597686dd872a786711d9bc028009f89864fe7d"
     },
     {
+      "path": "assets/media/course/ch01/codex-safety-loop.svg",
+      "size": 3914,
+      "sha256": "810345642433535eb6801d2279f66c0f1d3c0069c571ee606979bc3eee360622"
+    },
+    {
+      "path": "assets/media/course/ch02/codex-boundary-map.svg",
+      "size": 3148,
+      "sha256": "c819403e6be9ef8e66e0a40e08a1a15c2edcde1df514ec709a00e0bb972991a6"
+    },
+    {
+      "path": "assets/media/course/ch03/codex-desktop-route.svg",
+      "size": 3209,
+      "sha256": "415b2d953e2a9b6af9386db36ce981f8ef39a30eeda9fe8b1895ecf176415fec"
+    },
+    {
+      "path": "assets/media/course/ch04/codex-first-request-loop.svg",
+      "size": 3838,
+      "sha256": "7c18a7f5e68e04281f68ec73293209aad60fd6f47183e79d7f52526a92035c23"
+    },
+    {
+      "path": "assets/media/course/ch05/codex-recovery-handoff.svg",
+      "size": 3889,
+      "sha256": "7a13e3e37ee53e246e6d2480e4564af32367033f6783fa4ef738c3896828a730"
+    },
+    {
       "path": "assets/style.css",
-      "size": 18721,
-      "sha256": "b7e161db34d6f0ebd0ac33c7aea7223b2367f2b33cee7dcf5e44dbce2adf87d5"
+      "size": 19204,
+      "sha256": "a3d32c89d73f513ad404037dc93b22727f5223e094c943437892e67265a50b84"
     },
     {
       "path": "ch01.html",
-      "size": 30755,
-      "sha256": "8b3b7db18c36f588abecbd91dc2e28cb73b242bb537b74dcf4cfd4b3ef17d552"
+      "size": 31197,
+      "sha256": "f4ec29d41ad7ded8f2dae81d138f878f0f40e8e662607d2b0c5b14407a641a61"
     },
     {
       "path": "ch02.html",
-      "size": 30496,
-      "sha256": "55daf0536e62699137b3e128ba72d90ccb9bba106b2356470b8d3a094b2cd76b"
+      "size": 30921,
+      "sha256": "4b8dfb3ecadfe33a380de390f7b5670bc421f33e77d3c01767d9464a914bb9ab"
     },
     {
       "path": "ch03.html",
-      "size": 43759,
-      "sha256": "6efe1fc833915629948c956a29636b7a763a07bae03f4eafec76e7effddfc3d2"
+      "size": 44226,
+      "sha256": "306b46b5b469119c042fb4a9f61c435e38e66eac26da69cbdfd77883ccbe85a9"
     },
     {
       "path": "ch04.html",
-      "size": 38519,
-      "sha256": "7fde936f8bf2c97da8d5d83834e0ebb5088a6f46e4930c1adfad7bf195081192"
+      "size": 38999,
+      "sha256": "76fd8ea568e9f58c4614f33b9a6c78ad1567cd81390de332198ef41563927327"
     },
     {
       "path": "ch05.html",
-      "size": 45609,
-      "sha256": "41fcd048571e096bd6cdce59b641436b5dcba5efabfcec8babd5483db6985b6e"
+      "size": 46152,
+      "sha256": "77018af4f8d4d2f6a8bdf08c11b4000dd2deee705eda6dfbf78e5f6975178a5b"
     },
     {
       "path": "ch06.html",
@@ -78,8 +103,8 @@
     },
     {
       "path": "ch11.html",
-      "size": 25477,
-      "sha256": "a168fae6d6925136fc0b3f8f45f4d1d2c85d152bc69682f67473b9ab15048166"
+      "size": 26781,
+      "sha256": "8acf5dce6a4f4d8dfe8f84204875f7f27467cab346c729cbb0aaf5cfca22c195"
     },
     {
       "path": "deploy/Caddyfile",
@@ -123,8 +148,13 @@
     },
     {
       "path": "notion-workflow.html",
-      "size": 5959,
-      "sha256": "e6446b617de05e075d1663da88e2659df54dd3f7805ab1bbd4432f5619fd588d"
+      "size": 8187,
+      "sha256": "a58a2effbdea64b2692aa2ddbfb405e76199e7a691a5953c536c0bfe075e437f"
+    },
+    {
+      "path": "prompt-image-guide.html",
+      "size": 6091,
+      "sha256": "f69030ab5ca18578bb4aa8eef7b8c7d3c40f934e7b68fea1e19be0974fc83f91"
     },
     {
       "path": "prompts.html",
@@ -152,6 +182,11 @@
       "sha256": "6035237e1b4250ced303befe519062c324e3968e5d8861e692c4cff154f21206"
     },
     {
+      "path": "schemas/media-v1.schema.json",
+      "size": 6504,
+      "sha256": "058613d877a3bda048e054a37f33ba8dbce67a6a71859c0fedb77fb5c6fcc868"
+    },
+    {
       "path": "schemas/modules-v1.schema.json",
       "size": 25926,
       "sha256": "0d58800f93b0173dc32f4a93d54322f9ef4076dacebbc00ce60795080457beb6"
@@ -175,6 +210,11 @@
       "path": "specs/2026-09-03-github-baseline-hardening-design.html",
       "size": 7037,
       "sha256": "e02c7557aac891f6f062c0dc77d86617d617401ff675fe97f3f5d84f6545d510"
+    },
+    {
+      "path": "specs/2026-09-04-image-course-assets-design.html",
+      "size": 11601,
+      "sha256": "4c7c10340595441985a13a40ebc3a665ab2f8b0b01638e98a2168d9dc2acb92e"
     },
     {
       "path": "templates/module-template.html",

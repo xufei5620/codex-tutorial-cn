@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>维护框架：提示词效果图约定</title>
+  <style>
+    :root { font-family: "Segoe UI", "PingFang SC", sans-serif; color: #172033; background: #f5f7fb; line-height: 1.65; }
+    body { margin: 0; } main { max-width: 980px; margin: auto; padding: 44px 24px 72px; }
+    h1, h2, h3 { color: #101828; line-height: 1.25; } h2 { margin-top: 42px; padding-top: 24px; border-top: 1px solid #d8deea; }
+    a { color: #175cd3; } code { background: #e9eef8; border-radius: 4px; padding: .1em .35em; overflow-wrap: anywhere; }
+    .lede { color: #475467; font-size: 1.08rem; } .notice { padding: 15px 18px; border: 1px solid #f4c56a; background: #fff7e8; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; } th, td { padding: 10px 12px; border: 1px solid #d8deea; text-align: left; vertical-align: top; }
+    th { background: #eef2f8; } .flow { padding: 16px; background: #101828; color: #f8fafc; border-radius: 10px; overflow-wrap: anywhere; }
+    footer { margin-top: 48px; color: #667085; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <p><a href="index.html">返回框架首页 index.html</a></p>
+    <h1>提示词效果图约定</h1>
+    <p class="lede">效果图只负责把提示词意图、约束和结果摆清楚，不负责替代课程正文，也不负责伪装成真实界面。任何图片都必须能回链到 Prompt ID 和媒体 ID。</p>
+  </header>
+
+  <aside class="notice"><strong>硬规则：</strong>不要为了凑版面创建空图、假图或没有登记的占位文件。没有真实来源、真实生成记录或真实复核结论的图片，不进入公开课程，也不进入 Notion 投影。</aside>
+
+  <section>
+    <h2>行业映射</h2>
+    <p>行业名称用于图片目录、登记表、Notion 投影和维护说明的同一套口径，并写入小写的 <code>industry</code> 字段。当前示例绑定的是课程已有的通用 Prompt 卡；未来行业专用 Prompt 卡仍须先进入 <code>src/modules-v1.json</code>，图片文件名保留可读的行业英文名。</p>
+    <table>
+      <thead>
+        <tr><th>行业</th><th>用途范围</th><th>媒体 ID 示例</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>ecommerce</td><td>商品图、活动页、促销横幅、转化型展示图</td><td><code>IMG-PROMPT-ECOMMERCE-0001</code></td></tr>
+        <tr><td>education</td><td>课程封面、教学示意、学习路径、知识卡片</td><td><code>IMG-PROMPT-EDUCATION-0001</code></td></tr>
+        <tr><td>marketing</td><td>品牌活动、社媒宣传、广告概念、活动海报</td><td><code>IMG-PROMPT-MARKETING-0001</code></td></tr>
+        <tr><td>design</td><td>界面概念、品牌视觉、构图示意、风格探索</td><td><code>IMG-PROMPT-DESIGN-0001</code></td></tr>
+        <tr><td>office</td><td>办公流程、管理看板、协作示意、流程图式效果</td><td><code>IMG-PROMPT-OFFICE-0001</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>命名规则</h2>
+    <p class="flow"><code>IMG-PROMPT-&lt;UPPERCASE-INDUSTRY&gt;-&lt;four-digit-sequence&gt;</code></p>
+    <ul>
+      <li>媒体 ID 中的行业段必须大写；登记表的 <code>industry</code> 字段仍取小写的 <code>ecommerce</code>、<code>education</code>、<code>marketing</code>、<code>design</code>、<code>office</code> 之一。</li>
+      <li><code>&lt;four-digit-sequence&gt;</code> 是四位零填充序号，按行业各自递增，不跨行业共用流水号。</li>
+      <li>同一张图只允许一个 ID；同一 ID 不能对应多个文件，也不能复用给不同版本的图。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Prompt ID 绑定</h2>
+    <p>Prompt ID 是提示词卡的稳定主键，格式为 <code>PRM-XXX-NNNN</code>。下列是当前可解析到课程 <code>src/modules-v1.json</code> 的通用提示词卡；它们仅为计划中的行业效果图绑定示例，不代表已有媒体文件。</p>
+    <table>
+      <thead>
+        <tr><th>媒体 ID</th><th>Prompt ID</th><th>绑定方式</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>IMG-PROMPT-ECOMMERCE-0001</code></td><td><code>PRM-COM-0001</code></td><td>计划中的行业条目；同一行业、同一提示词卡、同一版本的一对一绑定。</td></tr>
+        <tr><td><code>IMG-PROMPT-EDUCATION-0001</code></td><td><code>PRM-COM-0002</code></td><td>计划中的行业条目；媒体和提示词都来自同一份维护记录。</td></tr>
+        <tr><td><code>IMG-PROMPT-MARKETING-0001</code></td><td><code>PRM-COM-0003</code></td><td>计划中的行业条目；如果图像换版，必须新开媒体 ID。</td></tr>
+        <tr><td><code>IMG-PROMPT-DESIGN-0001</code></td><td><code>PRM-COM-0004</code></td><td>计划中的行业条目；页面展示、Notion 投影和 Git 记录都引用同一对 ID。</td></tr>
+        <tr><td><code>IMG-PROMPT-OFFICE-0001</code></td><td><code>PRM-COM-0005</code></td><td>计划中的行业条目；办公类示意图也按同样规则登记。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <p>同一批当前可解析的示例还包括 <code>PRM-COM-0006</code>；只有在实际媒体生成、来源和权利均已复核后，才可为它新增对应的媒体登记记录。</p>
+
+  <section>
+    <h2>复核与停用</h2>
+    <ul>
+      <li>只要图片改成生成示例，就必须把 <code>generated-example</code> 写进来源类型和说明，不得包装成真实照片、真实截图或官方素材。</li>
+      <li>权利状态是 <code>pending</code>、来源缺失、许可冲突、GitHub 路径缺失、或最后复核日期过期时，公开投影停止使用该图。</li>
+      <li>Notion 只能做展示和复核，不是图片的权威库；权威记录永远在 Git 的媒体目录和登记表里。</li>
+    </ul>
+  </section>
+
+  <footer><p>维护框架，不是课程正文。最后更新：2026-09-04。</p></footer>
+</main>
+</body>
+</html>

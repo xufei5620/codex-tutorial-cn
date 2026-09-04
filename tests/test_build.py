@@ -27,6 +27,19 @@ TEXT_SUFFIXES = {
     ".yml",
     ".yaml",
 }
+PNG_DOT = (
+    b"\x89PNG\r\n\x1a\n"
+    b"\x00\x00\x00\rIHDR"
+    b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00"
+    b"\x90wS\xde"
+    b"\x00\x00\x00\x0cIDATx\x9cc```\x00\x00\x00\x04\x00\x01"
+    b"\x0b\xe7\x02\x9d"
+    b"\x00\x00\x00\x00IEND\xaeB`\x82"
+)
+SVG_DOT = (
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\">"
+    "<rect width=\"1\" height=\"1\" fill=\"#084a51\"/></svg>\n"
+)
 
 
 def copy_repo(target: Path) -> None:
@@ -77,7 +90,183 @@ def checksum_records(payload: str) -> dict[str, str]:
     return records
 
 
+def media_asset_record() -> dict[str, object]:
+    return {
+        "id": "IMG-TEST-0001",
+        "kind": "ui-screenshot",
+        "path": "assets/media/course/ch03/codex-entry-windows.png",
+        "mediaType": "image/png",
+        "alt": "ChatGPT 桌面应用中选择 Codex 的实际界面",
+        "caption": "Windows 示例：从 ChatGPT 产品入口选择 Codex。",
+        "sourceType": "maintainer-capture",
+        "sourceUrl": None,
+        "license": "owned",
+        "rights": "owned",
+        "platform": "windows",
+        "observedProductVersion": "ChatGPT desktop 2026-09-04",
+        "captureDate": "2026-09-04",
+        "verificationState": "unverified",
+        "verificationDate": None,
+        "lastReviewedDate": "2026-09-04",
+    }
+
+
+def install_media_fixture(
+    root: Path,
+    asset: dict[str, object] | None = None,
+    *,
+    reference: bool = True,
+) -> dict[str, object]:
+    asset = dict(media_asset_record() if asset is None else asset)
+    relative = asset["path"].removeprefix("assets/media/")
+    source = root / "src/media" / relative
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_bytes(PNG_DOT)
+    catalog_path = root / "src/media-v1.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["assets"].append(asset)
+    catalog_path.write_text(
+        json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    if reference:
+        with (root / "src/content/ch03.html").open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(
+                "\n"
+                "<figure>\n"
+                f'  <img src="{{{{media:{asset["id"]}}}}}" alt="{asset["alt"]}">\n'
+                f"  <figcaption>{asset['caption']}</figcaption>\n"
+                "</figure>\n"
+            )
+    return asset
+
+
 class BuildBaselineTests(unittest.TestCase):
+    def test_build_resolves_registered_media_macros_and_packages_assets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            asset = install_media_fixture(root)
+
+            result = run_build(root)
+
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            generated = root / asset["path"]
+            self.assertTrue(generated.is_file(), generated)
+            self.assertEqual(generated.read_bytes(), PNG_DOT)
+            chapter = (root / "ch03.html").read_text(encoding="utf-8")
+            self.assertIn(asset["path"], chapter)
+            self.assertNotIn(f"{{{{media:{asset['id']}}}}}", chapter)
+
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            self.assertIn(asset["path"], {item["path"] for item in manifest["files"]})
+            sums = (root / "SHA256SUMS.txt").read_text(encoding="utf-8")
+            self.assertIn(f"  {asset['path']}\n", sums)
+
+            archive = offline_archive(root)
+            with zipfile.ZipFile(archive) as package:
+                self.assertIn(f"codex-tutorial-cn/{asset['path']}", package.namelist())
+
+    def test_build_rejects_unknown_media_macros(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            with (root / "src/content/ch03.html").open("a", encoding="utf-8", newline="\n") as handle:
+                handle.write("\n<p><img src=\"{{media:IMG-UNKNOWN-0001}}\" alt=\"unknown\"></p>\n")
+
+            result = run_build(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"unknown media id", result.stderr.lower())
+
+    def test_build_rejects_media_macro_referencing_pending_rights(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            asset = media_asset_record()
+            asset["rights"] = "pending"
+            install_media_fixture(root, asset)
+
+            result = run_build(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"pending rights", result.stderr.lower())
+
+    def test_build_excludes_unreferenced_pending_media_from_public_artifacts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            asset = media_asset_record()
+            asset["rights"] = "pending"
+            install_media_fixture(root, asset, reference=False)
+
+            result = run_build(root)
+
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            self.assertFalse((root / asset["path"]).exists())
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            self.assertNotIn(asset["path"], {item["path"] for item in manifest["files"]})
+            sums = (root / "SHA256SUMS.txt").read_text(encoding="utf-8")
+            self.assertNotIn(f"  {asset['path']}\n", sums)
+            with zipfile.ZipFile(offline_archive(root)) as package:
+                self.assertNotIn(f"codex-tutorial-cn/{asset['path']}", package.namelist())
+
+    def test_build_rejects_media_path_traversal(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            asset = media_asset_record()
+            asset["path"] = "assets/media/../rogue.svg"
+            asset["mediaType"] = "image/svg+xml"
+            catalog = {
+                "contentVersion": "0.4.0",
+                "generatedDate": "2026-09-04",
+                "status": "draft",
+                "assets": [asset],
+            }
+            (root / "src/rogue.svg").write_text(SVG_DOT, encoding="utf-8", newline="\n")
+            (root / "src/media-v1.json").write_text(
+                json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            with (root / "src/content/ch03.html").open("a", encoding="utf-8", newline="\n") as handle:
+                handle.write(f'\n<p><img src="{{{{media:{asset["id"]}}}}}" alt="{asset["alt"]}"></p>\n')
+
+            result = run_build(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"unsupported media path", result.stderr.lower())
+
+    def test_build_rejects_media_with_unsupported_suffix(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            asset = media_asset_record()
+            asset["path"] = "assets/media/course/ch03/codex-entry-windows.jpg"
+            catalog = {
+                "contentVersion": "0.4.0",
+                "generatedDate": "2026-09-04",
+                "status": "draft",
+                "assets": [asset],
+            }
+            source = root / "src/media/course/ch03/codex-entry-windows.jpg"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_bytes(b"\xff\xd8\xff\xdbfake-jpeg")
+            (root / "src/media-v1.json").write_text(
+                json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            with (root / "src/content/ch03.html").open("a", encoding="utf-8", newline="\n") as handle:
+                handle.write(f'\n<p><img src="{{{{media:{asset["id"]}}}}}" alt="{asset["alt"]}"></p>\n')
+
+            result = run_build(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"unsupported media path", result.stderr.lower())
+
     def test_git_attributes_force_all_generated_text_types_to_lf(self):
         attributes = (REPO / ".gitattributes").read_text(encoding="utf-8")
         for pattern in ("*.conf", "*.svg", "*.sha256"):
@@ -156,6 +345,16 @@ class BuildBaselineTests(unittest.TestCase):
             readme = (root / "README.md").read_text(encoding="utf-8")
             self.assertIn("{{link:ch04}}", readme)
             self.assertIn("{{link:prompts#prm-com-0001}}", readme)
+
+    def test_generated_readme_explains_offline_media_reading(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            result = run_build(root)
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
+            readme = (root / "README.md").read_text(encoding="utf-8")
+            self.assertIn("assets/media/", readme)
+            self.assertIn("无需联网加载", readme)
 
     def test_online_manifest_contains_only_generated_public_artifacts(self):
         with tempfile.TemporaryDirectory() as directory:

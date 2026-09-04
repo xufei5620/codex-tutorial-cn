@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import importlib.util
+import json
 import os
 from pathlib import Path
 import shutil
@@ -12,6 +13,15 @@ import zipfile
 
 
 REPO = Path(__file__).resolve().parents[1]
+PNG_DOT = (
+    b"\x89PNG\r\n\x1a\n"
+    b"\x00\x00\x00\rIHDR"
+    b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00"
+    b"\x90wS\xde"
+    b"\x00\x00\x00\x0cIDATx\x9cc```\x00\x00\x00\x04\x00\x01"
+    b"\x0b\xe7\x02\x9d"
+    b"\x00\x00\x00\x00IEND\xaeB`\x82"
+)
 
 
 def load_check_module():
@@ -49,7 +59,160 @@ def run_check(root: Path, *arguments: str, no_site_packages: bool = False) -> su
     )
 
 
+def run_build(root: Path) -> subprocess.CompletedProcess:
+    env = os.environ.copy()
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env["PYTHONUTF8"] = "1"
+    return subprocess.run(
+        [sys.executable, "src/build.py"],
+        cwd=root,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+
+def media_asset_record() -> dict[str, object]:
+    return {
+        "id": "IMG-TEST-0001",
+        "kind": "ui-screenshot",
+        "path": "assets/media/course/ch03/codex-entry-windows.png",
+        "mediaType": "image/png",
+        "alt": "ChatGPT 桌面应用中选择 Codex 的实际界面",
+        "caption": "Windows 示例：从 ChatGPT 产品入口选择 Codex。",
+        "sourceType": "maintainer-capture",
+        "sourceUrl": None,
+        "license": "owned",
+        "rights": "owned",
+        "platform": "windows",
+        "observedProductVersion": "ChatGPT desktop 2026-09-04",
+        "captureDate": "2026-09-04",
+        "verificationState": "unverified",
+        "verificationDate": None,
+        "lastReviewedDate": "2026-09-04",
+    }
+
+
+def install_media_fixture(
+    root: Path,
+    asset: dict[str, object] | None = None,
+    *,
+    reference: bool = True,
+) -> dict[str, object]:
+    asset = dict(media_asset_record() if asset is None else asset)
+    relative = asset["path"].removeprefix("assets/media/")
+    source = root / "src/media" / relative
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_bytes(PNG_DOT)
+    catalog_path = root / "src/media-v1.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["assets"].append(asset)
+    catalog_path.write_text(
+        json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    if reference:
+        with (root / "src/content/ch03.html").open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(
+                "\n"
+                "<figure>\n"
+                f'  <img src="{{{{media:{asset["id"]}}}}}" alt="{asset["alt"]}">\n'
+                f"  <figcaption>{asset['caption']}</figcaption>\n"
+                "</figure>\n"
+            )
+    return asset
+
+
 class CheckBaselineTests(unittest.TestCase):
+    def test_strict_check_accepts_registered_generated_media(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            shutil.rmtree(root / ".superpowers", ignore_errors=True)
+            install_media_fixture(root)
+            build = run_build(root)
+            self.assertEqual(build.returncode, 0, build.stderr.decode("utf-8", errors="replace"))
+
+            result = run_check(root, "--strict", "--verify-generated")
+
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout.decode("utf-8", errors="replace"),
+            )
+
+    def test_strict_check_rejects_unregistered_generated_media_references(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            shutil.rmtree(root / ".superpowers", ignore_errors=True)
+            install_media_fixture(root)
+            build = run_build(root)
+            self.assertEqual(build.returncode, 0, build.stderr.decode("utf-8", errors="replace"))
+            rogue = root / "assets/media/rogue.png"
+            rogue.parent.mkdir(parents=True, exist_ok=True)
+            rogue.write_bytes(PNG_DOT)
+            with (root / "ch01.html").open("a", encoding="utf-8", newline="\n") as handle:
+                handle.write('\n<img src="assets/media/rogue.png" alt="rogue">\n')
+
+            catalog = json.loads((root / "src/media-v1.json").read_text(encoding="utf-8"))
+            errors, warnings = checker.check_media_references(root, catalog, strict=True)
+
+            self.assertEqual(warnings, [])
+            self.assertTrue(
+                any("unregistered media" in error for error in errors),
+                errors,
+            )
+
+    def test_strict_check_rejects_pending_rights_media_leaked_into_generated_output(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            shutil.rmtree(root / ".superpowers", ignore_errors=True)
+            asset = media_asset_record()
+            asset["rights"] = "pending"
+            install_media_fixture(root, asset, reference=False)
+            leaked = root / asset["path"]
+            leaked.parent.mkdir(parents=True, exist_ok=True)
+            leaked.write_bytes(PNG_DOT)
+            catalog = json.loads((root / "src/media-v1.json").read_text(encoding="utf-8"))
+
+            errors, warnings = checker.check_media_references(root, catalog, strict=True)
+
+            self.assertEqual(warnings, [])
+            self.assertTrue(
+                any("pending-rights media artifact" in error for error in errors),
+                errors,
+            )
+
+    def test_strict_check_rejects_public_reference_to_pending_rights_media(self):
+        checker = load_check_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            copy_repo(root)
+            shutil.rmtree(root / ".superpowers", ignore_errors=True)
+            asset = media_asset_record()
+            asset["rights"] = "pending"
+            install_media_fixture(root, asset, reference=False)
+            (root / "ch03.html").write_text(
+                '<img src="assets/media/course/ch03/codex-entry-windows.png" alt="pending">\n',
+                encoding="utf-8",
+                newline="\n",
+            )
+            catalog = json.loads((root / "src/media-v1.json").read_text(encoding="utf-8"))
+
+            errors, warnings = checker.check_media_references(root, catalog, strict=True)
+
+            self.assertEqual(warnings, [])
+            self.assertTrue(
+                any("pending-rights media reference" in error for error in errors),
+                errors,
+            )
+
     def test_success_output_does_not_crash_in_a_gbk_non_tty_process(self):
         env = os.environ.copy()
         env["PYTHONDONTWRITEBYTECODE"] = "1"

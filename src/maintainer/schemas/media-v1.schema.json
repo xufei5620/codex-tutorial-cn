@@ -1,0 +1,292 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-tutorial.local/schemas/media-v1.schema.json",
+  "title": "Codex tutorial media catalog",
+  "description": "校验 Phase C 的 src/media-v1.json。目录记录可发布图片的身份、来源、权利和替代文字。",
+  "type": "object",
+  "required": [
+    "contentVersion",
+    "generatedDate",
+    "status",
+    "assets"
+  ],
+  "properties": {
+    "contentVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "generatedDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "source-and-rights-review",
+        "stable"
+      ]
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "nullableDate": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "safeMediaPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^assets/media/[A-Za-z0-9._~!$&'()*+,;=@%/-]+\\.(?:png|webp|svg)$"
+    },
+    "publicSourceUrl": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://[^\\s]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "path",
+        "mediaType",
+        "alt",
+        "caption",
+        "sourceType",
+        "sourceUrl",
+        "license",
+        "rights",
+        "verificationState",
+        "verificationDate",
+        "lastReviewedDate"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^IMG-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]{4}$"
+        },
+        "kind": {
+          "enum": [
+            "ui-screenshot",
+            "concept-diagram",
+            "prompt-effect"
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/safeMediaPath"
+        },
+        "mediaType": {
+          "enum": [
+            "image/png",
+            "image/webp",
+            "image/svg+xml"
+          ]
+        },
+        "alt": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "caption": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "sourceType": {
+          "enum": [
+            "maintainer-capture",
+            "maintainer-diagram",
+            "owned-diagram",
+            "generated-example",
+            "official-source",
+            "licensed-source",
+            "authorized-user-provided"
+          ]
+        },
+        "sourceUrl": {
+          "$ref": "#/$defs/publicSourceUrl"
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "rights": {
+          "enum": [
+            "owned",
+            "licensed",
+            "pending"
+          ]
+        },
+        "platform": {
+          "enum": [
+            "windows",
+            "macos"
+          ]
+        },
+        "observedProductVersion": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "captureDate": {
+          "type": "string",
+          "format": "date",
+          "description": "界面截图的实际截取日期；不同于登记记录的最后复核日期 lastReviewedDate。"
+        },
+        "industry": {
+          "enum": [
+            "ecommerce",
+            "education",
+            "marketing",
+            "design",
+            "office"
+          ]
+        },
+        "promptId": {
+          "type": "string",
+          "pattern": "^PRM-[A-Z]{3}-[0-9]{4}$"
+        },
+        "verificationState": {
+          "enum": [
+            "verified",
+            "unverified",
+            "not-applicable"
+          ]
+        },
+        "verificationDate": {
+          "$ref": "#/$defs/nullableDate"
+        },
+        "lastReviewedDate": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "ui-screenshot"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "platform",
+              "observedProductVersion",
+              "captureDate"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "platform"
+                  ]
+                },
+                {
+                  "required": [
+                    "observedProductVersion"
+                  ]
+                },
+                {
+                  "required": [
+                    "captureDate"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "prompt-effect"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "industry",
+              "promptId"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "industry"
+                  ]
+                },
+                {
+                  "required": [
+                    "promptId"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "verificationState": {
+                "const": "verified"
+              }
+            },
+            "required": [
+              "verificationState"
+            ]
+          },
+          "then": {
+            "properties": {
+              "verificationDate": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "verificationDate": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -98,6 +98,13 @@
       <section id="s2" data-unit-id="CDX-M-0062" data-content-status="draft" data-verification-state="unverified">
         <h2><span class="sn">11.2</span>来源清单</h2>
         <p>教程正文里关于产品的每一条事实，都来自下面这些官方页面（最近复核：2026 年 9 月 4 日）。教程与官方页面不一致时，<strong>以官方页面为准</strong>。官方文档站有机器翻译的简体中文版，但英文原文更准确。下面的链接文字省略了 https:// 和页面标题后缀，点击即到完整地址。</p>
+        <h3>图片与效果图</h3>
+        <p>图片资产的登记入口是仓库里的 <code>src/media-v1.json</code>；构建器只会把已登记、已校验的图片复制到 <code>assets/media/</code>，并把它们纳入 <code>manifest.json</code>、<code>SHA256SUMS.txt</code> 和离线 ZIP，不会额外生成一个图片 registry 页面。那份登记表记录媒体 ID、行业、Prompt ID、图片 URL 或附件、来源、权利状态、验证状态、GitHub 路径和最后复核日期；如果 Notion 里只是做投影，图片可以上传或嵌入，但必须保留这些身份字段，且 Notion 的改动永远不能回写课程源文件。</p>
+        <ul>
+          <li>版权停止条件很直接：权利状态仍是 <code>pending</code>、来源不清、许可冲突、GitHub 路径缺失、或无法证明能继续公开时，立刻停止发布和转发该图片。</li>
+          <li>只要图片是生成示例，就必须保留 <code>generated-example</code> 标记，并在说明里老老实实写清楚它是示意图，不得冒充真实截图、官方宣传图或现场拍摄。</li>
+          <li>更细的行业 Prompt 约定见 <code>src/maintainer/prompt-image-guide.html</code>；它定义了每个效果图如何绑定 Prompt ID 和文件名。</li>
+        </ul>
         <h3>公告</h3>
         <ul>
           <li>Codex 桌面应用发布（2026-02，3 月补充 Windows）：<a href="https://openai.com/index/introducing-the-codex-app/">openai.com/index/introducing-the-codex-app</a></li>

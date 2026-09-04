@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">Codex 任务边界示意图</title>
+  <desc id="desc">把材料、范围、结果和人工确认分开检查的任务边界图。</desc>
+  <rect width="960" height="420" rx="24" fill="#f7fafb"/>
+  <rect x="44" y="54" width="208" height="128" rx="20" fill="#ffffff" stroke="#0e6b74" stroke-width="3"/>
+  <text x="148" y="102" fill="#084a51" font-family="sans-serif" font-size="30" font-weight="700" text-anchor="middle">材料</text>
+  <text x="148" y="134" fill="#3d4a53" font-family="sans-serif" font-size="18" text-anchor="middle">只给已获准、</text>
+  <text x="148" y="160" fill="#3d4a53" font-family="sans-serif" font-size="18" text-anchor="middle">最少且可核对的内容</text>
+  <rect x="44" y="238" width="208" height="128" rx="20" fill="#ffffff" stroke="#0e6b74" stroke-width="3"/>
+  <text x="148" y="286" fill="#084a51" font-family="sans-serif" font-size="30" font-weight="700" text-anchor="middle">范围</text>
+  <text x="148" y="318" fill="#3d4a53" font-family="sans-serif" font-size="18" text-anchor="middle">限定文件、时间、</text>
+  <text x="148" y="344" fill="#3d4a53" font-family="sans-serif" font-size="18" text-anchor="middle">不能改的边界</text>
+  <rect x="358" y="126" width="244" height="168" rx="24" fill="#dcecee" stroke="#084a51" stroke-width="3"/>
+  <text x="480" y="178" fill="#084a51" font-family="sans-serif" font-size="32" font-weight="700" text-anchor="middle">结果</text>
+  <text x="480" y="212" fill="#1b2730" font-family="sans-serif" font-size="20" text-anchor="middle">先出草稿、清单、预览</text>
+  <text x="480" y="242" fill="#1b2730" font-family="sans-serif" font-size="20" text-anchor="middle">再用原材料与规则核验</text>
+  <text x="480" y="272" fill="#1b2730" font-family="sans-serif" font-size="20" text-anchor="middle">不把第一版当最终答案</text>
+  <rect x="708" y="126" width="208" height="168" rx="24" fill="#fdefef" stroke="#9e2f2f" stroke-width="3"/>
+  <text x="812" y="182" fill="#9e2f2f" font-family="sans-serif" font-size="30" font-weight="700" text-anchor="middle">人工确认</text>
+  <text x="812" y="218" fill="#6b4c00" font-family="sans-serif" font-size="18" text-anchor="middle">发送、发布、删除、付款、</text>
+  <text x="812" y="244" fill="#6b4c00" font-family="sans-serif" font-size="18" text-anchor="middle">改权限前都由人决定</text>
+  <path d="M252 118H332" stroke="#0e6b74" stroke-width="6" stroke-linecap="round"/>
+  <path d="M316 104L336 118L316 132" fill="none" stroke="#0e6b74" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M252 302H332" stroke="#0e6b74" stroke-width="6" stroke-linecap="round"/>
+  <path d="M316 288L336 302L316 316" fill="none" stroke="#0e6b74" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M602 210H682" stroke="#9e2f2f" stroke-width="6" stroke-linecap="round"/>
+  <path d="M666 196L686 210L666 224" fill="none" stroke="#9e2f2f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
