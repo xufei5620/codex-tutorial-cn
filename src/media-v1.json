@@ -1,0 +1,37 @@
+{
+  "contentVersion": "0.4.0",
+  "generatedDate": "2026-09-04",
+  "status": "draft",
+  "assets": [
+    {
+      "id": "IMG-C01-0001",
+      "kind": "concept-diagram",
+      "path": "assets/media/course/ch01/codex-safety-loop.svg",
+      "mediaType": "image/svg+xml",
+      "alt": "Codex 安全闭环示意图：描述任务，限定材料与边界，执行后检查，再决定纠正或停止。",
+      "caption": "自有绘制示意图：Codex 安全闭环。正文要求仍以本章文字说明为准。",
+      "sourceType": "owned-diagram",
+      "sourceUrl": null,
+      "license": "owned",
+      "rights": "owned",
+      "verificationState": "not-applicable",
+      "verificationDate": null,
+      "lastReviewedDate": "2026-09-04"
+    },
+    {
+      "id": "IMG-C02-0001",
+      "kind": "concept-diagram",
+      "path": "assets/media/course/ch02/codex-boundary-map.svg",
+      "mediaType": "image/svg+xml",
+      "alt": "Codex 任务边界示意图：材料、范围、结果与人工确认分开检查。",
+      "caption": "自有绘制示意图：先分清材料、范围、结果，再把高影响动作留给人工确认。",
+      "sourceType": "owned-diagram",
+      "sourceUrl": null,
+      "license": "owned",
+      "rights": "owned",
+      "verificationState": "not-applicable",
+      "verificationDate": null,
+      "lastReviewedDate": "2026-09-04"
+    }
+  ]
+}

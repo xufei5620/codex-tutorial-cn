@@ -104,7 +104,7 @@
 
     <section id="task-4">
       <h2>Task 4：同步 Notion 投影与 Prompt 效果图约定</h2>
-      <p><strong>Files：</strong>修改 <code>src/maintainer/notion-workflow.html</code>、<code>src/content/ch11.html</code>；创建 <code>src/maintainer/prompt-image-guide.html</code>，不加入未经授权的效果图或空的媒体占位文件。</p>
+      <p><strong>Files：</strong>修改 <code>src/maintainer/notion-workflow.html</code>、<code>src/content/ch11.html</code>、<code>src/build.py</code>；创建 <code>src/maintainer/prompt-image-guide.html</code>，并把它接入构建器的公开维护文档白名单。不加入未经授权的效果图或空的媒体占位文件。</p>
       <ol>
         <li>[ ] 在 Notion 工作流中写清图片数据库字段：媒体 ID、行业、Prompt ID、图片 URL/附件、来源、版权状态、验证状态、GitHub 路径和最后复核日期。</li>
         <li>[ ] 明确 Notion 图片可上传或嵌入，但每条记录必须保留媒体 ID 和 GitHub 来源；Notion 修改不自动回写课程源码。</li>
@@ -117,7 +117,7 @@
 
     <section id="task-5">
       <h2>Task 5：跨平台验证、Sites 更新与交付</h2>
-      <p><strong>Files：</strong>构建生成的根页面、<code>manifest.json</code>、<code>SHA256SUMS.txt</code>、<code>registry/</code> 和 <code>downloads/</code>；维护 <code>README.md</code> 中的图片阅读说明。不手改生成文件。</p>
+      <p><strong>Files：</strong>构建生成的根页面、<code>manifest.json</code>、<code>SHA256SUMS.txt</code>、<code>registry/</code> 和 <code>downloads/</code>；维护 <code>README.md</code> 中的图片阅读说明。不手改生成文件。Sites 保存版本与部署由当前站点所有者在任务审查通过后执行，实现代理只准备并验证本地发布包。</p>
       <ol>
         <li>[ ] 在 Windows 运行两次构建、完整单测、<code>python src/check.py --strict --verify-generated</code> 和 <code>git diff --check</code>；记录 HTML 数量、链接数、媒体文件数和离线 ZIP SHA-256。</li>
         <li>[ ] 在 Ubuntu/WSL 对同一提交运行完整单测、构建和严格检查；比较 ZIP SHA-256 与 Windows 完全一致。</li>
@@ -132,6 +132,50 @@
       <h2>最终完成门槛</h2>
       <p>只有当媒体登记、宏解析、来源/版权、安全检查、两张概念图、Notion 投影说明、在线/离线/Sites 路径和 Windows/Ubuntu 重复构建全部通过时，才把本阶段标记为完成。界面截图和行业 Prompt 效果图仍按规格进入后续阶段，不能用自绘概念图替代真实产品实测。</p>
     </section>
+
+    <!-- Machine-readable task briefs for the subagent-driven execution skill.
+         The visible HTML above remains the maintainer-facing plan. -->
+    <script type="text/plain" id="sdd-task-briefs">
+# Task 1: 建立媒体登记表与 Schema
+
+Files: create src/media-v1.json, src/maintainer/schemas/media-v1.schema.json, tests/test_media_registry.py; modify src/check.py Schema loading.
+
+Implement the exact catalog interface: top-level contentVersion, generatedDate, status, assets[]; every asset has id, kind, path, mediaType, alt, caption, sourceType, sourceUrl, license, rights, verificationState, verificationDate, lastReviewedDate. Screenshots additionally have platform and observedProductVersion; prompt effects additionally have industry and promptId. Allowed media types are image/png, image/webp, image/svg+xml. rights is owned, licensed, or pending. verificationState is verified, unverified, or not-applicable. sourceUrl may be null but cannot contain credentials or local absolute paths.
+
+TDD steps: write tests for a valid asset, duplicate IDs, missing alt, missing rights, invalid mediaType, and path traversal; run python -m unittest tests.test_media_registry -v and capture the expected RED failure; implement the Schema and strict checker; run the focused tests and git diff --check; run the full suite before committing. Commit with subject feat: add media asset registry. Write the detailed report to the SDD report path supplied by the controller and report only the required short status contract.
+
+# Task 2: 解析媒体宏并接入发布门禁
+
+Files: modify src/build.py, src/check.py, tests/test_build.py, tests/test_check.py; use src/media/ for registered assets.
+
+Implement load_media_catalog(), resolve_media_macro(text, media_by_id), copy_media_assets(catalog), check_media_catalog(root, strict), and check_media_references(root, catalog, strict) following the existing Python build/check style. The exact macro is {{media:IMG-...}} and it resolves only to a relative assets/media/... path. Unknown or duplicate IDs, missing files, traversal, remote image URLs, unregistered assets, missing alt/caption/rights, symlinks, and unsupported formats must fail strict checks. Copy registered src/media files to generated assets/media and include them in manifest, SHA256SUMS, and offline ZIP. Use temp fixtures so the no-media 0.4.0 generated tree remains unchanged.
+
+TDD steps: write focused success and rejection tests, run python -m unittest tests.test_build tests.test_check -v for RED, implement the minimal pipeline, then run those tests, the full suite, python src/check.py --strict --verify-generated, and git diff --check. Commit with subject feat: validate and publish local media. Write the detailed report to the SDD report path supplied by the controller.
+
+# Task 3: 加入首批自有概念图与可访问图文组件
+
+Files: create src/media/course/ch01/codex-safety-loop.svg and src/media/course/ch02/codex-boundary-map.svg; modify src/media-v1.json, src/content/ch01.html, src/content/ch02.html, src/build.py, tests/test_foundation_course.py.
+
+Create two self-owned SVG diagrams without external fonts, scripts, or images. The first shows 描述 → 限定 → 执行 → 检查 → 纠正/停止. The second shows 材料、范围、结果、人工确认. Register them as IMG-C01-0001 and IMG-C02-0001 with sourceType=owned-diagram, rights=owned, verificationState=not-applicable, descriptive Chinese alt text, and captions containing 示意图 or 自有绘制. Embed semantic figure elements with data-media-id, the {{media:...}} macro, loading=lazy, width, height, and meaningful alt/caption. Keep the prose as the authoritative instructions. Add responsive .course-figure styling to the generated CSS without changing existing colors or breakpoints. Add tests for registration, alt, caption, and source labeling.
+
+Run python src/build.py, python -m unittest discover -s tests -q, python src/check.py --strict --verify-generated, and git diff --check before committing with subject feat: add accessible foundation diagrams. Write the detailed report to the SDD report path supplied by the controller.
+
+# Task 4: 同步 Notion 投影与 Prompt 效果图约定
+
+Files: modify src/maintainer/notion-workflow.html, src/content/ch11.html, and src/build.py; create src/maintainer/prompt-image-guide.html and add it to the builder's public maintainer-document allowlist. Do not create empty or unauthorized effect images.
+
+Document Notion fields: media ID, industry, Prompt ID, image URL or attachment, source, rights status, verification status, GitHub path, and last review date. State that Notion may upload/embed an image but must retain the media ID and GitHub source; Notion edits never write back to course source. Add the media registry entry point, copyright stop conditions, and the generated-example label rule to ch11. In the prompt image guide map ecommerce, education, marketing, design, and office, and define IMG-PROMPT-<industry>-<four-digit-sequence> plus Prompt ID binding. Use HTML maintainer docs and no fake placeholder assets.
+
+Run python src/build.py, python -m unittest discover -s tests -q, python src/check.py --strict --verify-generated, and git diff --check. Commit with subject docs: define image and notion projection workflow. Write the detailed report to the SDD report path supplied by the controller.
+
+# Task 5: 跨平台验证、Sites 更新与交付
+
+Files: generated root pages, manifest.json, SHA256SUMS.txt, registry/, downloads/, and README.md image-reading notes; never hand-edit generated files. The controller/site owner performs Sites save-version and private deployment after this task's review; the implementer must not call Sites tools.
+
+Run two Windows builds, the full suite, strict verification, and diff check; record HTML count, link count, media count, and ZIP SHA-256. Run the same commit in Ubuntu/WSL and require the ZIP SHA-256 to match. Inspect the ZIP for every referenced media file, relative HTML/media paths, no remote media URLs, no private test files, and no unregistered assets. Push codex/image-course-assets and create/update a Draft PR based on PR #10. Prepare the exact generated static output and archive for the controller/site owner to use in the existing private Sites project; do not call Sites tools from the implementer and do not change access to public or merge automatically.
+
+Before reporting completion, run python -m unittest discover -s tests -q, python src/check.py --strict --verify-generated, git diff --check, and verify a clean git status plus the final ZIP checksum. Write the detailed report to the SDD report path supplied by the controller.
+    </script>
   </main>
 </body>
 </html>

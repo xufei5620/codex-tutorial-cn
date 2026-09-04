@@ -24,7 +24,7 @@
   </header>
 
   <aside class="notice"><strong>状态：当前阶段暂缓启用（2026-09-01 决定）。</strong>单人维护阶段不建 Notion 台账：章节导航以 <code>src/chapters.json</code> 为准，内容单元身份与双状态以 <code>src/modules-v1.json</code> 为准，并构建为公开只读的 <code>registry/modules-v1.json</code>。本页保留为未来多人协作时的启用方案；届时仍不得维护第二套事实源。</aside>
-  <aside class="notice"><strong>边界：</strong>本框架不要求读者拥有 Notion，也不把私有反馈、原始截图、环境日志或未清权素材同步到公开页面。公开 Notion 仅在用户验收后，作为 Git 已发布版本的单向可读投影。</aside>
+  <aside class="notice"><strong>边界：</strong>本框架不要求读者拥有 Notion，也不把私有反馈、原始截图、环境日志或未清权素材同步到公开页面。公开 Notion 仅在用户验收后，作为 Git 已发布版本的单向可读投影；可以上传或嵌入图片，但必须保留媒体 ID、GitHub 源路径和最后复核日期，Notion 上的任何编辑都不能回写课程源文件。</aside>
 
   <section>
     <h2>一条事实如何流动</h2>
@@ -39,6 +39,7 @@
       <tbody>
         <tr><td>课程模块</td><td>投影每一个已登记内容单元；不在 Notion 新建正式身份。</td><td>永久单元 ID、标题、所属章节、内容状态、验证状态、公开路径、平台、风险、最近复核日期</td></tr>
         <tr><td>素材与来源</td><td>登记官方文档、GitHub 项目、图片、提示词方法和授权条件。</td><td>来源名称、URL、固定版本或 commit、许可证、使用方式、审查结论、权利状态、登记日期</td></tr>
+        <tr><td>图片与效果图</td><td>登记维护者上传、嵌入或复核过的图片投影；不把 Notion 当作图片的权威源。</td><td>媒体 ID、行业、Prompt ID、图片 URL 或附件、来源、权利状态、验证状态、GitHub 路径、最后复核日期</td></tr>
         <tr><td>反馈</td><td>收集读者问题，避免把原始隐私信息写入课程。</td><td>教程版本、模块 ID、问题描述、平台、产品版本、脱敏附件、处理状态、关联任务</td></tr>
         <tr><td>复验与发布任务</td><td>管理“谁在什么环境复验了什么”。</td><td>任务 ID、模块 ID、环境、步骤、预期、实际、证据位置、验证状态、到期日、阻断级别</td></tr>
         <tr><td>变更与撤回</td><td>保留发行决策、风险和墓碑记录。</td><td>版本、影响模块、变更类型、风险级别、决定、发布日期、撤回原因、替代版本</td></tr>
@@ -49,7 +50,7 @@
   <section>
     <h2>内容状态与 Git 的关系</h2>
     <p>Notion 的看板只显示工作状态；Git 中的 HTML、<code>src/modules-v1.json</code>、测试和发行清单才是可复现的事实。内容生产状态与产品验证状态必须作为两个字段投影，不能由看板列名互相推导或自动提升。</p>
-    <p>Notion 中的草稿不能视为课程，公开投影也不能反向覆盖 Git。每条卡片只链接永久单元 ID 与公开路径，不复制一份正文；需要修改时回到 Git，经构建生成新的 <code>registry/modules-v1.json</code>。</p>
+    <p>Notion 中的草稿不能视为课程，公开投影也不能反向覆盖 Git。每条卡片只链接永久单元 ID 与公开路径，不复制一份正文；需要修改时回到 Git，经构建生成新的 <code>registry/modules-v1.json</code>。图片和效果图也遵守同样的单向规则：Notion 可以展示投影，但图片登记的权威仍在仓库里的 <code>src/media-v1.json</code> 和维护者文档里，构建时只把已登记的图片复制到 <code>assets/media/</code>，并由 <code>manifest.json</code>、<code>SHA256SUMS.txt</code> 和离线 ZIP 继续覆盖发布结果。</p>
   </section>
 
   <section>
@@ -65,11 +66,21 @@
   </section>
 
   <section>
+    <h2>图片投影与止损条件</h2>
+    <p>图片台账的入口是仓库里的 <code>src/media-v1.json</code>；构建器只会把已登记且通过校验的图片复制到 <code>assets/media/</code>，并把它们纳入 <code>manifest.json</code>、<code>SHA256SUMS.txt</code> 和离线 ZIP，不会生成额外的图片 registry 页面。每条记录都要把媒体 ID、行业、Prompt ID、图片 URL 或附件、来源、权利状态、验证状态、GitHub 路径和最后复核日期写全。Notion 里可以上传或嵌入图片，但必须保留原始媒体 ID 和 GitHub 源路径，方便回指和复验。</p>
+    <ul>
+      <li>权利状态是 <code>pending</code>、来源不明、许可冲突、路径缺失或无法写清 GitHub 源路径时，立即停用公开投影。</li>
+      <li>图片一旦改成生成示例，就必须保留 <code>generated-example</code> 标记，不得伪装成现场截图、官方图或真实拍摄。</li>
+      <li>Notion 的编辑只允许调整展示顺序、说明文字和复核状态，不得把图片投影写成新的课程来源。</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>反馈处理的最小闭环</h2>
     <p>读者反馈只需提供教程版本、模块 ID 和问题描述。处理人先脱敏，再判断它是内容错误、平台差异、失效来源、可访问性问题还是新需求；随后创建关联维护任务。可复现的问题要写入 Git 修复和验证记录，不能只在 Notion 卡片里标“已解决”。</p>
   </section>
 
-  <footer><p>维护框架，不是课程正文。最后更新：2026-09-03。</p></footer>
+  <footer><p>维护框架，不是课程正文。最后更新：2026-09-04。</p></footer>
 </main>
 </body>
 </html>

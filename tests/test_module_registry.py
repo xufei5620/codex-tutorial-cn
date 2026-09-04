@@ -670,6 +670,7 @@ class ModuleRegistryTests(unittest.TestCase):
         for leaked_path in (
             "K:/private/worktree/note",
             "C:\\Users\\alice\\secret.txt",
+            "[C:/Users/alice/secret.png]",
             "/mnt/k/private-authoring/note",
             "/root/.ssh/id_rsa",
             "/mnt/private-authoring/alice/secret.txt",

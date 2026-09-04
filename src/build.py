@@ -12,7 +12,7 @@ MAINT = os.path.join(ROOT, 'maintainer')
 # 由本脚本生成、每次重建前先清掉的东西（其余文件如 .git、src/ 不动）
 GENERATED = ['index.html', '404.html', 'robots.txt', 'prompts.html', 'README.md', 'manifest.json', 'SHA256SUMS.txt',
              'assets', 'downloads', 'deploy', 'templates', 'specs', 'schemas', 'registry',
-             'maintenance-release.html', 'notion-workflow.html', 'source-research.html'] + [f'ch{i:02d}.html' for i in range(1, 100)]
+             'maintenance-release.html', 'notion-workflow.html', 'prompt-image-guide.html', 'source-research.html'] + [f'ch{i:02d}.html' for i in range(1, 100)]
 
 def reject_duplicate_json_keys(pairs):
     result = {}
@@ -90,6 +90,8 @@ TEXT_SUFFIXES = {
 }
 TEXT_NAMES = {'Caddyfile', 'Dockerfile'}
 BINARY_SUFFIXES = {'.avif', '.gif', '.ico', '.jpeg', '.jpg', '.png', '.webp'}
+MEDIA_MACRO_PATTERN = re.compile(r'\{\{media:(IMG-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]{4})\}\}')
+MEDIA_SUFFIXES = {'.png', '.webp', '.svg'}
 
 
 def validate_binary_asset(path, suffix):
@@ -157,8 +159,78 @@ def copy_public_path(source, target):
         copy_public_file(source, target)
 
 
+def safe_relative(value):
+    normalized = value.replace('\\', '/')
+    parts = normalized.split('/')
+    return (
+        bool(normalized)
+        and not normalized.startswith('/')
+        and not re.match(r'^[A-Za-z]:', normalized)
+        and all(part not in ('', '.', '..') for part in parts)
+    )
+
+
+def load_media_catalog():
+    catalog = load_json(os.path.join(ROOT, 'media-v1.json'))
+    assets = catalog.get('assets')
+    if not isinstance(assets, list):
+        raise ValueError('media catalog assets must be an array')
+    media_by_id = {}
+    for asset in assets:
+        if not isinstance(asset, dict):
+            raise ValueError('media catalog assets must be objects')
+        asset_id = asset.get('id')
+        if not isinstance(asset_id, str) or not asset_id:
+            raise ValueError('media catalog asset id must be a non-empty string')
+        if asset_id in media_by_id:
+            raise ValueError(f'duplicate media id: {asset_id}')
+        media_by_id[asset_id] = asset
+    return assets, media_by_id
+
+
+MEDIA_CATALOG, MEDIA_BY_ID = load_media_catalog()
+
+
 def read(name):
-    return open(os.path.join(CONTENT, name + '.html'), encoding='utf-8').read()
+    with open(os.path.join(CONTENT, name + '.html'), encoding='utf-8') as handle:
+        return resolve_media_macro(handle.read(), MEDIA_BY_ID)
+
+
+def resolve_media_macro(text, media_by_id):
+    def replace(match):
+        asset_id = match.group(1)
+        asset = media_by_id.get(asset_id)
+        if asset is None:
+            raise ValueError(f'unknown media id: {asset_id}')
+        path = asset.get('path')
+        if (
+            not isinstance(path, str)
+            or not safe_relative(path)
+            or not path.startswith('assets/media/')
+            or os.path.splitext(path)[1].lower() not in MEDIA_SUFFIXES
+        ):
+            raise ValueError(f'{asset_id}: unsupported media path: {path!r}')
+        return path
+
+    return MEDIA_MACRO_PATTERN.sub(replace, text)
+
+
+def copy_media_assets(catalog):
+    for asset in catalog:
+        asset_id = asset.get('id', '<unknown>')
+        path = asset.get('path')
+        if (
+            not isinstance(path, str)
+            or not safe_relative(path)
+            or not path.startswith('assets/media/')
+            or os.path.splitext(path)[1].lower() not in MEDIA_SUFFIXES
+        ):
+            raise ValueError(f'{asset_id}: unsupported media path: {path!r}')
+        source = os.path.join(ROOT, 'media', path.removeprefix('assets/media/').replace('/', os.sep))
+        if not os.path.isfile(source):
+            raise ValueError(f'{asset_id}: media source is missing: {source}')
+        target = os.path.join(SITE, path.replace('/', os.sep))
+        copy_public_file(source, target)
 
 
 def apply_unit_metadata(source):
@@ -678,6 +750,7 @@ def build_site():
     os.makedirs(os.path.join(SITE, 'assets'))
     write_text(os.path.join(SITE, 'assets', 'style.css'), css)
     write_text(os.path.join(SITE, 'assets', 'favicon.svg'), FAVICON)
+    copy_media_assets(MEDIA_CATALOG)
     write_text(os.path.join(SITE, 'index.html'), page_shell(SITE_TITLE, 'home', home_body('multi')))
     write_text(os.path.join(SITE, '404.html'), page_shell(f'找不到页面｜{SITE_TITLE}', 'home', NOT_FOUND, css_href='/assets/style.css'))
     write_text(os.path.join(SITE, 'robots.txt'), 'User-agent: *\nAllow: /\nDisallow: /templates/\nDisallow: /specs/\nDisallow: /schemas/\nDisallow: /registry/\nDisallow: /src/\nDisallow: /deploy/\n')
@@ -690,7 +763,7 @@ def build_site():
         write_text(os.path.join(SITE, eid + '.html'),
                    page_shell(f'{e["title"]}｜{SITE_TITLE}', '', doc_page(eid, 'multi')))
     # 维护者文件：从原仓库原样复制
-    for name in ['maintenance-release.html', 'notion-workflow.html', 'source-research.html', 'templates', 'specs', 'schemas']:
+    for name in ['maintenance-release.html', 'notion-workflow.html', 'prompt-image-guide.html', 'source-research.html', 'templates', 'specs', 'schemas']:
         src = os.path.join(MAINT, name)
         dst = os.path.join(SITE, name)
         copy_public_path(src, dst)
@@ -767,7 +840,7 @@ def readme():
 
 写给第一次接触 AI 与 Codex 的中文读者的离线教程。不需要编程、命令行或 Git 基础。
 
-**怎么读：** 离线 HTML 是主要交付：下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。
+**怎么读：** 离线 HTML 是主要交付：下载首页的「离线版 ZIP」（也可以 Code → Download ZIP），解压后双击 `index.html`。全站纯 HTML + CSS，无 JavaScript、无远程资源，不联网也能看。图示与课程图片也随 ZIP 保存在 `assets/media/`，无需联网加载。
 
 **可选在线预览：** 如需把同一批生成页面放到服务器，再看 [deploy/DEPLOY.md](deploy/DEPLOY.md)。在线部署不是课程完成或正式发布的必要条件。
 

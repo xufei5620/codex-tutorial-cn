@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">Codex 安全闭环示意图</title>
+  <desc id="desc">从描述、限定、执行、检查，到纠正或停止的安全闭环。</desc>
+  <rect width="960" height="420" rx="24" fill="#f0f7f8"/>
+  <rect x="48" y="44" width="170" height="84" rx="18" fill="#084a51"/>
+  <text x="133" y="84" fill="#ffffff" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">描述</text>
+  <text x="133" y="112" fill="#dcecee" font-family="sans-serif" font-size="16" text-anchor="middle">目标与背景</text>
+  <rect x="266" y="44" width="170" height="84" rx="18" fill="#0e6b74"/>
+  <text x="351" y="84" fill="#ffffff" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">限定</text>
+  <text x="351" y="112" fill="#dcecee" font-family="sans-serif" font-size="16" text-anchor="middle">材料与边界</text>
+  <rect x="484" y="44" width="170" height="84" rx="18" fill="#0e6b74"/>
+  <text x="569" y="84" fill="#ffffff" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">执行</text>
+  <text x="569" y="112" fill="#dcecee" font-family="sans-serif" font-size="16" text-anchor="middle">先做一版</text>
+  <rect x="702" y="44" width="170" height="84" rx="18" fill="#084a51"/>
+  <text x="787" y="84" fill="#ffffff" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">检查</text>
+  <text x="787" y="112" fill="#dcecee" font-family="sans-serif" font-size="16" text-anchor="middle">对照原材料</text>
+  <path d="M218 86H248" stroke="#0e6b74" stroke-width="6" stroke-linecap="round"/>
+  <path d="M236 72L252 86L236 100" fill="none" stroke="#0e6b74" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M436 86H466" stroke="#0e6b74" stroke-width="6" stroke-linecap="round"/>
+  <path d="M454 72L470 86L454 100" fill="none" stroke="#0e6b74" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M654 86H684" stroke="#0e6b74" stroke-width="6" stroke-linecap="round"/>
+  <path d="M672 72L688 86L672 100" fill="none" stroke="#0e6b74" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M787 136V190" stroke="#0e6b74" stroke-width="6" stroke-linecap="round"/>
+  <path d="M787 190H360" stroke="#0e6b74" stroke-width="6" stroke-linecap="round"/>
+  <path d="M360 190V212" stroke="#0e6b74" stroke-width="6" stroke-linecap="round"/>
+  <path d="M360 200L344 216H376Z" fill="#0e6b74"/>
+  <rect x="238" y="230" width="246" height="128" rx="20" fill="#ffffff" stroke="#0e6b74" stroke-width="3"/>
+  <text x="361" y="274" fill="#084a51" font-family="sans-serif" font-size="30" font-weight="700" text-anchor="middle">纠正</text>
+  <text x="361" y="308" fill="#3d4a53" font-family="sans-serif" font-size="18" text-anchor="middle">缩小范围、补充条件、</text>
+  <text x="361" y="334" fill="#3d4a53" font-family="sans-serif" font-size="18" text-anchor="middle">要求重做并说明已发生的事</text>
+  <rect x="548" y="230" width="246" height="128" rx="20" fill="#fdefef" stroke="#9e2f2f" stroke-width="3"/>
+  <text x="671" y="274" fill="#9e2f2f" font-family="sans-serif" font-size="30" font-weight="700" text-anchor="middle">停止</text>
+  <text x="671" y="308" fill="#6b4c00" font-family="sans-serif" font-size="18" text-anchor="middle">遇到秘密、无权材料、</text>
+  <text x="671" y="334" fill="#6b4c00" font-family="sans-serif" font-size="18" text-anchor="middle">高影响且看不懂的动作就停</text>
+  <path d="M787 190V212" stroke="#9e2f2f" stroke-width="6" stroke-linecap="round"/>
+  <path d="M787 212H680" stroke="#9e2f2f" stroke-width="6" stroke-linecap="round"/>
+  <path d="M680 212V230" stroke="#9e2f2f" stroke-width="6" stroke-linecap="round"/>
+  <path d="M680 220L664 236H696Z" fill="#9e2f2f"/>
+</svg>

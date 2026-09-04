@@ -39,6 +39,15 @@ class FoundationCourseTests(unittest.TestCase):
         self.assertIsNotNone(match, f"missing section: {section_id}")
         return match.group(0)
 
+    def _figure(self, source, asset_id):
+        match = re.search(
+            rf'<figure class="course-figure" data-media-id="{re.escape(asset_id)}"[^>]*>.*?</figure>',
+            source,
+            flags=re.DOTALL,
+        )
+        self.assertIsNotNone(match, f"missing course figure: {asset_id}")
+        return match.group(0)
+
     def test_phase_c_has_a_new_content_identity(self):
         config = json.loads((REPO / "src/chapters.json").read_text(encoding="utf-8"))
         catalog = json.loads((REPO / "src/modules-v1.json").read_text(encoding="utf-8"))
@@ -190,6 +199,55 @@ class FoundationCourseTests(unittest.TestCase):
                 self.assertIn(marker, source, f"{chapter_id}: missing {marker}")
             self.assertRegex(source, r'https://(?:learn\.chatgpt\.com|help\.openai\.com|openai\.com)/')
             self.assertNotIn("【填写】", source)
+
+    def test_first_two_chapters_register_and_embed_owned_diagrams_accessibly(self):
+        catalog = json.loads((REPO / "src/media-v1.json").read_text(encoding="utf-8"))
+        assets = {asset["id"]: asset for asset in catalog["assets"]}
+        expected = {
+            "IMG-C01-0001": {
+                "chapter": "ch01",
+                "path": "assets/media/course/ch01/codex-safety-loop.svg",
+                "labels": ("描述", "限定", "执行", "检查", "纠正", "停止"),
+            },
+            "IMG-C02-0001": {
+                "chapter": "ch02",
+                "path": "assets/media/course/ch02/codex-boundary-map.svg",
+                "labels": ("材料", "范围", "结果", "人工确认"),
+            },
+        }
+        for asset_id, rule in expected.items():
+            with self.subTest(asset_id=asset_id):
+                asset = assets.get(asset_id)
+                self.assertIsNotNone(asset, asset_id)
+                self.assertEqual(asset["kind"], "concept-diagram")
+                self.assertEqual(asset["path"], rule["path"])
+                self.assertEqual(asset["mediaType"], "image/svg+xml")
+                self.assertEqual(asset["sourceType"], "owned-diagram")
+                self.assertEqual(asset["rights"], "owned")
+                self.assertEqual(asset["verificationState"], "not-applicable")
+                self.assertIsNone(asset["sourceUrl"])
+                self.assertRegex(asset["alt"], r"示意图")
+                self.assertRegex(asset["caption"], r"示意图|自有绘制")
+                diagram = (REPO / "src/media" / Path(rule["path"].removeprefix("assets/media/"))).read_text(
+                    encoding="utf-8"
+                )
+                self.assertIn("<svg", diagram)
+                for label in rule["labels"]:
+                    self.assertIn(label, diagram)
+
+                source = (REPO / f"src/content/{rule['chapter']}.html").read_text(encoding="utf-8")
+                figure = self._figure(source, asset_id)
+                self.assertIn(f'src="{{{{media:{asset_id}}}}}"', figure)
+                self.assertIn(f'alt="{asset["alt"]}"', figure)
+                self.assertIn('loading="lazy"', figure)
+                self.assertRegex(figure, r'width="\d+"')
+                self.assertRegex(figure, r'height="\d+"')
+                self.assertIn(asset["caption"], figure)
+
+        style = (REPO / "src/content/style.css").read_text(encoding="utf-8")
+        self.assertIn(".course-figure", style)
+        self.assertIn(".course-figure img", style)
+        self.assertIn(".course-figure figcaption", style)
 
     def test_dangerous_or_obsolete_absolute_promises_are_removed(self):
         combined = "\n".join(
