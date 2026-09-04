@@ -118,8 +118,8 @@
     },
     {
       "path": "maintenance-release.html",
-      "size": 8268,
-      "sha256": "f03530ed36599f6470fe410887c101029b20a952419c1755cb5e41702a2a6e7c"
+      "size": 8591,
+      "sha256": "4a3ccbd9b77a8c5cfba5bbdba9d299ddd0e24cf5b5872601e65a08cd4bb992c4"
     },
     {
       "path": "notion-workflow.html",
@@ -128,18 +128,18 @@
     },
     {
       "path": "prompts.html",
-      "size": 35277,
-      "sha256": "b6ad64270df3bea599e6a15406d4beee6aa7d922ec4c70f81b3f566b8bc81082"
+      "size": 35594,
+      "sha256": "a187cdbdc061307346b63275af539f54f58396bbf11f0a889367e62db1e3ff0a"
     },
     {
       "path": "registry/framework-v1.json",
-      "size": 8716,
-      "sha256": "8ec15716fb03dece7d43dda9a76e7b3cf00558d751210e5384e57ee1e40be462"
+      "size": 8851,
+      "sha256": "0ab8d6e7c4d4ddf23e9b610ac6744075c34adde7f6ff51a2995fd425de0bc90f"
     },
     {
       "path": "registry/modules-v1.json",
-      "size": 40036,
-      "sha256": "10f73ba8aa48effbd5deab971d2b00c53ddf96e28f6af9f53afdb0794b35581f"
+      "size": 40514,
+      "sha256": "6c2688448cb04f1f49504ed2f675667b97b01fc701fe503ec187d9e29a6e9a52"
     },
     {
       "path": "robots.txt",
@@ -148,13 +148,13 @@
     },
     {
       "path": "schemas/framework-v1.schema.json",
-      "size": 16203,
-      "sha256": "491ac9680445f01b7d3229e7dbdf25dae1277abb00069be87420872ddc81a537"
+      "size": 16348,
+      "sha256": "618f64a7a5aad3758752982aa91047395402af95fae6c9f27885b2eda6fb17cc"
     },
     {
       "path": "schemas/modules-v1.schema.json",
-      "size": 25452,
-      "sha256": "2bfd574b6a8fdf4ed22a3bb357043cf93568aed0c018c0736e1c8ae23f9e4960"
+      "size": 25926,
+      "sha256": "0d58800f93b0173dc32f4a93d54322f9ef4076dacebbc00ce60795080457beb6"
     },
     {
       "path": "source-research.html",
@@ -188,8 +188,8 @@
     },
     {
       "path": "templates/prompt-card-template.html",
-      "size": 3381,
-      "sha256": "52445ef72277c07ecfac50ac03b0a56ed19155262723be64fd1eec32c01cfa16"
+      "size": 3539,
+      "sha256": "b903d2b405f36c4647d72efe18255226fccf77140dfe662679ca3aeff6160dac"
     },
     {
       "path": "templates/skill-template.html",

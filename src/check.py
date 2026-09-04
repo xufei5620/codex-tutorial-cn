@@ -139,15 +139,17 @@ LOCKED_TASK_TITLES = {
     "visual": "视觉创意",
 }
 LOCKED_PROMPT_COLLECTIONS = [
-    {"key": "prompt-common", "title": "跨行业通用", "uniqueCardCount": 6, "usesSharedFileCard": False},
-    {"key": "prompt-ecommerce", "title": "电商与零售", "uniqueCardCount": 5, "usesSharedFileCard": True},
-    {"key": "prompt-food", "title": "餐饮与本地生活", "uniqueCardCount": 5, "usesSharedFileCard": True},
-    {"key": "prompt-media", "title": "传媒与内容创作", "uniqueCardCount": 5, "usesSharedFileCard": True},
-    {"key": "prompt-education", "title": "教育与培训", "uniqueCardCount": 5, "usesSharedFileCard": True},
+    {"key": "prompt-common", "title": "跨行业通用", "idPrefix": "COM", "uniqueCardCount": 6, "usesSharedFileCard": False},
+    {"key": "prompt-ecommerce", "title": "电商与零售", "idPrefix": "ECM", "uniqueCardCount": 5, "usesSharedFileCard": True},
+    {"key": "prompt-food", "title": "餐饮与本地生活", "idPrefix": "FOD", "uniqueCardCount": 5, "usesSharedFileCard": True},
+    {"key": "prompt-media", "title": "传媒与内容创作", "idPrefix": "MED", "uniqueCardCount": 5, "usesSharedFileCard": True},
+    {"key": "prompt-education", "title": "教育与培训", "idPrefix": "EDU", "uniqueCardCount": 5, "usesSharedFileCard": True},
 ]
 LOCKED_ACTIVE_PROMPT_COUNTS = {
     item["key"]: item["uniqueCardCount"] for item in LOCKED_PROMPT_COLLECTIONS
 }
+LOCKED_SHARED_PROMPT_ID = "PRM-COM-0003"
+LOCKED_SHARED_PLACEMENTS = list(LOCKED_ACTIVE_PROMPT_COUNTS)
 LOCKED_RISK_WINDOWS = {"high": 30, "medium": 90, "low": 180}
 LOCKED_STABLE_GATES = [
     "framework-user-approved",
@@ -561,6 +563,7 @@ class ContentUnitParser(HTMLParser):
                     "verificationState": attributes.get("data-verification-state"),
                     "collectionKeys": attributes.get("data-collection-keys", "").split(),
                     "taskKey": attributes.get("data-task-key") or None,
+                    "placementCollections": attributes.get("data-placement-collections", "").split(),
                     "visibleStatus": None,
                     "visibleStatusLabel": [],
                     "retirementNotice": False,
@@ -1181,16 +1184,28 @@ def check_module_registry(
             for unit in unit_records
             if unit.get("kind") == "prompt-card" and unit.get("contentStatus") in active_states
         ]
-        if len(active_prompts) < 26:
-            errors.append(f"active prompt coverage is below the locked minimum ({len(active_prompts)} < 26)")
+        if len(active_prompts) != 26:
+            errors.append(f"active unique prompt coverage differs from the locked total ({len(active_prompts)} != 26)")
+        placement_count = sum(len(unit.get("placementCollectionKeys", [])) for unit in active_prompts)
+        if placement_count != 30:
+            errors.append(
+                f"active prompt placement coverage differs from the locked total ({placement_count} != 30)"
+            )
         for collection_key, required_count in LOCKED_ACTIVE_PROMPT_COUNTS.items():
             active_count = sum(
                 1 for unit in active_prompts if collection_key in unit.get("collectionKeys", [])
             )
-            if active_count < required_count:
+            required_placements = required_count + (0 if collection_key == "prompt-common" else 1)
+            active_placements = sum(
+                1
+                for unit in active_prompts
+                if collection_key in unit.get("placementCollectionKeys", [])
+            )
+            if active_count != required_count or active_placements != required_placements:
                 errors.append(
-                    f"{collection_key}: active prompt coverage is below the locked minimum "
-                    f"({active_count} < {required_count})"
+                    f"{collection_key}: active prompt coverage differs from the locked plan "
+                    f"(unique {active_count} != {required_count} or placements "
+                    f"{active_placements} != {required_placements})"
                 )
 
     legacy = registry.get("legacyChapterPlaceholders", [])
@@ -1212,9 +1227,16 @@ def check_module_registry(
         errors.append("legacy chapter mapping differs from the locked v1 allocation")
 
     collection_keys = [item.get("key") for item in registry.get("collections", []) if isinstance(item, dict)]
+    collection_prefixes = {
+        item.get("key"): item.get("idPrefix")
+        for item in registry.get("collections", [])
+        if isinstance(item, dict)
+    }
     task_keys = [item.get("key") for item in registry.get("taskTypes", []) if isinstance(item, dict)]
     if repeated(collection_keys):
         errors.append("duplicate prompt collection keys")
+    if repeated(list(collection_prefixes.values())):
+        errors.append("duplicate prompt collection ID prefixes")
     if repeated(task_keys):
         errors.append("duplicate prompt task keys")
     expected_task_types = [{"key": key, "title": title} for key, title in LOCKED_TASK_TITLES.items()]
@@ -1224,6 +1246,9 @@ def check_module_registry(
         for collection_key in unit.get("collectionKeys", []):
             if collection_key not in collection_keys:
                 errors.append(f"{unit.get('id')}: unknown collection key: {collection_key}")
+        for collection_key in unit.get("placementCollectionKeys", []):
+            if collection_key not in collection_keys:
+                errors.append(f"{unit.get('id')}: unknown placement collection key: {collection_key}")
         task_key = unit.get("taskKey")
         if task_key is not None and task_key not in task_keys:
             errors.append(f"{unit.get('id')}: unknown task key: {task_key}")
@@ -1232,6 +1257,19 @@ def check_module_registry(
             if problem:
                 errors.append(f"{unit.get('id')}: source URL {problem}: {source_ref['url']}")
         if unit.get("kind") == "prompt-card":
+            home_collections = unit.get("collectionKeys", [])
+            placements = unit.get("placementCollectionKeys", [])
+            if len(home_collections) == 1:
+                expected_prefix = collection_prefixes.get(home_collections[0])
+                if expected_prefix and not str(unit.get("id", "")).startswith(f"PRM-{expected_prefix}-"):
+                    errors.append(f"{unit.get('id')}: prompt ID prefix differs from its home collection")
+            expected_placements = (
+                LOCKED_SHARED_PLACEMENTS
+                if unit.get("id") == LOCKED_SHARED_PROMPT_ID
+                else home_collections
+            )
+            if placements != expected_placements:
+                errors.append(f"{unit.get('id')}: prompt placement collections differ from the locked plan")
             expected_anchor = str(unit.get("id", "")).lower()
             if (
                 unit.get("sourceAnchor") != expected_anchor
@@ -1286,6 +1324,9 @@ def check_module_registry(
             errors.append(f"{prompt_id}: permanent prompt identity differs from the locked v1 allocation")
         elif record.get("risk") != "low" or record.get("platforms") != ["windows", "macos"]:
             errors.append(f"{prompt_id}: risk/platforms differ from the locked v1 allocation")
+    shared_record = records_by_id.get(LOCKED_SHARED_PROMPT_ID)
+    if shared_record is not None and shared_record.get("collectionKeys") != ["prompt-common"]:
+        errors.append("shared prompt home collection differs from the locked plan")
 
     framework = None
     try:
@@ -1307,7 +1348,7 @@ def check_module_registry(
             if framework_chapters.get(chapter_id, {}).get("status") != expected_status:
                 errors.append(f"{chapter_id}: chapter status differs from its least-advanced unit")
         expected_collections = [
-            {"key": item["key"], "title": item["title"]}
+            {"key": item["key"], "title": item["title"], "idPrefix": item["idPrefix"]}
             for item in framework["promptLibrary"]["collections"]
         ]
         if registry.get("collections") != expected_collections:
@@ -1559,6 +1600,10 @@ def check_module_registry(
             for field in ("collectionKeys", "taskKey"):
                 if record.get(field) != parsed.get(field):
                     errors.append(f"{parsed.get('id')}: {field} differs between registry and HTML metadata")
+            if parsed.get("placementCollections") != record.get("placementCollectionKeys"):
+                errors.append(
+                    f"{parsed.get('id')}: placement collections differ between the plan and HTML metadata"
+                )
             if (
                 parsed.get("visibleStatus") != record.get("contentStatus")
                 or parsed.get("visibleStatusLabel") != STATUS_ZH.get(record.get("contentStatus"))

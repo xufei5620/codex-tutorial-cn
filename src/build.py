@@ -33,6 +33,7 @@ MODULES_CFG = load_json(os.path.join(ROOT, 'modules-v1.json'))
 UNIT_BY_ID = {unit['id']: unit for unit in MODULES_CFG['units']}
 RETIREMENT_BY_ID = {record['unitId']: record for record in MODULES_CFG.get('retirementRecords', [])}
 COLLECTION_TITLE = {item['key']: item['title'] for item in MODULES_CFG['collections']}
+COLLECTION_PREFIX = {item['key']: item['idPrefix'] for item in MODULES_CFG['collections']}
 TASK_TITLE = {item['key']: item['title'] for item in MODULES_CFG['taskTypes']}
 SITE_TITLE = cfg['site']['title']
 TAGLINE = cfg['site']['tagline']
@@ -75,6 +76,8 @@ LOCKED_ACTIVE_PROMPT_COUNTS = {
     'prompt-media': 5,
     'prompt-education': 5,
 }
+SHARED_PROMPT_ID = 'PRM-COM-0003'
+SHARED_PROMPT_PLACEMENTS = list(LOCKED_ACTIVE_PROMPT_COUNTS)
 
 css = open(os.path.join(CONTENT, 'style.css'), encoding='utf-8').read()
 ZIP_NAME = f"codex-tutorial-cn-v{cfg['site']['version']}-offline.zip"
@@ -165,7 +168,7 @@ def apply_unit_metadata(source):
         if unit is None:
             raise ValueError(f'HTML references unknown data-unit-id: {unit_id}')
         opening = re.sub(
-            r'\sdata-(?:content-status|verification-state|collection-keys|task-key)=(?:"[^"]*"|\'[^\']*\')',
+            r'\sdata-(?:content-status|verification-state|collection-keys|task-key|placement-collections)=(?:"[^"]*"|\'[^\']*\')',
             '',
             opening,
         )
@@ -179,6 +182,11 @@ def apply_unit_metadata(source):
             metadata += (
                 f' data-collection-keys="{html.escape(" ".join(unit["collectionKeys"]), quote=True)}"'
                 f' data-task-key="{html.escape(unit["taskKey"], quote=True)}"'
+            )
+            metadata += (
+                ' data-placement-collections="'
+                + html.escape(' '.join(unit['placementCollectionKeys']), quote=True)
+                + '"'
             )
             body, badge_count = re.subn(
                 r'<span class="badge [^"]+">[^<]+</span>',
@@ -579,6 +587,17 @@ def validate_source_inputs():
                 f'({chapter["status"]} != {aggregate})'
             )
     prompt_units = [unit for unit in MODULES_CFG['units'] if unit['kind'] == 'prompt-card']
+    for unit in prompt_units:
+        if len(unit['collectionKeys']) != 1:
+            raise ValueError(f'{unit["id"]}: prompt card must have exactly one home collection')
+        home_collection = unit['collectionKeys'][0]
+        if not unit['id'].startswith(f'PRM-{COLLECTION_PREFIX[home_collection]}-'):
+            raise ValueError(f'{unit["id"]}: prompt ID prefix differs from its home collection')
+        expected_placements = (
+            SHARED_PROMPT_PLACEMENTS if unit['id'] == SHARED_PROMPT_ID else unit['collectionKeys']
+        )
+        if unit['placementCollectionKeys'] != expected_placements:
+            raise ValueError(f'{unit["id"]}: prompt placement collections differ from the locked plan')
     prompt_status = aggregate_content_status(prompt_units)
     if EXTRAS['prompts']['status'] != prompt_status:
         raise ValueError(
@@ -601,14 +620,24 @@ def validate_source_inputs():
                     f'({active_count} < {required_count})'
                 )
         active_prompts = [unit for unit in prompt_units if unit['contentStatus'] in active_states]
-        if len(active_prompts) < 26:
-            raise ValueError(f'active prompt coverage is below the locked minimum ({len(active_prompts)} < 26)')
+        if len(active_prompts) != 26:
+            raise ValueError(f'active unique prompt coverage differs from the locked total ({len(active_prompts)} != 26)')
+        placement_count = sum(len(unit['placementCollectionKeys']) for unit in active_prompts)
+        if placement_count != 30:
+            raise ValueError(
+                f'active prompt placement coverage differs from the locked total ({placement_count} != 30)'
+            )
         for collection_key, required_count in LOCKED_ACTIVE_PROMPT_COUNTS.items():
             active_count = sum(1 for unit in active_prompts if collection_key in unit['collectionKeys'])
-            if active_count < required_count:
+            required_placements = required_count + (0 if collection_key == 'prompt-common' else 1)
+            active_placements = sum(
+                1 for unit in active_prompts if collection_key in unit['placementCollectionKeys']
+            )
+            if active_count != required_count or active_placements != required_placements:
                 raise ValueError(
-                    f'{collection_key} active prompt coverage is below the locked minimum '
-                    f'({active_count} < {required_count})'
+                    f'{collection_key} active prompt coverage differs from the locked plan '
+                    f'(unique {active_count} != {required_count} or placements '
+                    f'{active_placements} != {required_placements})'
                 )
 
     framework = load_json(os.path.join(MAINT, 'framework-v1.json'))

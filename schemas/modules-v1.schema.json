@@ -423,7 +423,8 @@
       "type": "object",
       "required": [
         "key",
-        "title"
+        "title",
+        "idPrefix"
       ],
       "properties": {
         "key": {
@@ -433,6 +434,10 @@
         "title": {
           "type": "string",
           "minLength": 1
+        },
+        "idPrefix": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
         }
       },
       "additionalProperties": false
@@ -862,6 +867,15 @@
             "pattern": "^prompt-[a-z]+(?:-[a-z]+)*$"
           }
         },
+        "placementCollectionKeys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^prompt-[a-z]+(?:-[a-z]+)*$"
+          }
+        },
         "taskKey": {
           "oneOf": [
             {
@@ -982,6 +996,9 @@
             ]
           },
           "then": {
+            "required": [
+              "placementCollectionKeys"
+            ],
             "properties": {
               "id": {
                 "type": "string",
@@ -993,6 +1010,7 @@
               "collectionKeys": {
                 "type": "array",
                 "minItems": 1,
+                "maxItems": 1,
                 "uniqueItems": true,
                 "items": {
                   "type": "string",

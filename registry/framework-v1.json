@@ -197,30 +197,35 @@
       {
         "key": "prompt-common",
         "title": "跨行业通用",
+        "idPrefix": "COM",
         "uniqueCardCount": 6,
         "usesSharedFileCard": false
       },
       {
         "key": "prompt-ecommerce",
         "title": "电商与零售",
+        "idPrefix": "ECM",
         "uniqueCardCount": 5,
         "usesSharedFileCard": true
       },
       {
         "key": "prompt-food",
         "title": "餐饮与本地生活",
+        "idPrefix": "FOD",
         "uniqueCardCount": 5,
         "usesSharedFileCard": true
       },
       {
         "key": "prompt-media",
         "title": "传媒与内容创作",
+        "idPrefix": "MED",
         "uniqueCardCount": 5,
         "usesSharedFileCard": true
       },
       {
         "key": "prompt-education",
         "title": "教育与培训",
+        "idPrefix": "EDU",
         "uniqueCardCount": 5,
         "usesSharedFileCard": true
       }
