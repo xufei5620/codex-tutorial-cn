@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Phase C 基础篇正式化实施计划</title></head><body>
+<main>
+  <h1>Phase C：第 1–5 章正式课程实施计划</h1>
+  <p>日期：2026-09-04。基线：Phase B 模块目录 PR #9。对应 GitHub Issue #4。</p>
+
+  <h2>目标与边界</h2>
+  <ul>
+    <li>把第 1–5 章的 30 个课程模块从说明性草稿改成零基础读者可以独立完成、检查和纠正的正式课程文本。</li>
+    <li>保留 <code>CDX-M-0001</code> 至 <code>CDX-M-0030</code>、章节锚点和既有跨页链接。</li>
+    <li>课程主路线仍为 Windows 与 macOS 的 ChatGPT 桌面应用；其他 Codex 入口只用于解释产品地图，不在本阶段承诺教学支持。</li>
+    <li>产品事实仅链接 OpenAI 官方页面；示例只用“蓝溪文具”等虚构材料，不复制第三方教程正文或截图。</li>
+    <li>编辑审校与产品实测分开：完成本阶段后 30 个模块可进入 <code>editorial-reviewed</code>，但未完成真实设备验证的模块继续保持 <code>unverified</code>。</li>
+  </ul>
+
+  <h2>统一课程单元结构</h2>
+  <p>每节按适用程度包含：可观察目标、前提与材料、示例或练习、预期结果、检查清单、一次受控纠正、停止条件和官方来源。章末必须有离章验收，不以“读完”作为通过。</p>
+
+  <h2>章节任务</h2>
+  <ol>
+    <li><strong>第 1 章：</strong>改成课程范围、安全三底线、阅读路线和脱敏求助；明确不能依赖审批弹窗，安全题必须全对。</li>
+    <li><strong>第 2 章：</strong>准确解释 Codex 的多入口、能力边界、来源核验、权限和提示词注入风险；删除“完全不知道”“放心交给”等绝对说法。</li>
+    <li><strong>第 3 章：</strong>把安装、登录、界面与权限写成条件性步骤；不承诺 Intel Mac、Windows 10、固定按钮或必然审批；保留 Windows/macOS 未实测标记。</li>
+    <li><strong>第 4 章：</strong>把四要素改为重要任务检查表；用 Quick chat 完成虚构练习，必须经历检查、完整修订和复检。</li>
+    <li><strong>第 5 章：</strong>用贯穿案例训练事实分类、精确修改、新文件备份、对话节奏和记忆边界；Git 审阅面板降为可选进阶。</li>
+  </ol>
+
+  <h2>目录、状态与版本</h2>
+  <ul>
+    <li>内容版本升为 <code>0.4.0</code>，生成日期为 2026-09-04；更新第 11 章版本记录。</li>
+    <li><code>src/chapters.json</code> 中第 1–5 章状态更新为 <code>editorial-reviewed</code>。</li>
+    <li><code>src/modules-v1.json</code> 中前 30 个模块更新为 <code>editorial-reviewed / unverified / owned</code>，填写 <code>lastReviewedDate</code> 和逐单元官方 <code>sourceRefs</code>；不创建虚构验证记录。</li>
+    <li>顶层目录状态更新为 <code>review-in-progress</code>，其余章节和提示词卡保持原状态。</li>
+  </ul>
+
+  <h2>验证与交付</h2>
+  <ol>
+    <li>新增正文合同测试：五章无占位、危险绝对承诺、错误 UI 路径；每节仍与稳定 ID 一一对应。</li>
+    <li>运行完整单测、严格 Schema/链接/离线检查与生成物零漂移检查。</li>
+    <li>在 Windows 与 Ubuntu/WSL 各运行一次；比较离线 ZIP SHA-256。</li>
+    <li>由独立审阅者按“零基础可执行、事实来源、安全停止点、检查纠正闭环”复核；通过后创建堆叠 Draft PR，等待用户验收，不自动合并。</li>
+  </ol>
+</main>
+</body></html>
