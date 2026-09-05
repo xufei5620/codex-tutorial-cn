@@ -1,0 +1,40 @@
+# 教程站（sites/）自动构建与发布：push 到 main 且改动了 sites/ 时触发，也可在 Actions 页手动触发。
+# 需要仓库 secrets：CLOUDFLARE_API_TOKEN（仅 Cloudflare Pages 编辑权限）、CLOUDFLARE_ACCOUNT_ID
+name: sites
+
+on:
+  push:
+    branches: [main]
+    paths: ['sites/**', '.github/workflows/sites.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: sites-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sites
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sites/package-lock.json
+      - run: npm ci
+      - name: Build both sites
+        run: npm run build
+      - name: Deploy docs-sub.solov.cc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler pages deploy sub2api/.vitepress/dist --project-name docs-sub --branch main --commit-dirty=true
+      - name: Deploy docs-new.solov.cc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler pages deploy newapi/.vitepress/dist --project-name docs-new --branch main --commit-dirty=true
