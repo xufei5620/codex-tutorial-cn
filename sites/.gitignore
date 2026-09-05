@@ -1,0 +1,9 @@
+node_modules/
+*/.vitepress/dist/
+*/.vitepress/cache/
+# 由 tools/prebuild.mjs 生成，改内容请改 shared/pages 或各站 overrides/
+*/clients/
+*/guide/download.md
+*/contact.md
+*/public/admin/
+*/public/img/shared/

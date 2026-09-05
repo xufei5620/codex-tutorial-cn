@@ -41,3 +41,17 @@
 **改内容的正确姿势：** 编辑 `src/content/` 里对应章节的 HTML 片段（章节标题、状态在 `src/chapters.json`），运行 `python3 src/build.py`（只需要 Python 3，无第三方依赖），根目录下的所有页面、README、清单、离线 ZIP 会一起重新生成；再运行 `python3 src/check.py` 检查链接、锚点、徽章与登记表；把生成结果一并提交。跨页链接写成 `{link:ch04}` 或 `{link:prompts#prm-com-0001}`，构建时自动换成正确地址。
 
 每一章底部都有「维护者信息」：模块 ID、风险级别、来源与权利、验证状态、复核日期。新增或修改内容请使用 `templates/` 中的模板，并在第 11 章更新版本记录与验证状态表。来源清单见第 11 章 11.2。
+
+## 仓库分类
+
+本仓库现在放两类教程，互不影响：
+
+| 分类 | 目录 | 说明 | 发布方式 |
+|---|---|---|---|
+| 通用 Codex 零基础教程 | 根目录 `index.html`、`ch01`–`ch11`、`src/` 等 | 上面介绍的离线 HTML 教程，`python3 src/build.py` 生成 | Docker / Nginx，见 `deploy/` |
+| 星芒AI 站点教程（多站点） | `sites/` | VitePress 静态站：`sites/sub2api/` → docs-sub.solov.cc（api.solov.cc 订阅站），`sites/newapi/` → docs-new.solov.cc（xm.solov.cc 按量站）。`sites/shared/` 是两站共用的教程模板与图片，各站 `site.json` 里是自己的名称、接口地址和客服（企微链接、二维码、工作时间） | push 到 main 后由 `.github/workflows/sites.yml` 自动构建并发布到 Cloudflare Pages |
+
+`sites/` 的编辑方式：
+
+- 网页后台：`https://docs-sub.solov.cc/admin/`（Sveltia CMS，用 GitHub 账号登录，保存即提交、自动发布）。
+- 本地：`cd sites && npm ci && npm run dev:sub`（或 `dev:new`）。共用页面在 `sites/shared/pages/`，里面的 `%%BASE_URL%%`、`%%MODELS_URL%%`、`%%KEYS_URL%%`、`%%KEY_WORD%%` 等占位符会在构建时按各站 `site.json` 替换；某站需要不同版本时，把同路径文件放到该站 `overrides/` 下即可覆盖。

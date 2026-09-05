@@ -1,0 +1,98 @@
+{
+  "nav": [
+    {
+      "text": "教程",
+      "link": "/guide/start",
+      "activeMatch": "^/(guide|clients)/"
+    },
+    {
+      "text": "常见问题",
+      "link": "/faq"
+    },
+    {
+      "text": "错误码",
+      "link": "/errors"
+    },
+    {
+      "text": "联系客服",
+      "link": "/contact"
+    },
+    {
+      "text": "返回控制台",
+      "link": "https://xm.solov.cc/console"
+    }
+  ],
+  "sidebar": [
+    {
+      "text": "开始使用",
+      "items": [
+        {
+          "text": "注册、充值与令牌",
+          "link": "/guide/start"
+        },
+        {
+          "text": "下载星芒AI管理工具",
+          "link": "/guide/download"
+        },
+        {
+          "text": "模型、分组与定价",
+          "link": "/guide/models"
+        }
+      ]
+    },
+    {
+      "text": "客户端配置",
+      "items": [
+        {
+          "text": "准备工作：Node.js",
+          "link": "/clients/nodejs"
+        },
+        {
+          "text": "Codex（CLI / 桌面端 / IDE）",
+          "link": "/clients/codex"
+        },
+        {
+          "text": "Claude Code",
+          "link": "/clients/claude-code"
+        },
+        {
+          "text": "Gemini CLI",
+          "link": "/clients/gemini-cli"
+        },
+        {
+          "text": "VS Code 里怎么用",
+          "link": "/clients/vscode"
+        },
+        {
+          "text": "OpenCode",
+          "link": "/clients/opencode"
+        },
+        {
+          "text": "Hermes Agent",
+          "link": "/clients/hermes"
+        },
+        {
+          "text": "小龙虾 OpenClaw",
+          "link": "/clients/openclaw"
+        }
+      ]
+    },
+    {
+      "text": "帮助",
+      "items": [
+        {
+          "text": "常见问题",
+          "link": "/faq"
+        },
+        {
+          "text": "错误码对照",
+          "link": "/errors"
+        },
+        {
+          "text": "联系客服",
+          "link": "/contact"
+        }
+      ]
+    }
+  ]
+}

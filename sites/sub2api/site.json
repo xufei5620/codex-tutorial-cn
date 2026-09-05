@@ -1,0 +1,21 @@
+{
+  "id": "sub2api",
+  "name": "星芒AI",
+  "title": "星芒AI 使用教程",
+  "domain": "docs-sub.solov.cc",
+  "description": "星芒AI（api.solov.cc）从注册、订阅、创建密钥到 Codex / Claude Code / Gemini CLI / OpenClaw 接入的完整教程，含常见问题与错误码对照。",
+  "site_url": "https://api.solov.cc",
+  "base_url": "https://api.solov.cc",
+  "models_url": "https://api.solov.cc/available-channels",
+  "keys_url": "https://api.solov.cc/keys",
+  "console_url": "https://api.solov.cc/dashboard",
+  "key_word": "API 密钥",
+  "contact": {
+    "hours": "每日 9:00–23:00（北京时间）",
+    "hours_short": "每日 9:00–23:00",
+    "wecom_url": "https://work.weixin.qq.com/kfid/kfcffe6f62fdaa0ccf4",
+    "wecom_qr": "/img/contact/wecom.png",
+    "telegram_url": "https://t.me/+4UmvMbm07acwZDA1",
+    "telegram_qr": "/img/contact/telegram.png"
+  }
+}

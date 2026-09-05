@@ -1,0 +1,22 @@
+{
+  "name": "xingmang-docs-sites",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prebuild:sub": "node tools/prebuild.mjs sub2api",
+    "prebuild:new": "node tools/prebuild.mjs newapi",
+    "predev:sub": "node tools/prebuild.mjs sub2api",
+    "predev:new": "node tools/prebuild.mjs newapi",
+    "dev:sub": "vitepress dev sub2api",
+    "dev:new": "vitepress dev newapi",
+    "build:sub": "vitepress build sub2api",
+    "build:new": "vitepress build newapi",
+    "build": "npm run build:sub && npm run build:new",
+    "deploy:sub": "wrangler pages deploy sub2api/.vitepress/dist --project-name docs-sub --branch main --commit-dirty=true",
+    "deploy:new": "wrangler pages deploy newapi/.vitepress/dist --project-name docs-new --branch main --commit-dirty=true"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "wrangler": "^4.129.0"
+  }
+}
