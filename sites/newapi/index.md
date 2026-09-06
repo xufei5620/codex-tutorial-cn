@@ -17,7 +17,7 @@ hero:
       link: /contact
     - theme: alt
       text: 返回控制台
-      link: https://xm.solov.cc/console
+      link: https://xm.solov.cc/dashboard
 features:
   - icon: 🚀
     title: 开始使用

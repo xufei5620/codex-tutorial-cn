@@ -7,8 +7,8 @@
   "site_url": "https://xm.solov.cc",
   "base_url": "https://xm.solov.cc",
   "models_url": "https://xm.solov.cc/pricing",
-  "keys_url": "https://xm.solov.cc/console/token",
-  "console_url": "https://xm.solov.cc/console",
+  "keys_url": "https://xm.solov.cc/keys",
+  "console_url": "https://xm.solov.cc/dashboard",
   "key_word": "令牌",
   "contact": {
     "hours": "每日 9:00–23:00（北京时间）",
