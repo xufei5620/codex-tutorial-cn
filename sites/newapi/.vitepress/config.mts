@@ -1,2 +1,2 @@
-import { siteConfig } from '../../shared/theme/site-config.mts'
-export default siteConfig(new URL('../', import.meta.url))
+import {studioConfig} from '../../studio/theme/config.mts'
+export default studioConfig(new URL('../',import.meta.url))
