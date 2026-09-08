@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { readFileSync } from 'node:fs'
+import { courseHtmlPlugin } from '../../tools/course-html.mjs'
 export function siteConfig(directory:URL) {
  // npm build/dev lifecycle always runs prebuild. Missing output is a build error, not a silent fallback.
  const site=JSON.parse(readFileSync(new URL('site.generated.json',directory),'utf8'))
@@ -7,6 +8,7 @@ export function siteConfig(directory:URL) {
  function cjkTokenize(text:string):string[]{const out:string[]=[];for(const m of text.matchAll(/[一-鿿㐀-䶿]+|[a-zA-Z0-9_./\-]+/g)){const s=m[0];if(/[一-鿿㐀-䶿]/.test(s)){for(let i=0;i<s.length;i++){out.push(s[i]);if(i+1<s.length)out.push(s.slice(i,i+2))}}else out.push(s.toLowerCase())}return out}
  return defineConfig({
   lang:'zh-CN',title:site.title,description:site.description,cleanUrls:true,lastUpdated:false,
+  markdown:{config:(md)=>{md.use(courseHtmlPlugin)}},
   head:[['link',{rel:'icon',type:'image/png',href:'/logo.png'}],['meta',{name:'theme-color',content:'#0B1F3B'}],['meta',{name:'robots',content:'noindex'}],['meta',{name:'referrer',content:'no-referrer'}]],
   themeConfig:{logo:'/logo.png',siteTitle:site.name,site,contact:site.contact,nav:nav.nav,sidebar:nav.sidebar,
    outline:{label:'本页目录',level:[2,3]},docFooter:{prev:'上一篇',next:'下一篇'},sidebarMenuLabel:'目录',returnToTopLabel:'回到顶部',darkModeSwitchLabel:'外观',lightModeSwitchTitle:'切换到浅色',darkModeSwitchTitle:'切换到深色',

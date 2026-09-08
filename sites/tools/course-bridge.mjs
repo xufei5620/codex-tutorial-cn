@@ -2,6 +2,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
+import { COURSE_END } from './course-html.mjs'
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
 export function rewriteCourseLinks(html,ids) {
  const valid=new Set([...ids,'home','index'])
@@ -24,7 +25,8 @@ export function stageCourse(repositoryRoot) {
   if(!meta?.title)throw Error('缺少课程标题：'+id)
   const body=rewriteCourseLinks(raw,sourceList)
   if(/<script\b|<iframe\b|\son\w+\s*=/i.test(body))throw Error(id+' 含执行脚本或嵌入内容，需人工审阅')
-  pages.push(['learn/codex/'+id+'.md',`---\ntitle: ${JSON.stringify(meta.title)}\noutline: false\n---\n\n<div class="xm-course-body" v-pre>\n${body}\n</div>\n\n[课程目录](/learn/codex/) · [本站接入方法](/clients/codex) · [实践练习](/learn/first-task)\n`])
+  if(body.includes('<!-- xm-course-end -->'))throw Error(id+' 使用了保留的课程边界标记')
+  pages.push(['learn/codex/'+id+'.md',`---\ntitle: ${JSON.stringify(meta.title)}\noutline: false\n---\n\n<div class="xm-course-body" v-pre>\n${body}\n${COURSE_END}\n\n[课程目录](/learn/codex/) · [本站接入方法](/clients/codex) · [实践练习](/learn/first-task)\n`])
   sources.push({id,file:'src/content/'+id+'.html',sha256:crypto.createHash('sha256').update(raw).digest('hex'),status:meta.status||'unverified'})
   sidebar.push({text:(meta.num?String(meta.num).padStart(2,'0')+' · ':'')+meta.title,link:'/learn/codex/'+id})
  }
