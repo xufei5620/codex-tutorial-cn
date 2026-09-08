@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
-import DefaultTheme from 'vitepress/theme'
+import DefaultTheme from 'vitepress/theme-without-fonts'
 import SupportCard from './SupportCard.vue'
 import MobileHelp from './MobileHelp.vue'
 const Layout=DefaultTheme.Layout
