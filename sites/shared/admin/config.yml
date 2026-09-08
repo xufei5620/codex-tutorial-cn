@@ -1,136 +1,149 @@
-# Sveltia CMS 配置（两个教程站共用同一份，分别挂在 docs-sub.solov.cc/admin/ 与 docs-new.solov.cc/admin/）
-# 登录：GitHub 账号（需要对仓库有写权限）。保存 = 向 main 分支提交 → GitHub Actions 构建并发布到 Cloudflare Pages。
+# Shared editor: source files only. Generated pages are deliberately not editable.
+# Production defaults to main; preview builds can set DOCS_CMS_BRANCH for their work branch.
 backend:
   name: github
   repo: xufei5620/codex-tutorial-cn
   branch: main
   base_url: https://sveltia-cms-auth.solomate-vip.workers.dev
-  commit_messages:
-    create: "docs(cms): 新增 {{collection}} {{slug}}"
-    update: "docs(cms): 更新 {{collection}} {{slug}}"
-    delete: "docs(cms): 删除 {{collection}} {{slug}}"
-    uploadMedia: "docs(cms): 上传图片 {{path}}"
-    deleteMedia: "docs(cms): 删除图片 {{path}}"
-
-# 共用图片（两个站都能引用，路径写 /img/shared/xxx.png）
 media_folder: sites/shared/img
 public_folder: /img/shared
-
 slug:
   encoding: ascii
   clean_accents: true
-
 collections:
   - name: shared
-    label: "共用教程（两站同用）"
-    description: "Node.js、Codex、Claude Code、Gemini CLI、VS Code、OpenCode、Hermes、OpenClaw、下载页。正文里的 %%BASE_URL%%、%%MODELS_URL%%、%%KEYS_URL%%、%%SITE_URL%%、%%SITE_NAME%%、%%KEY_WORD%% 会在构建时按各站的「站点设置」替换，请保留原样。"
+    label: 共用教程与实践课
+    description: 两站共用的内容源。保留 %%SITE_NAME%% 等占位符；站点地址与客服在各站设置里修改。
     folder: sites/shared/pages
     extension: md
     format: frontmatter
     create: true
-    nested:
-      depth: 3
-    identifier_field: title
-    summary: "{{filename}}"
-    fields:
-      - { label: "正文（Markdown）", name: body, widget: markdown }
-
-  - name: sub2api
-    label: "sub2api 教程（api.solov.cc 专属）"
-    description: "只属于 api.solov.cc 的页面：首页、注册订阅与密钥、可用模型、生图、常见问题、错误码。共用页面请到「共用教程」改。"
-    folder: sites/sub2api
-    extension: md
-    format: frontmatter
-    create: true
-    nested:
-      depth: 3
-    media_folder: sites/sub2api/public/img
-    public_folder: /img
-    summary: "{{filename}}"
-    fields:
-      - { label: "正文（Markdown）", name: body, widget: markdown }
-
-  - name: newapi
-    label: "new-api 教程（xm.solov.cc 专属）"
-    description: "只属于 xm.solov.cc 的页面：首页、注册充值与令牌、模型与定价、常见问题、错误码。"
-    folder: sites/newapi
-    extension: md
-    format: frontmatter
-    create: true
-    nested:
-      depth: 3
-    media_folder: sites/newapi/public/img
-    public_folder: /img
-    summary: "{{filename}}"
-    fields:
-      - { label: "正文（Markdown）", name: body, widget: markdown }
-
-  - name: settings
-    label: "站点设置（名称、地址、客服、二维码、导航）"
+    nested: {depth: 3}
+    summary: '{{filename}}'
+    fields: &markdown_fields
+      - {name: title, label: 页面标题, widget: string, required: false}
+      - {name: description, label: 页面摘要, widget: text, required: false}
+      - {name: body, label: 正文, widget: markdown}
+  - name: course_original
+    label: Codex 零基础课程原稿
+    description: 编辑原来的 HTML 正文，不编辑构建结果。保留链接占位符与审校状态；界面不是任意拖拽编辑器。
+    editor: {preview: false}
     files:
-      - name: sub2api_site
-        label: "sub2api · 站点信息与客服"
+      - name: ch01
+        label: 第1章 边界与阅读方法
+        file: src/content/ch01.html
+        format: raw
+        fields: &html_fields
+          - {name: body, label: HTML 正文源, widget: code, default_language: html, output_code_only: true, allow_language_selection: false}
+      - {name: ch02, label: 第2章 认识 AI 与 Codex, file: src/content/ch02.html, format: raw, fields: *html_fields}
+      - {name: ch03, label: 第3章 安装与界面, file: src/content/ch03.html, format: raw, fields: *html_fields}
+      - {name: ch04, label: 第4章 第一次对话, file: src/content/ch04.html, format: raw, fields: *html_fields}
+      - {name: ch05, label: 第5章 日常协作, file: src/content/ch05.html, format: raw, fields: *html_fields}
+      - {name: ch06, label: 第6章 插件, file: src/content/ch06.html, format: raw, fields: *html_fields}
+      - {name: ch07, label: 第7章 Skill, file: src/content/ch07.html, format: raw, fields: *html_fields}
+      - {name: ch08, label: 第8章 任务场景, file: src/content/ch08.html, format: raw, fields: *html_fields}
+      - {name: ch09, label: 第9章 完整案例, file: src/content/ch09.html, format: raw, fields: *html_fields}
+      - {name: ch10, label: 第10章 排错与安全, file: src/content/ch10.html, format: raw, fields: *html_fields}
+      - {name: ch11, label: 第11章 参考与维护, file: src/content/ch11.html, format: raw, fields: *html_fields}
+      - {name: prompts, label: 行业提示词库, file: src/content/prompts.html, format: raw, fields: *html_fields}
+      - name: course_index
+        label: 课程目录与审校状态
+        file: src/chapters.json
+        format: raw
+        fields:
+          - {name: body, label: JSON 清单（审校不等于实机验证）, widget: code, default_language: json, output_code_only: true, allow_language_selection: false}
+  - name: site_pages
+    label: 各站注册与计费原文
+    description: 这里只列出人工维护的源文件；不要编辑 clients 或 learn 下的生成页面。
+    files:
+      - {name: sub_start, label: Sub2API 注册订阅, file: sites/sub2api/guide/start.md, fields: *markdown_fields}
+      - {name: sub_models, label: Sub2API 模型与倍率, file: sites/sub2api/guide/models.md, fields: *markdown_fields}
+      - {name: sub_faq, label: Sub2API 常见问题, file: sites/sub2api/faq.md, fields: *markdown_fields}
+      - {name: sub_errors, label: Sub2API 错误码, file: sites/sub2api/errors.md, fields: *markdown_fields}
+      - {name: sub_gemini_image, label: Sub2API Gemini 生图, file: sites/sub2api/image/gemini.md, fields: *markdown_fields}
+      - {name: sub_gpt_image, label: Sub2API GPT-Image 生图, file: sites/sub2api/image/gpt-image.md, fields: *markdown_fields}
+      - {name: new_start, label: NewAPI 注册充值, file: sites/newapi/guide/start.md, fields: *markdown_fields}
+      - {name: new_models, label: NewAPI 模型定价, file: sites/newapi/guide/models.md, fields: *markdown_fields}
+      - {name: new_faq, label: NewAPI 常见问题, file: sites/newapi/faq.md, fields: *markdown_fields}
+      - {name: new_errors, label: NewAPI 错误码, file: sites/newapi/errors.md, fields: *markdown_fields}
+  - name: sub_overrides
+    label: Sub2API 专属覆盖
+    description: 与共用页相同路径时替换本站正文，另一站不受影响。
+    folder: sites/sub2api/overrides
+    extension: md
+    format: frontmatter
+    create: true
+    nested: {depth: 3}
+    fields: *markdown_fields
+  - name: new_overrides
+    label: NewAPI 专属覆盖
+    description: 与共用页相同路径时替换本站正文，另一站不受影响。
+    folder: sites/newapi/overrides
+    extension: md
+    format: frontmatter
+    create: true
+    nested: {depth: 3}
+    fields: *markdown_fields
+  - name: settings
+    label: 站点、客服与安装包
+    files:
+      - name: sub_settings
+        label: Sub2API 设置（仅本站）
         file: sites/sub2api/site.json
-        media_folder: sites/sub2api/public/img/contact
-        public_folder: /img/contact
-        fields:
-          - { label: "站点 ID（勿改）", name: id, widget: string, readonly: true }
-          - { label: "站点名称", name: name, widget: string }
-          - { label: "教程站标题", name: title, widget: string }
-          - { label: "教程站域名", name: domain, widget: string }
-          - { label: "站点描述", name: description, widget: text }
-          - { label: "站点地址", name: site_url, widget: string }
-          - { label: "接口地址（教程里的 %%BASE_URL%%）", name: base_url, widget: string }
-          - { label: "模型列表页地址", name: models_url, widget: string }
-          - { label: "密钥页地址", name: keys_url, widget: string }
-          - { label: "控制台地址", name: console_url, widget: string }
-          - { label: "密钥叫法（API 密钥 / 令牌）", name: key_word, widget: string }
-          - label: "客服"
-            name: contact
+        format: json
+        fields: &site_fields
+          - {name: id, label: 站点 ID（勿改）, widget: string, readonly: true}
+          - {name: name, label: 品牌名称, widget: string}
+          - {name: title, label: 教程标题, widget: string}
+          - {name: domain, label: 本站教程域名, widget: string}
+          - {name: description, label: 网站摘要, widget: text}
+          - {name: site_url, label: 本站首页地址, widget: string}
+          - {name: base_url, label: 通用服务根地址, widget: string}
+          - {name: codex_base_url, label: Codex 基址（按实际渠道核对）, widget: string}
+          - {name: codex_endpoint_verified, label: 已完成当前站点 Codex 实测, widget: boolean, default: false}
+          - {name: models_url, label: 本站模型与价格地址, widget: string}
+          - {name: keys_url, label: 本站密钥页面地址, widget: string}
+          - {name: console_url, label: 本站控制台地址, widget: string}
+          - {name: key_word, label: 密钥叫法, widget: string}
+          - name: contact
+            label: 客服（保存后构建自动生成二维码）
             widget: object
             fields:
-              - { label: "工作时间（完整）", name: hours, widget: string }
-              - { label: "工作时间（简短，侧栏用）", name: hours_short, widget: string }
-              - { label: "企业微信客服链接", name: wecom_url, widget: string }
-              - { label: "企业微信二维码图片", name: wecom_qr, widget: image }
-              - { label: "Telegram 链接（可留空）", name: telegram_url, widget: string, required: false }
-              - { label: "Telegram 二维码图片（可留空）", name: telegram_qr, widget: image, required: false }
-      - name: newapi_site
-        label: "new-api · 站点信息与客服"
+              - {name: hours, label: 完整服务时间, widget: string, required: false}
+              - {name: hours_short, label: 简短服务时间, widget: string, required: false}
+              - {name: wecom_url, label: 企业微信客服链接, widget: string}
+              - {name: qr_mode, label: 二维码模式, widget: select, options: [auto, upload], default: auto}
+              - {name: wecom_qr, label: 已有二维码图片（仅 upload 模式使用）, widget: image, required: false}
+              - {name: telegram_url, label: Telegram 频道（可留空）, widget: string, required: false}
+              - {name: telegram_qr, label: Telegram 图片（可留空）, widget: image, required: false}
+          - name: downloads
+            label: 管理工具下载
+            widget: object
+            fields:
+              - name: windows
+                label: Windows 安装包
+                widget: object
+                fields: &download_fields
+                  - {name: enabled, label: 显示该安装包, widget: boolean, default: true}
+                  - {name: label, label: 按钮名称, widget: string}
+                  - {name: architecture, label: 芯片架构, widget: string, required: false}
+                  - {name: url, label: HTTPS 下载网址（不上传安装包）, widget: string, required: false}
+                  - {name: version, label: 版本号, widget: string, required: false}
+                  - {name: date, label: 发布日期, widget: string, required: false}
+                  - {name: notes_url, label: 更新说明 HTTPS 网址, widget: string, required: false}
+                  - {name: checksum, label: SHA-256 摘要（64位）, widget: string, required: false}
+                  - {name: notes, label: 安装与系统要求, widget: text, required: false}
+              - {name: macos-arm64, label: macOS Apple 芯片, widget: object, fields: *download_fields}
+              - {name: macos-x64, label: macOS Intel, widget: object, fields: *download_fields}
+      - name: new_settings
+        label: NewAPI 设置（仅本站）
         file: sites/newapi/site.json
-        media_folder: sites/newapi/public/img/contact
-        public_folder: /img/contact
-        fields:
-          - { label: "站点 ID（勿改）", name: id, widget: string, readonly: true }
-          - { label: "站点名称", name: name, widget: string }
-          - { label: "教程站标题", name: title, widget: string }
-          - { label: "教程站域名", name: domain, widget: string }
-          - { label: "站点描述", name: description, widget: text }
-          - { label: "站点地址", name: site_url, widget: string }
-          - { label: "接口地址（教程里的 %%BASE_URL%%）", name: base_url, widget: string }
-          - { label: "模型列表页地址", name: models_url, widget: string }
-          - { label: "令牌页地址", name: keys_url, widget: string }
-          - { label: "控制台地址", name: console_url, widget: string }
-          - { label: "密钥叫法（API 密钥 / 令牌）", name: key_word, widget: string }
-          - label: "客服"
-            name: contact
-            widget: object
-            fields:
-              - { label: "工作时间（完整）", name: hours, widget: string }
-              - { label: "工作时间（简短，侧栏用）", name: hours_short, widget: string }
-              - { label: "企业微信客服链接", name: wecom_url, widget: string }
-              - { label: "企业微信二维码图片", name: wecom_qr, widget: image }
-              - { label: "Telegram 链接（可留空）", name: telegram_url, widget: string, required: false }
-              - { label: "Telegram 二维码图片（可留空）", name: telegram_qr, widget: image, required: false }
-      - name: sub2api_nav
-        label: "sub2api · 顶栏与侧栏目录（JSON）"
+        format: json
+        fields: *site_fields
+      - name: sub_nav
+        label: Sub2API 顶栏与侧栏源
         file: sites/sub2api/nav.json
-        fields:
-          - { label: "顶栏", name: nav, widget: code, default_language: json, allow_language_selection: false, output_code_only: true }
-          - { label: "侧栏", name: sidebar, widget: code, default_language: json, allow_language_selection: false, output_code_only: true }
-      - name: newapi_nav
-        label: "new-api · 顶栏与侧栏目录（JSON）"
-        file: sites/newapi/nav.json
-        fields:
-          - { label: "顶栏", name: nav, widget: code, default_language: json, allow_language_selection: false, output_code_only: true }
-          - { label: "侧栏", name: sidebar, widget: code, default_language: json, allow_language_selection: false, output_code_only: true }
+        format: raw
+        fields: &json_fields
+          - {name: body, label: JSON 导航（原课程章节会自动补入）, widget: code, default_language: json, output_code_only: true, allow_language_selection: false}
+      - {name: new_nav, label: NewAPI 顶栏与侧栏源, file: sites/newapi/nav.json, format: raw, fields: *json_fields}

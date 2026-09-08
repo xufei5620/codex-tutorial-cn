@@ -1,124 +1,80 @@
-# Codex 配置教程
+---
+title: OpenAI / Codex 接入教程
+description: 区分官方账号与本站 API 接入，用最小配置验证 Codex。
+---
+# OpenAI / Codex 接入教程
 
-适用于 Codex CLI、Codex 桌面端，以及 VS Code / Cursor / Windsurf / Kiro 里的 Codex 扩展。三者共用同一份配置文件，配一次全部生效。
+本篇先讲 Codex CLI 的本站接入。桌面应用、IDE 扩展与命令行是不同使用入口，具体名称和功能以安装版本的官方说明为准；不能把某一入口配置成功当作所有入口都已适配。
 
-::: tip 不想手动改文件？
-用 [星芒AI管理工具](/guide/download) 一键写入即可，下面的步骤是手动配置方式。
-:::
+[想先了解怎么使用？阅读零基础课程](/learn/codex/)；不想手动配置可先看 [管理工具说明](/guide/manager)。
 
-## 1. 安装 Codex CLI
+## 1. 安装与准备
 
-先完成 [Node.js 安装](/clients/nodejs)，然后：
+使用 [官方 CLI 安装说明](https://developers.openai.com/codex/cli/)。采用 npm 方式时，先完成 [Node.js 准备](/clients/nodejs)：
 
-```powershell
+```text
 npm install -g @openai/codex
-```
-
-```powershell
 codex --version
 ```
 
-显示版本号即安装成功。已经装过的跳过。
+准备当前%%KEY_WORD%%、允许的模型 ID，并确认分组支持 Codex 所需的 Responses 协议。官方 ChatGPT 登录与本站 API 密钥是两条不同认证路径，不能把网站密码当作 API Key。
 
-## 2. IDE 扩展（可选）
+## 2. 备份并编辑配置
 
-只用命令行的可以跳过这一步。在 VS Code / Cursor / Windsurf / Kiro 的扩展市场里搜索 **Codex** 安装：
-
-![在 IDE 扩展市场安装 Codex](/img/shared/image-16.png)
-
-其他 IDE 同理。扩展和 CLI 共用下面第 3 步的配置文件，配一次都生效；VS Code 里的更多用法见 [VS Code 里怎么用](/clients/vscode)。
-
-## 3. 修改配置文件
-
-**先关闭正在运行的 Codex**（CLI、桌面端、IDE 扩展都关掉）。
-
-打开配置目录：
-
-::: code-group
-
-```powershell [Windows]
-# 按 Win + R，输入 %USERPROFILE%\.codex 回车；或在 PowerShell 里执行
-explorer $env:USERPROFILE\.codex
-```
-
-```bash [macOS]
-open ~/.codex
-```
-
-```bash [Linux]
-xdg-open ~/.codex      # 或直接编辑：nano ~/.codex/config.toml
-```
-
-:::
-
-![.codex 目录](/img/shared/image.png)
-
-目录里有两个文件要改：`auth.json` 和 `config.toml`，**没有就新建**（目录不存在说明 Codex 还没运行过，先运行一次 `codex` 再退出）。之前配置过的建议先备份一份。三个系统的文件内容完全一样。
-
-### auth.json
-
-只能是下面这个格式，只有 `OPENAI_API_KEY` 一项：
-
-```json
-{
-  "OPENAI_API_KEY": "换成你在%%SITE_NAME%%创建的%%KEY_WORD%%"
-}
-```
-
-### config.toml
-
-把接口配置改成下面这样，**放在文件开头**：
+用户配置通常位于 `~/.codex/config.toml`；Windows 对应 `%USERPROFILE%\.codex\config.toml`。已有配置先备份，退出正在运行的客户端，只修改必要字段，不覆盖整个目录。
 
 ```toml
-model_provider = "mycodex"
-model = "gpt-5.4"
-review_model = "gpt-5.4"
-model_reasoning_effort = "xhigh"
-disable_response_storage = true
-network_access = "enabled"
-windows_wsl_setup_acknowledged = true
-model_context_window = 1000000
-model_auto_compact_token_limit = 900000
+model_provider = "xingmang"
+model = "REPLACE_WITH_MODEL_ID"
 
-[model_providers.mycodex]
-name = "mycodex"
-base_url = "%%BASE_URL%%"
+[model_providers.xingmang]
+name = "星芒 AI"
+base_url = "%%CODEX_BASE_URL%%"
 wire_api = "responses"
-requires_openai_auth = true
+env_key = "XINGMANG_API_KEY"
 ```
 
-::: warning 只改这四项，其他别动
-可以按需修改的只有 `model`、`model_reasoning_effort`、`model_context_window`、`model_auto_compact_token_limit`。模型名请以 [可用渠道](%%MODELS_URL%%) 页面为准。
+模型 ID 从 [本站列表](%%MODELS_URL%%)选择。本例不写入固定的超大上下文、推理等级或压缩阈值。已存在同名 TOML 表时合并内容，不重复添加。
+
+::: warning 先确认基址
+此处基址来自本站教程配置，仍需与实际渠道核对。客户端通常在基址后拼接具体请求路径；不要同时把 `/responses` 写入基址，也不要盲目添加或删除 `/v1`。路径报错时核对最终请求 URL，而不是反复更换 Key。
 :::
 
-## 4. 重启
+## 3. 在当前终端提供认证
 
-- 用 Codex 桌面端：完全退出后重新打开（Windows 在托盘图标右键退出，macOS 按 ⌘Q）。
+`env_key` 指定环境变量名称，不是把密钥本身写进这个字段。可以在可信的系统环境变量界面配置 `XINGMANG_API_KEY` 后重开终端；不要把真实密钥写入教程、截图或共享项目。
 
-  ![重启 Codex 桌面端](/img/shared/image-6.png)
+Windows PowerShell 可用隐藏输入，避免将密钥直接写入命令历史：
 
-- 用 CLI 或 IDE 扩展：重启终端 / IDE。
+```powershell
+$secret = Read-Host "请输入本站 API Key" -AsSecureString
+$env:XINGMANG_API_KEY = [System.Net.NetworkCredential]::new('', $secret).Password
+codex
+```
 
-配置成功后的效果：
+上面仅设置当前终端环境变量。不要输出变量值用于排错。退出测试后关闭该终端即可结束本次临时设置。
 
-![Codex CLI](/img/shared/image-14.png)
+macOS / Linux 使用 Bash 时可以在同一终端隐藏输入并启动：
 
-![Codex 桌面端](/img/shared/image-4.png)
+```bash
+read -r -s -p "请输入本站 API Key: " XINGMANG_API_KEY
+printf '\n'
+export XINGMANG_API_KEY
+codex
+```
 
-![IDE 扩展](/img/shared/image-41.png)
+该段是 Bash 语法。使用 zsh 等其他终端时，按终端自己的隐藏输入语法或系统环境变量管理方式设置同名变量，不要照抄不兼容选项。
 
-![对话效果](/img/shared/image-37.png)
+## 4. 验证连接和实际路径
 
-![对话效果](/img/shared/image-31.png)
+按 [验证第一次调用](/guide/verify)完成文本测试和本站记录核对。出现认证错误时检查变量是否被当前进程读取；出现路径错误时检查基址；模型不允许时检查分组和精确 ID。
 
-## 调不通？
+终端里的临时环境变量不会自动改变已经打开的图形客户端。桌面端、远程环境或扩展的配置位置与认证方式，需要分别按当前官方说明确认。
 
-按顺序检查：
+## 5. 连接之后怎么用
 
-1. `base_url` 是否是 `%%BASE_URL%%`（没有多余的 `/v1`）；
-2. 密钥是否复制完整、是否已启用；
-3. 密钥的分组是否包含你填的模型；
-4. `config.toml` 是否保存成功、是否放在文件开头；
-5. Codex 是否已经完全重启。
+从 [第一次任务](/learn/first-task)开始练习提需求，再学习 [文件夹操作](/learn/working-with-files)和 [结果检查](/learn/review-and-revise)。需要完整学习路线时进入 [11 章课程](/learn/codex/)。
 
-仍然报错，对照 [错误码对照](/errors) 处理，或把完整报错文案发给[客服](/contact)。
+## 参考与验证状态
+
+[官方 CLI](https://developers.openai.com/codex/cli/) · [高级配置](https://developers.openai.com/codex/config-advanced/)。2026-09-08 文档核对；本站端点与不同客户端版本仍需实测，未执行真实 API 请求。

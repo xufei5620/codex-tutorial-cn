@@ -1,0 +1,30 @@
+{
+  "version":"4.4.1",
+  "description":"与已交付 v4.4 首页对应的教程路径合同；不改写已粘贴的首页 HTML，不代表路径已经部署。",
+  "sites":{
+    "sub2api":{"homepage":"https://api.solov.cc","docs":"https://docs-sub.solov.cc"},
+    "newapi":{"homepage":"https://xm.solov.cc","docs":"https://docs-new.solov.cc"}
+  },
+  "routes":{
+    "docs-main":"/guide/start",
+    "guide-openai":"/clients/codex",
+    "guide-anthropic":"/clients/claude-code",
+    "guide-gemini-cli":"/clients/gemini-cli",
+    "guide-grok-build":"/clients/grok-build",
+    "guide-hermes":"/clients/hermes",
+    "guide-openclaw":"/clients/openclaw",
+    "guide-opencode":"/clients/opencode",
+    "guide-deepseek-harness":"/clients/deepseek-harness",
+    "guide-cursor":"/clients/cursor",
+    "guide-vscode":"/clients/vscode",
+    "docs-models":"/guide/models",
+    "download-windows":"/guide/download#windows",
+    "download-macos":"/guide/download#macos",
+    "download-macos-arm64":"/guide/download#macos-arm64",
+    "download-macos-x64":"/guide/download#macos-x64",
+    "manager-guide":"/guide/manager",
+    "docs-beginner":"/learn/codex/",
+    "docs-first-task":"/learn/first-task",
+    "docs-choose":"/guide/choose-tool"
+  }
+}

@@ -1,90 +1,72 @@
-# Claude Code 配置教程
+---
+title: Claude Code 接入教程
+description: 使用最小配置接入本站，保留默认权限确认，并验证实际调用。
+---
+# Claude Code 接入教程
 
-::: tip 不想手动改文件？
-用 [星芒AI管理工具](/guide/download) 一键写入即可，下面的步骤是手动配置方式。
+Claude Code 是编程工具，Claude 桌面应用是另一种使用入口。本篇先完成命令行接入，不把桌面功能、扩展和 CLI 拆成重复产品，也不承诺它们自动共享所有配置。
+
+::: tip 使用管理工具
+可以先看 [星芒管理工具使用教程](/guide/manager)。只有当前发行版本明确支持本站和目标工具时，才使用自动配置。
 :::
 
-## 1. 安装 Claude Code
+## 1. 安装并确认版本
 
-先完成 [Node.js 安装](/clients/nodejs)，并确认 npm 源是官方源（方法见该页第 4 节）。然后：
-
-```powershell
-npm install -g @anthropic-ai/claude-code
-```
+按 [官方安装说明](https://code.claude.com/docs/en/setup)选择原生安装、WinGet 或 Homebrew 等受支持的方式。安装途径并非都需要 Node.js；不要将 npm 当成唯一方法。
 
 ```powershell
-claude --version
+# Windows 已安装 WinGet 时
+winget install Anthropic.ClaudeCode
 ```
 
-显示版本号即安装成功。
-
-## 2. 修改配置文件
-
-**先关闭正在运行的 Claude Code。**
-
-打开配置文件（三个系统的文件内容完全一样）：
-
-::: code-group
-
-```powershell [Windows]
-# 按 Win + R，输入 %USERPROFILE%\.claude\settings.json 回车；或在 PowerShell 里执行
-notepad $env:USERPROFILE\.claude\settings.json
+```bash
+# macOS 已安装 Homebrew 时
+brew install --cask claude-code
 ```
 
-```bash [macOS]
-open -e ~/.claude/settings.json      # 用「文本编辑」打开
-```
+安装完成重新打开终端，执行 `claude --version`。没有显示版本号时先处理安装问题，不反复替换密钥。
 
-```bash [Linux]
-nano ~/.claude/settings.json
-```
+## 2. 备份用户配置
 
-:::
+先退出 Claude Code。用户设置通常位于 `~/.claude/settings.json`，Windows 对应 `%USERPROFILE%\.claude\settings.json`。目录不存在时可以手动创建；已有文件先备份。
 
-![.claude 目录](/img/shared/image-23.png)
+只合并需要的字段，不覆盖原有权限、插件或项目设置。公司托管设置可能有更高优先级，遇到组织限制时联系管理员。
 
-文件不存在就新建（`.claude` 目录不存在说明还没运行过，先运行一次 `claude` 再退出）；之前配置过的建议先备份。把内容替换成：
+## 3. 添加本站接入信息
+
+以下是独立的最小示例。把占位文字替换为 [本站](%%SITE_URL%%)创建的%%KEY_WORD%%，不要把示例内容提交到公开仓库：
 
 ```json
 {
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "换成你在%%SITE_NAME%%创建的%%KEY_WORD%%",
-    "ANTHROPIC_BASE_URL": "%%BASE_URL%%"
-  },
-  "permissions": {
-    "defaultMode": "bypassPermissions"
-  },
-  "model": "opus[1m]",
-  "effortLevel": "medium",
-  "skipDangerousModePermissionPrompt": true
+    "ANTHROPIC_BASE_URL": "%%BASE_URL%%",
+    "ANTHROPIC_AUTH_TOKEN": "REPLACE_WITH_YOUR_SITE_KEY"
+  }
 }
 ```
 
-::: warning
-`ANTHROPIC_BASE_URL` 不要动；`model`、`effortLevel`、`permissions` 可以按需修改，不想折腾就用上面这份。模型名以 [可用渠道](%%MODELS_URL%%) 页面为准。
-:::
+`ANTHROPIC_AUTH_TOKEN` 与 `ANTHROPIC_API_KEY` 的使用应跟随本站网关要求，不要无目的地同时设置两套认证。Base URL 不是文档站或控制台路径，需匹配 Anthropic Messages 等工具所需接口。
 
-::: tip 分组提示
-部分分组只允许 Claude Code 这个客户端调用（报错 `this group only allows Claude Code`），用别的工具调这类分组的密钥会被拒绝，见[错误码对照](/errors)。
-:::
+本例不设置绕过权限确认，不关闭危险操作提示。先保持客户端默认确认机制，再讨论进阶自动执行需求。
 
-## 3. 启动
+## 4. 选择模型并启动
 
-```powershell
+从 [本站模型页面](%%MODELS_URL%%)确认精确模型 ID 和分组。使用当前版本提供的模型选择功能；必要时按官方设置说明添加 `model`，不照抄旧截图的别名和上下文参数。
+
+```text
 claude
 ```
 
-![启动 Claude Code](/img/shared/image-19.png)
+先用虚构内容做小文本测试，再按 [首次调用验证](/guide/verify)核对控制台记录。只有文本成功，不能据此声称所有工具调用和上下文长度都通过。
 
-输入一个问题，AI 回复就说明配置成功：
+## 5. 常见问题
 
-![对话效果](/img/shared/image-29.png)
+认证失败先检查实际读取的配置、旧环境变量与密钥状态。路径错误检查基址是否重复追加 `/v1/messages`。收到分组或客户端限制时，使用本站允许的工具与渠道，不伪造客户端身份。
 
-## 调不通？
+桌面或 IDE 中的功能，请对照它们自己的认证说明；CLI 成功不等于其他环境自动成功。日志先脱敏再交给 [客服](/contact)。
 
-1. `ANTHROPIC_BASE_URL` 是否是 `%%BASE_URL%%`；
-2. 密钥是否完整、已启用，分组是否包含 Claude 模型；
-3. `settings.json` 是否是合法 JSON（多一个逗号都会失败）；
-4. 是否已完全重启。
+[排错顺序](/guide/troubleshooting) · [备份与恢复](/guide/recovery)
 
-仍然报错，对照 [错误码对照](/errors)，或把完整报错文案发给[客服](/contact)。
+## 参考与验证状态
+
+配置字段依据 [Claude Code settings](https://code.claude.com/docs/en/settings)和 [LLM gateway](https://code.claude.com/docs/en/llm-gateway)。2026-09-08 文档核对；未在用户设备或本站真实 API 上实测。
