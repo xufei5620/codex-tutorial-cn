@@ -1,0 +1,46 @@
+# Validate the actual VitePress output. This workflow never deploys or writes to a branch.
+name: sites-preview
+on:
+  push:
+    branches: [docs/dual-site-build-v4-4-1-20260908]
+  pull_request:
+    paths: ['sites/**', 'src/**', 'homepage/**', '.github/workflows/sites-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sites-preview-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sites/package-lock.json
+      - name: Install locked dependencies
+        working-directory: sites
+        run: npm ci
+      - name: Build both documentation sites
+        working-directory: sites
+        run: npm run build
+      - name: Upload exact static builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: xingmang-dual-site-preview-${{ github.sha }}
+          path: |
+            sites/sub2api/.vitepress/dist
+            sites/newapi/.vitepress/dist
+          include-hidden-files: true
+          retention-days: 7
+      - name: Preview status
+        run: |
+          echo '## Documentation build completed' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Both artifacts are actual VitePress production output. No deployment was performed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Source commit: `${{ github.sha }}`' >> "$GITHUB_STEP_SUMMARY"
