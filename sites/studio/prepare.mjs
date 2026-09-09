@@ -16,6 +16,27 @@ export function addShots(html,prefix,context,manifest){let stack=[],offsets=[],i
  let out=html;for(let i=offsets.length-1;i>=0;i--){const id=prefix+'-step'+String(i+1).padStart(2,'0');out=out.slice(0,offsets[i].at)+slot(id,offsets[i].title,false)+out.slice(offsets[i].at)}return out
 }
 function routeRewrites(html){return html.replace(/href="#\/skills"/g,'href="/skills"').replace(/href="#\/atlas\/[^"\s]+"/g,'href="/learn/codex/ch07#s2"').replace(/href="#\/chapter\/(ch\d+)\?s=(\d+)"/g,(_,c,s)=>'href="/learn/codex/'+c+'#s'+(Number(s)+1)+'"')}
+export function addDocumentShots(text,{rel,route,title},manifest){
+ let section=0,step=0,fence=null
+ for(const line of text.split(/\r?\n/)){
+  let codeLine=!!fence
+  if(fence){
+   const close=line.match(/^ {0,3}(`{3,}|~{3,})[ \t]*$/)
+   if(close&&close[1][0]===fence[0]&&close[1].length>=fence.length)fence=null
+  }else{
+   const open=line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/)
+   if(open&&(open[1][0]==='~'||!open[2].includes('`'))){fence=open[1];codeLine=true}
+  }
+  // Keep legacy counters, including code examples, so existing real-step backup IDs do not shift.
+  if(/^##\s/.test(line)){section++;step=0}
+  if(/^\d+[.)]\s+/.test(line)){
+   step++
+   if(codeLine)continue
+   const label=plain(line.replace(/^\d+[.)]\s+/,''))
+   manifest.push({id:'doc-'+rel.replace(/\.md$/,'').replaceAll('/','-')+'-s'+String(section||1).padStart(2,'0')+'-step'+String(step).padStart(2,'0'),route,group:title,section:label,title:label.slice(0,90),target:label,highlight:'本站操作截图不能带入另一站。',optional:false,siteOnly:true})
+  }
+ }
+}
 export function prepare(id){build(id);const dir=path.join(ROOT,id),site=json(path.join(dir,'site.json')),publicSite=json(path.join(dir,'site.generated.json'));const units=[...readContent('units-1.json'),...readContent('units-2.json'),...readContent('units-3.json')],sources=readContent('sources.json'),industries=readContent('industries.json'),manifest=[];const byId=new Map(units.map(u=>[u.id,u]));
  const chapters=Array.from({length:11},(_,i)=>readContent('ch'+String(i+1).padStart(2,'0')+'.json')).map(ch=>({...ch,sections:ch.sections.map((s,i)=>{const section=ch.n+'.'+(i+1)+' '+s.title;let body=s.unitId?integrate(byId.get(s.unitId))+(s.question||''):s.body||'';body=routeRewrites(safeProse(body));body=addShots(body,ch.id+'-s'+String(i+1).padStart(2,'0'),{route:'/learn/codex/'+ch.id,group:'第 '+ch.n+' 章 · '+ch.title,section,siteOnly:/本站|认证分流/.test(s.title)},manifest);return {...s,body,anchor:'s'+(i+1)}})}));
  const write=(name,content)=>{const f=path.join(dir,name);fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,content)};
@@ -31,7 +52,7 @@ export function prepare(id){build(id);const dir=path.join(ROOT,id),site=json(pat
  for(const [id,title]of [['skills-editor','保存 SKILL.md'],['skills-install','确认技能目录与发现'],['skills-test','正常、缺失和冲突测试']])manifest.push({id,route:'/skills',group:'Skill 动手工坊',section:title,title,target:'按当前产品记录'+title+'的实际界面',optional:false,siteOnly:false});
  // Supplement all legacy operation pages, without changing their Markdown or business answers.
  const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.name.startsWith('.')||['public','overrides'].includes(e.name)?[]:e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)]);
- const docs=[];for(const f of walk(dir).filter(f=>f.endsWith('.md'))){const rel=path.relative(dir,f).replaceAll('\\','/'),route='/'+rel.replace(/index\.md$/,'').replace(/\.md$/,'');if(rel.startsWith('learn/codex/')||rel.startsWith('industry/')||['skills.md','screenshots.md','tools.md'].includes(rel))continue;const text=fs.readFileSync(f,'utf8'),title=text.match(/^#\s+(.+)$/m)?.[1]||rel;docs.push({route,title,text:plain(text).slice(0,22000)});if(['errors.md','faq.md','contact.md'].includes(rel))continue;let section=0,step=0;for(const line of text.split('\n')){if(/^##\s/.test(line)){section++;step=0}if(/^\d+[.)]\s+/.test(line)){step++;const label=plain(line.replace(/^\d+[.)]\s+/,''));manifest.push({id:'doc-'+rel.replace(/\.md$/,'').replaceAll('/','-')+'-s'+String(section||1).padStart(2,'0')+'-step'+String(step).padStart(2,'0'),route,group:title,section:label,title:label.slice(0,90),target:label,highlight:'本站操作截图不能带入另一站。',optional:false,siteOnly:true})}}}
+ const docs=[];for(const f of walk(dir).filter(f=>f.endsWith('.md'))){const rel=path.relative(dir,f).replaceAll('\\','/'),route='/'+rel.replace(/index\.md$/,'').replace(/\.md$/,'');if(rel.startsWith('learn/codex/')||rel.startsWith('industry/')||['skills.md','screenshots.md','tools.md'].includes(rel))continue;const text=fs.readFileSync(f,'utf8'),title=text.match(/^#\s+(.+)$/m)?.[1]||rel;docs.push({route,title,text:plain(text).slice(0,22000)});if(['errors.md','faq.md','contact.md'].includes(rel))continue;addDocumentShots(text,{rel,route,title},manifest)}
  const images=path.join(HERE,'screenshots',id+'.json');const shots=fs.existsSync(images)?json(images):{schema:'xingmang-screenshots/1',version:'5.3',siteId:id,records:{}};if(shots.siteId!==id)throw Error('Screenshot site mismatch');
  const data={version:'5.3',site:{...publicSite,console_url:site.console_url,keys_url:site.keys_url,models_url:site.models_url},chapters,industries,sources,manifest,docs,shots,scope:{adaptedUnits:units.length,totalSections:chapters.reduce((n,c)=>n+c.sections.length,0),note:'内容沿用已确认 v5.3 预览；来源日期为原预览记录。本轮提交不是重新核验全部官方课程。'}};
  if(new Set(manifest.map(s=>s.id)).size!==manifest.length)throw Error('Duplicate screenshot ID');
