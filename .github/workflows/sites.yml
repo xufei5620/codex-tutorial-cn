@@ -1,33 +1,43 @@
-# 教程站（sites/）自动构建与发布：push 到 main 且改动了 sites/ 时触发，也可在 Actions 页手动触发。
-# 需要仓库 secrets：CLOUDFLARE_API_TOKEN（仅 Cloudflare Pages 编辑权限）、CLOUDFLARE_ACCOUNT_ID
+# Production deployment remains limited to main. Merging a reviewed PR may trigger publishing.
 name: sites
-
 on:
   push:
     branches: [main]
-    paths: ['sites/**', '.github/workflows/sites.yml']
+    paths: ['sites/**', 'src/content/**', 'src/chapters.json', '.github/workflows/sites.yml']
   workflow_dispatch:
-
+permissions:
+  contents: read
 concurrency:
   group: sites-deploy
   cancel-in-progress: false
-
 jobs:
   build-deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: sites
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: sites/package-lock.json
+      - name: Unit and route checks
+        run: |
+          node --test tools/tests/*.test.mjs studio/tests/*.test.mjs
+          node tools/prebuild.mjs sub2api
+          node tools/prebuild.mjs newapi
+          node tools/check-routes.mjs
       - run: npm ci
       - name: Build both sites
         run: npm run build
+      - name: Check final studio routes
+        run: node tools/check-routes.mjs
       - name: Deploy docs-sub.solov.cc
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

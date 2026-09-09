@@ -1,0 +1,52 @@
+name: studio-v53-preview
+on:
+  push:
+    branches: [feat/learning-studio-v5-3]
+  pull_request:
+    paths: ['sites/**', 'src/**', '.github/workflows/studio-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: studio-v53-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DOCS_CMS_BRANCH: ${{ github.head_ref || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sites/package-lock.json
+      - name: Original infrastructure and v5.3 regression tests
+        working-directory: sites
+        run: node --test tools/tests/*.test.mjs studio/tests/*.test.mjs
+      - name: Install locked build dependencies
+        working-directory: sites
+        run: npm ci
+      - name: Build actual new learning studio for both sites
+        working-directory: sites
+        run: npm run build
+      - name: Check source routes
+        working-directory: sites
+        run: node tools/check-routes.mjs
+      - name: Upload actual site artifacts and reviewable source
+        uses: actions/upload-artifact@v4
+        with:
+          name: learning-studio-v5.3-${{ github.sha }}
+          path: |
+            sites/sub2api/.vitepress/dist
+            sites/newapi/.vitepress/dist
+            sites/studio
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - name: No deployment
+        run: echo 'v5.3 preview built. No merge, production deployment or credentials are used.' >> "$GITHUB_STEP_SUMMARY"

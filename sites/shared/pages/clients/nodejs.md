@@ -1,88 +1,44 @@
-# 准备工作：安装 Node.js
+---
+title: Node.js 与终端准备
+description: 仅为需要 npm 的安装方式准备运行环境，不放宽整机权限。
+---
+# Node.js 与终端准备
 
-Codex CLI、Claude Code、Gemini CLI、OpenCode、OpenClaw 都通过 npm 安装，所以先装 Node.js（LTS 长期支持版）。已经装过的可以跳过本页。
+并非每个 AI 工具都必须先装 Node.js。只有所选安装方式使用 npm，或工具明确要求时才需要。版本要求先看对应工具的当前官方说明。
 
-## 1. 安装
+## 1. 选择系统对应的安装方式
 
-::: code-group
+从 [Node.js 官方下载页](https://nodejs.org/en/download)获取符合工具要求的受支持版本。Windows 核对系统架构，macOS 核对 Apple 或 Intel 芯片。已经使用版本管理器时，继续按它自己的安装方式管理，不重复覆盖系统环境。
 
-```text [Windows]
-1. 打开 https://nodejs.org/ ，下载 LTS 版（页面左边那个）的 Windows 安装包（.msi）
-2. 双击安装，一路「下一步」，默认选项不用改
-3. 安装完成后重新打开 PowerShell
+不要因教程截图的页面位置变化而选择不明来源的安装包。安装完成后重开终端。
+
+## 2. 检查命令
+
+```text
+node --version
+npm --version
 ```
 
-```bash [macOS]
-# 方式一：到 https://nodejs.org/ 下载 LTS 版的 macOS 安装包（.pkg），双击安装
-# 方式二：已装 Homebrew 的直接执行
-brew install node
-```
+显示版本号只说明命令可用；还需对照目标工具的最低版本要求。找不到命令时检查安装路径、当前用户和终端是否重开，WSL 或远程环境应在实际运行的位置分别检查。
 
-```bash [Linux]
-# 推荐用 nvm 安装，不需要 sudo，也不会和系统自带的老版本冲突
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-source ~/.bashrc      # zsh 用 source ~/.zshrc
-nvm install --lts
-```
+## 3. Windows 脚本策略报错
 
-:::
+PowerShell 提示 `npm.ps1` 不能运行时，可先尝试 `npm.cmd --version`，再使用 `npm.cmd` 执行对应安装命令。这不需要更改整机执行策略。
 
-## 2. 验证
+不要把管理员运行、全局放宽执行策略或关闭防护作为固定准备步骤。企业管理设备遵循管理员策略。
 
-打开命令行（Windows：PowerShell；macOS / Linux：终端），输入：
+## 4. 权限与 npm 源
 
-```bash
-node -v   # 查看 Node.js 版本
-npm -v    # 查看 npm 版本
-```
+出现 EACCES 等权限问题时，按 [npm 官方建议](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally)处理用户级安装目录或版本管理器，不直接给所有安装命令加 sudo。
 
-两条都显示版本号就说明安装成功。
-
-## 3. 各系统常见问题
-
-::: code-group
-
-```powershell [Windows]
-# 报错「无法加载文件 … 因为在此系统上禁止运行脚本」时，
-# 以管理员身份打开 PowerShell 执行下面一条，然后重开终端：
-Set-ExecutionPolicy RemoteSigned
-
-# 还不行就换成只对当前用户生效：
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-```bash [macOS]
-# npm install -g 时报 EACCES / permission denied：
-# 用 Homebrew 装的 node 一般不会遇到；用 .pkg 装的可以在命令前加 sudo，例如
-sudo npm install -g @openai/codex
-```
-
-```bash [Linux]
-# npm install -g 时报 EACCES：说明用的是系统自带 node，改用上面的 nvm 方式即可，
-# 或者在命令前加 sudo。
-# 新开终端找不到 node 命令：执行 source ~/.bashrc（或重新登录）让 nvm 生效。
-```
-
-:::
-
-![Windows PowerShell 禁止运行脚本的报错](/img/shared/image-1.png)
-
-## 4. npm 源
-
-安装 Claude Code、Gemini CLI 前，先确认 npm 源是官方源：
-
-```bash
+```text
 npm config get registry
 ```
 
-返回的不是 `https://registry.npmjs.org/` 时，改回来：
+先了解当前源的用途再修改。没有特殊需求时使用官方源；不要为了一个工具强制改变所有项目的全局下载来源。使用镜像需要确认可信性和同步状态。
 
-```bash
-npm config set registry https://registry.npmjs.org/
-```
+## 下一步
 
-::: tip OpenClaw 是例外
-OpenClaw 的教程里用的是国内镜像 `https://registry.npmmirror.com`，装完 OpenClaw 后如果要再装其他工具，记得按上面的命令改回官方源。
-:::
+回到 [工具选择](/guide/choose-tool)，只安装当前需要的工具，完成小请求验证后再继续。
 
-准备好了，去配置客户端：[Codex](/clients/codex) · [Claude Code](/clients/claude-code) · [Gemini CLI](/clients/gemini-cli) · [VS Code](/clients/vscode) · [OpenCode](/clients/opencode) · [Hermes Agent](/clients/hermes) · [OpenClaw](/clients/openclaw)
+参考：[Node.js 下载](https://nodejs.org/en/download)、[npm 权限排错](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally)。本页不包含实机安装记录。

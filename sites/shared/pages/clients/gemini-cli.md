@@ -1,59 +1,30 @@
-# Gemini CLI 配置教程
+---
+title: Gemini CLI 接入教程
+description: 使用 Gemini API Key 模式和对应基址，不把不同协议混用。
+---
+# Gemini CLI 接入教程
 
-::: tip 不想手动改文件？
-用 [星芒AI管理工具](/guide/download) 一键写入即可，下面的步骤是手动配置方式。
-:::
+本篇对应终端中的 Gemini CLI。Gemini 网页、Google 官方账号登录与本站 API Key 并不是同一条认证路径。
 
-## 1. 安装 Gemini CLI
+## 1. 安装并确认
 
-先完成 [Node.js 安装](/clients/nodejs)，并确认 npm 源是官方源。然后：
+按 [官方快速开始](https://geminicli.com/docs/get-started/)检查所需 Node.js 版本；使用 npm 安装时：
 
-```powershell
+```text
 npm install -g @google/gemini-cli
-```
-
-```powershell
 gemini --version
 ```
 
-显示版本号即安装成功。
+版本命令失败先处理环境问题，见 [Node.js 与终端](/clients/nodejs)。
 
-## 2. 修改配置文件
+## 2. 备份配置目录
 
-**先关闭正在运行的 Gemini CLI。**
+用户配置通常在 `~/.gemini/`，Windows 对应 `%USERPROFILE%\.gemini\`。已经设置 `GEMINI_CLI_HOME` 时以实际位置为准。关闭工具后备份，再合并必要字段。
 
-打开配置目录（三个系统的文件内容完全一样）：
-
-::: code-group
-
-```powershell [Windows]
-# 按 Win + R，输入 %USERPROFILE%\.gemini 回车；或在 PowerShell 里执行
-explorer $env:USERPROFILE\.gemini
-```
-
-```bash [macOS]
-open ~/.gemini
-```
-
-```bash [Linux]
-xdg-open ~/.gemini     # 或直接编辑：nano ~/.gemini/.env
-```
-
-:::
-
-![.gemini 目录](/img/shared/image-44.png)
-
-目录里要有两个文件，没有就新建（目录不存在说明还没运行过，先运行一次 `gemini` 再退出）；之前配置过的建议先备份。
-
-### settings.json
-
-原样写入，不要改：
+`settings.json` 最小示例：
 
 ```json
 {
-  "ide": {
-    "enabled": true
-  },
   "security": {
     "auth": {
       "selectedType": "gemini-api-key"
@@ -62,33 +33,36 @@ xdg-open ~/.gemini     # 或直接编辑：nano ~/.gemini/.env
 }
 ```
 
-### .env
+这份配置不强制启用 IDE 集成，也不改变执行权限。
 
-换成你的密钥，模型名可以按需修改：
+## 3. 设置基址、密钥和模型
+
+在用户级 `.gemini/.env` 中填写：
 
 ```ini
 GOOGLE_GEMINI_BASE_URL=%%BASE_URL%%
-GEMINI_API_KEY=换成你在%%SITE_NAME%%创建的%%KEY_WORD%%
-GEMINI_MODEL=gemini-3.5-flash
+GEMINI_API_KEY=REPLACE_WITH_YOUR_SITE_KEY
+GEMINI_MODEL=REPLACE_WITH_MODEL_ID
 ```
 
-模型名以 [可用渠道](%%MODELS_URL%%) 页面为准。
+模型名按 [本站可用列表](%%MODELS_URL%%)填写。此基址用于 Gemini API Key 模式，需要相应原生兼容协议；普通 OpenAI 兼容地址不等价。
 
-## 3. 启动
+不要把文件存成 `.env.txt`。用户环境和项目环境可能覆盖设置，修改后重启工具。密钥文件不要提交到公开仓库或发送给别人。
 
-```powershell
+## 4. 启动并验证
+
+```text
 gemini
 ```
 
-输入一个问题，AI 回复就说明配置成功：
+先做 [小请求验证](/guide/verify)，核对模型与本站调用记录，再测试实际需要的图片或工具功能。一个文本回复不证明其他功能都可用。
 
-![对话效果](/img/shared/image-28.png)
+## 5. 常见问题
 
-## 调不通？
+重新出现官方登录页面时检查是否选择了正确认证模式。读取到旧模型时检查系统环境变量与项目配置。路径错误检查基址和协议，配置文件格式错误先修正 JSON。
 
-1. `.env` 文件名前面有个点，Windows 上新建时注意不要变成 `.env.txt`（在记事本「另存为」时把文件类型选成"所有文件"）；macOS / Linux 上带点的文件默认隐藏，用终端 `ls -a ~/.gemini` 能看到；
-2. `GOOGLE_GEMINI_BASE_URL` 是否是 `%%BASE_URL%%`；
-3. 密钥是否完整、已启用，分组是否包含 Gemini 模型；
-4. 是否已完全重启。
+[排错顺序](/guide/troubleshooting) · [备份恢复](/guide/recovery) · [本站客服](/contact)
 
-仍然报错，对照 [错误码对照](/errors)，或把完整报错文案发给[客服](/contact)。
+## 参考与验证状态
+
+[官方配置说明](https://geminicli.com/docs/reference/configuration/)。2026-09-08 文档核对；未进行本站真实请求或用户设备测试。

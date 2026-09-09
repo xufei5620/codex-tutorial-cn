@@ -1,0 +1,5 @@
+/* Use installed system fonts; no font download or font asset distribution. */
+:root {
+  --vp-font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --vp-font-family-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
