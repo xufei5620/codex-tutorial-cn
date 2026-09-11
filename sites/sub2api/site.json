@@ -22,8 +22,8 @@
     "telegram_qr":"/img/contact/telegram.png"
   },
   "downloads":{
-    "windows":{"label":"Windows","architecture":"以发布说明为准","enabled":true,"url":"","version":"","date":"","checksum":"","notes_url":"","notes":""},
-    "macos-arm64":{"label":"macOS · Apple 芯片","architecture":"arm64","enabled":true,"url":"","version":"","date":"","checksum":"","notes_url":"","notes":""},
-    "macos-x64":{"label":"macOS · Intel","architecture":"x64","enabled":true,"url":"","version":"","date":"","checksum":"","notes_url":"","notes":""}
+    "windows":{"label":"Windows","architecture":"以发布说明为准","enabled":true,"url":"https://s4621e8xzb.feishu.cn/wiki/WpBUwh4PhiAs2skvWfmcnM5vnDb?from=from_copylink","version":"","date":"","checksum":"","notes_url":"","notes":""},
+    "macos-arm64":{"label":"macOS · Apple 芯片","architecture":"arm64","enabled":true,"url":"https://s4621e8xzb.feishu.cn/wiki/WpBUwh4PhiAs2skvWfmcnM5vnDb?from=from_copylink","version":"","date":"","checksum":"","notes_url":"","notes":""},
+    "macos-x64":{"label":"macOS · Intel","architecture":"x64","enabled":true,"url":"https://s4621e8xzb.feishu.cn/wiki/WpBUwh4PhiAs2skvWfmcnM5vnDb?from=from_copylink","version":"","date":"","checksum":"","notes_url":"","notes":""}
   }
 }
