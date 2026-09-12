@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.0.0",
-  "artifact": "codex-tutorial-cn",
+  "artifact": "codex-tutorial-cn-online",
   "version": "0.2.1",
-  "status": "draft-complete-unverified",
+  "status": "draft-seed-unverified",
   "generatedDate": "2026-09-02",
   "entry": "index.html",
   "files": [
@@ -13,13 +13,13 @@
     },
     {
       "path": "README.md",
-      "size": 3237,
-      "sha256": "9475b99da860a832fc55feffde824e4e37b9f54deed3afc6caf37aa27116f813"
+      "size": 3318,
+      "sha256": "86a5b38bbe5cdd86b232af54e6c9cf1c3b3f2e21c2792691bead289e4e6b3617"
     },
     {
       "path": "assets/favicon.svg",
-      "size": 332,
-      "sha256": "0bb05ef07a4febb333368f5a71bb86580052c1c2c838bc8126b7e7db54f6e46e"
+      "size": 333,
+      "sha256": "c88c4f3dbd95d3894284d6cb23597686dd872a786711d9bc028009f89864fe7d"
     },
     {
       "path": "assets/style.css",
@@ -78,8 +78,8 @@
     },
     {
       "path": "ch11.html",
-      "size": 22803,
-      "sha256": "872e8cb9c464d949a5735f0ab2c8a4ec78b1acabebe6d31730c2fa861e71e97d"
+      "size": 22833,
+      "sha256": "63e2ede3d4141a914917a68fdfb3aa6440c535c877d65099589be9a1137a98dd"
     },
     {
       "path": "deploy/Caddyfile",
@@ -113,8 +113,8 @@
     },
     {
       "path": "index.html",
-      "size": 8100,
-      "sha256": "8c3aed5949aeb5dc172a05572ff3c67374158ed562702fdb5f085c987a2633d5"
+      "size": 8170,
+      "sha256": "0e663c7932a43f7e88144f99f3edd5b508ba82860e72f4165deac559875e96e6"
     },
     {
       "path": "maintenance-release.html",
@@ -133,8 +133,8 @@
     },
     {
       "path": "registry/framework-v1.json",
-      "size": 8618,
-      "sha256": "9b8341305db60549ab50d4e8fea93096abea814a39de2689fa9777853a382c74"
+      "size": 8716,
+      "sha256": "832362bdbe53f2ee8d5aebd1480ec6e0f65ee2e7e3ff7bb1ee98c77330fd57dc"
     },
     {
       "path": "robots.txt",
@@ -143,8 +143,8 @@
     },
     {
       "path": "schemas/framework-v1.schema.json",
-      "size": 14320,
-      "sha256": "0a20672303e26e51410acb1514bff857fdd06993f98523a4fc149b42c1dbe1d0"
+      "size": 14612,
+      "sha256": "4746fd17db3cde4b3a407a3513d2523817c8610d41e12affa2697bc8408a979f"
     },
     {
       "path": "source-research.html",
@@ -155,6 +155,16 @@
       "path": "specs/2026-09-01-framework-first-addendum.html",
       "size": 7663,
       "sha256": "662eca7d03de34a8081931b755205b5778675c63474bf7f1d51bf6cbb4f5cd98"
+    },
+    {
+      "path": "specs/2026-09-03-formal-course-v1-design.html",
+      "size": 7029,
+      "sha256": "c798194d890c33fee4095b7f9a3696f52cbbb90d59c4937de4e7cadae6c31385"
+    },
+    {
+      "path": "specs/2026-09-03-github-baseline-hardening-design.html",
+      "size": 7037,
+      "sha256": "e02c7557aac891f6f062c0dc77d86617d617401ff675fe97f3f5d84f6545d510"
     },
     {
       "path": "templates/module-template.html",

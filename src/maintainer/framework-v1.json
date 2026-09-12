@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "frameworkVersion": "1.0.0",
   "status": "framework-review",
   "authority": {
     "canonicalSource": {
@@ -160,6 +160,7 @@
       "outline",
       "draft",
       "source-and-rights-review",
+      "editorial-reviewed",
       "verification",
       "acceptance-ready",
       "stable",
@@ -232,7 +233,7 @@
     }
   },
   "releaseGate": {
-    "currentDecision": "framework-review-only",
+    "currentDecision": "course-beta-in-development",
     "requiredBeforeStable": [
       "framework-user-approved",
       "all-required-content-acceptance-ready",
