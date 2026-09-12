@@ -6,6 +6,12 @@ description: 使用最小配置接入本站，保留默认权限确认，并验�
 
 Claude Code 是编程工具，Claude 桌面应用是另一种使用入口。本篇先完成命令行接入，不把桌面功能、扩展和 CLI 拆成重复产品，也不承诺它们自动共享所有配置。
 
+::: tip 本站这一页要填的基址
+`%%BASE_URL%%`
+
+不要加 `/v1`。Claude Code 会自己拼 `/v1/messages`。也不要把 Codex 或 OpenClaw 的地址抄过来。
+:::
+
 ::: tip 使用管理工具
 可以先看 [星芒管理工具使用教程](/guide/manager)。只有当前发行版本明确支持本站和目标工具时，才使用自动配置。
 :::
@@ -28,7 +34,7 @@ brew install --cask claude-code
 
 ## 2. 备份用户配置
 
-先退出 Claude Code。用户设置通常位于 `~/.claude/settings.json`，Windows 对应 `%USERPROFILE%\.claude\settings.json`。目录不存在时可以手动创建；已有文件先备份。
+先退出 Claude Code。Windows 用 Win+R 打开 `%USERPROFILE%\.claude\settings.json`；macOS / Linux 对应 `~/.claude/settings.json`。没有文件就新建；已有文件先备份。
 
 只合并需要的字段，不覆盖原有权限、插件或项目设置。公司托管设置可能有更高优先级，遇到组织限制时联系管理员。
 
@@ -45,7 +51,7 @@ brew install --cask claude-code
 }
 ```
 
-`ANTHROPIC_AUTH_TOKEN` 与 `ANTHROPIC_API_KEY` 的使用应跟随本站网关要求，不要无目的地同时设置两套认证。Base URL 不是文档站或控制台路径，需匹配 Anthropic Messages 等工具所需接口。
+`ANTHROPIC_AUTH_TOKEN` 与 `ANTHROPIC_API_KEY` 的使用应跟随本站网关要求，不要无目的地同时设置两套认证。Base URL 填 `%%BASE_URL%%`，不是文档站、控制台，也不是带 `/v1` 的 OpenAI 兼容地址。
 
 本例不设置绕过权限确认，不关闭危险操作提示。先保持客户端默认确认机制，再讨论进阶自动执行需求。
 

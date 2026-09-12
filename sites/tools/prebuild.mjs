@@ -48,7 +48,7 @@ export function build(id,root=ROOT){
  for(const key of ['site_url','base_url','keys_url','models_url','console_url'])https(site[key],key)
  if(!/^[a-zA-Z0-9.-]+$/.test(site.domain))throw Error('Invalid documentation hostname')
  const other=id==='sub2api'?'xm.solov.cc':'api.solov.cc'
- for(const key of ['site_url','base_url','codex_base_url','keys_url','models_url','console_url'])if(site[key]&&new URL(site[key]).hostname===other)throw Error('Cross-site URL: '+key)
+ for(const key of ['site_url','base_url','codex_base_url','openclaw_base_url','keys_url','models_url','console_url'])if(site[key]&&new URL(site[key]).hostname===other)throw Error('Cross-site URL: '+key)
  if(site.domain===(id==='sub2api'?'docs-new.solov.cc':'docs-sub.solov.cc'))throw Error('Cross-site docs hostname')
  for(const item of Object.values(site.downloads||{})){
   if(item.url)https(item.url,'Download URL')
@@ -56,8 +56,10 @@ export function build(id,root=ROOT){
   if(item.checksum&&!/^[a-f0-9]{64}$/i.test(item.checksum))throw Error('Invalid SHA-256')
  }
  const course=stageCourse(path.dirname(root))
- const vars={SITE_NAME:site.name,SITE_URL:site.site_url,BASE_URL:site.base_url,CODEX_BASE_URL:site.codex_base_url||site.base_url,KEYS_URL:site.keys_url,MODELS_URL:site.models_url,CONSOLE_URL:site.console_url,DOCS_URL:'https://'+site.domain,KEY_WORD:site.key_word||'API 密钥',HOURS:site.contact?.hours||''}
+ const origin=new URL(site.base_url).origin
+ const vars={SITE_NAME:site.name,SITE_URL:site.site_url,BASE_URL:site.base_url,CODEX_BASE_URL:site.codex_base_url||site.base_url,OPENCLAW_BASE_URL:site.openclaw_base_url||origin+'/v1',KEYS_URL:site.keys_url,MODELS_URL:site.models_url,CONSOLE_URL:site.console_url,DOCS_URL:'https://'+site.domain,KEY_WORD:site.key_word||'API 密钥',HOURS:site.contact?.hours||''}
  https(vars.CODEX_BASE_URL,'Codex base URL')
+ https(vars.OPENCLAW_BASE_URL,'OpenClaw base URL')
  const outputs=[]
  const pageRoot=path.join(shared,'pages'),overrideRoot=path.join(directory,'overrides')
  const pageNames=new Set([...files(pageRoot),...files(overrideRoot)].filter(name=>name.endsWith('.md')))
@@ -75,7 +77,7 @@ export function build(id,root=ROOT){
  const sourceNav=JSON.parse(fs.readFileSync(path.join(directory,'nav.json'),'utf8'))
  const courseNav={text:'Codex 零基础课程',items:[{text:'完整课程目录',link:'/learn/codex/'},...course.sidebar,{text:'第一次任务练习',link:'/learn/first-task'},{text:'文件夹练习',link:'/learn/working-with-files'},{text:'检查结果与修改',link:'/learn/review-and-revise'}]}
  const nav={nav:sourceNav.nav,sidebar:[sourceNav.sidebar[0],courseNav,...sourceNav.sidebar.slice(1)]}
- const publicSite={id:site.id,name:site.name,title:site.title,description:site.description,domain:site.domain,site_url:site.site_url,contact,downloads:site.downloads||{}}
+ const publicSite={id:site.id,name:site.name,title:site.title,description:site.description,domain:site.domain,site_url:site.site_url,base_url:site.base_url,codex_base_url:vars.CODEX_BASE_URL,openclaw_base_url:vars.OPENCLAW_BASE_URL,contact,downloads:site.downloads||{}}
  outputs.push(['site.generated.json',JSON.stringify(publicSite,null,2)],['nav.generated.json',JSON.stringify(nav,null,2)],['course-provenance.generated.json',JSON.stringify({version:course.version,sources:course.sources},null,2)])
  const parent=new URL(site.site_url).origin
  outputs.push(['public/_headers',`/*\n  Content-Security-Policy: frame-ancestors 'self' ${parent}\n  Referrer-Policy: no-referrer\n  X-Content-Type-Options: nosniff\n`])

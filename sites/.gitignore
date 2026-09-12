@@ -31,3 +31,7 @@ node_modules/
 */tools.md
 */studio.generated.json
 */public/studio/
+/studio/screenshots/.local-backups/
+/studio/screenshots/.*.tmp
+/newapi/public/screenshots/
+/sub2api/public/screenshots/

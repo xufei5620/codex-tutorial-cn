@@ -4,25 +4,62 @@ description: 从官方项目开始，保留本地访问和权限边界，区分�
 ---
 # OpenClaw 接入与本地使用
 
-本篇对应 [OpenClaw 官方项目](https://docs.openclaw.ai/start/getting-started)。过去使用过 `openclaw-cn` 等社区分支的用户，应先核对来源、版本和迁移说明，不能认为包名、命令与配置完全相同。
+星芒原文安装的是 `openclaw-cn`，配置文件仍在 `~/.openclaw/openclaw.json`。包名、命令和上游 OpenClaw 不一定相同，不要混用两套说明。
 
 ## 1. 安装与初始化
 
-按当前官方安装指南选择系统对应的方法，核对运行环境和依赖版本。不要把管理员权限或 sudo 用作所有安装问题的默认答案，也不需要为了配置 OpenClaw 先安装无关的 OpenCode。
+已安装可跳过。按你实际使用的安装包核对版本；不要把管理员权限当成所有安装问题的默认答案。
 
-首次使用选择自己的练习目录，保留默认访问保护。按向导确认模型提供方、认证和本地运行方式；不同版本的提示可能变化，不把旧截图里的每一步当作固定界面。
+```text
+npm install -g openclaw-cn@latest
+openclaw-cn onboard --install-daemon
+```
+
+首次向导选本机练习目录，保留默认访问保护。界面加载慢或打不开时，再执行 `openclaw-cn gateway` 后刷新本地页面。
+
+::: tip 本站这一页要填的基址
+`%%OPENCLAW_BASE_URL%%`
+
+这是 OpenAI 兼容地址。不要抄 Codex、Claude Code 或 Gemini CLI 的基址，两站也不要互相抄。
+:::
 
 ## 2. 选择本站兼容的提供方
 
-准备 [本站密钥](%%KEYS_URL%%)和允许的 [模型 ID](%%MODELS_URL%%)，确认工具提供方支持当前渠道协议。OpenAI Chat Completions、Responses 和 Anthropic 请求方式要分别匹配。
+准备 [本站密钥](%%KEYS_URL%%)和允许的 [模型 ID](%%MODELS_URL%%)。向导若要求 OpenAI 兼容 Base URL，填：
 
-只有向导明确要求 OpenAI 兼容 Base URL 时，才按本站对应协议说明填写，例如 `%%BASE_URL%%/v1`。不要复制其他工具的完整请求端点。
+```text
+%%OPENCLAW_BASE_URL%%
+```
+
+Windows 用 Win+R 打开 `%USERPROFILE%\.openclaw\openclaw.json`；macOS / Linux 对应 `~/.openclaw/openclaw.json`。只改提供方基址、%%KEY_WORD%%和模型，不要整份覆盖向导生成的 workspace、gateway token。
+
+```json
+{
+  "models": {
+    "providers": {
+      "xingmang": {
+        "baseUrl": "%%OPENCLAW_BASE_URL%%",
+        "apiKey": "REPLACE_WITH_YOUR_SITE_KEY",
+        "auth": "api-key",
+        "api": "openai-responses"
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "xingmang/REPLACE_WITH_MODEL_ID"
+      }
+    }
+  }
+}
+```
+
+模型 ID 从 [本站列表](%%MODELS_URL%%)复制。`baseUrl` 必须是 `%%OPENCLAW_BASE_URL%%`，不要抄原文示例里其他域名。
 
 ## 3. 不覆盖整份配置
 
-保留向导生成的工作目录、网关认证与当前版本信息。只编辑需要的模型和提供方字段，修改前备份。
-
-不要复制旧配置中的版本号、固定价格、上下文长度或网关 token。配置中的展示费用也不等于本站实际扣费。
+保留向导生成的工作目录、网关认证与当前版本信息。修改前备份。不要复制别人配置里的价格、上下文长度或 gateway token。
 
 ## 4. 先在本机验证
 
@@ -32,8 +69,12 @@ description: 从官方项目开始，保留本地访问和权限边界，区分�
 
 ## 5. 更新、排错和恢复
 
-记录 OpenClaw 版本、提供方配置和所用插件。更新前备份，出现不兼容时按对应版本文档处理，不盲目执行另一分支的命令。
+改完后重启网关再试：
+
+```text
+openclaw-cn gateway restart
+```
+
+记录版本、提供方和所用插件。更新前备份，不要混用另一分支的命令。
 
 [排错顺序](/guide/troubleshooting) · [备份恢复](/guide/recovery) · [本站客服](/contact)
-
-官方参考：[Getting started](https://docs.openclaw.ai/start/getting-started)、[模型提供方](https://docs.openclaw.ai/concepts/model-providers)。未进行真实模型和外部平台连接测试。

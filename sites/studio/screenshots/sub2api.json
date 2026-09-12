@@ -1,1 +1,351 @@
-{"schema":"xingmang-screenshots/1","version":"5.3","siteId":"sub2api","hideMissing":false,"records":{}}
+{
+  "schema": "xingmang-screenshots/1",
+  "version": "5.4",
+  "siteId": "sub2api",
+  "hideMissing": false,
+  "records": {
+    "ch04-s01-step02": {
+      "caption": "本地虚构商品资料：已提供规格、价格和颜色；未知项留在原文中。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/de107ddc9ddb17587f2e51cd9d656909cb1163f51ac97367db6d65f2ebee123b.jpg",
+          "name": "product-source.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch04-s02-overview": {
+      "caption": "首次请求的本地文本：任务、范围、材料、未知项与输出要求已写明。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/3ce3617d1dd8c637a629ee43cddf6810124175575c1f5d04428cb4563e72e00f.jpg",
+          "name": "first-request.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch05-s01-step03": {
+      "caption": "活动说明 v1、v2 与分工记录的本地 input 目录；用于核对版本来源。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/f7b0a9987f44e7bc55d1d70378b45051887eed7af8bfe4629eb6af0cf74f5426.jpg",
+          "name": "activity-versions.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch05-s05-step01": {
+      "caption": "项目范围 AGENTS.md：输入只读、缺口保留、输出范围受限。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/015078b0a91f0e34f149bbc8e6e32ef1c60d08e72232685cad83543e6f6319b9.jpg",
+          "name": "project-rules.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch05-s05-step02": {
+      "caption": "练习项目目录：AGENTS.md 与 input、output、backup 同级。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/c94f190cdfa9a71c66483a6b293acce0d53d465657ead6921b0ca4f8f4f8d860.jpg",
+          "name": "project-rules-folder.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch06-s02-overview": {
+      "caption": "插件检查记录模板：来源、组成、权限和退出方式待实际核对。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/bf48b6c452be759eed8da36d0fb9b8af434178f8a6d5723d68b35d709db1d89f.jpg",
+          "name": "plugin-checklist.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch07-s05-overview": {
+      "caption": "本地教学技能目录及 SKILL.md 文件；技能发现仍需实际验证。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/6d0a1190145d703fa8e92f2b2a53a67ad862e54428a58e5065b7fb4c8441a737.jpg",
+          "name": "skill-folder.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "skills-editor": {
+      "caption": "本地练习目录中的技能文件夹与 SKILL.md 文件名；文件内容需在编辑器中另行核对。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/6d0a1190145d703fa8e92f2b2a53a67ad862e54428a58e5065b7fb4c8441a737.jpg",
+          "name": "skill-folder.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch07-s06-overview": {
+      "caption": "六组 Skill 测试材料目录；这是测试输入，不是测试结果。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/74493d7061e478e510c8b9c6ff0e7bc8a5f2decb24b5963b25284748fa2899af.jpg",
+          "name": "skill-cases.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch09-s02-overview": {
+      "caption": "综合案例 input 目录：商品、产品表、访谈、销量、素材和交付要求。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/3c73941d8cbb8925bcf0d36a4d3d3f506c99787cac870480783383a14cf8f5f3.jpg",
+          "name": "case-materials.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch09-s07-step01": {
+      "caption": "S1/S2/S3 虚构来源材料；容量与收费存在差异，需要保留依据。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/584e657600dc7cda2528dce3850757e0f8477a13ca85a55b15cebf1972844cbd.jpg",
+          "name": "source-conflicts.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch10-s04-overview": {
+      "caption": "可复制的求助记录模板；空白字段留待真实问题发生后填写。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/e822662f14fdcf595890c5a2c537171662998b7e18c8f3e8aead38e448c67e4d.jpg",
+          "name": "help-template.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "ch11-s03-overview": {
+      "caption": "本地维护记录模板：版本、来源、验证范围和待确认事项。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/11401a561ca54ca14a9edb4ee42d5029621d520e05d13353b16596f8d0e5ff92.jpg",
+          "name": "maintenance-template.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "industry-commerce-input": {
+      "caption": "电商行业虚构产品输入：A5、80页、18元和蓝白绿。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/1087a98214a66e975cf3cfd9bb419a757434aee083f5a1c5c472702f387ee85f.jpg",
+          "name": "commerce-input.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "industry-media-input": {
+      "caption": "自媒体虚构采访输入：开门、清洁、补货和蓝白到货。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/2b75d0d0aa0e1e20e8a30d44c64878e38e725490b652fa60199f398c1029dcb1.jpg",
+          "name": "media-input.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "industry-office-input": {
+      "caption": "行政协作虚构会议输入：负责人、期限和报价状态。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/c055c26437395a815bd11b280059575b32e5c9e3083adcc11528cb0f98b324a3.jpg",
+          "name": "office-input.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "industry-service-input": {
+      "caption": "客服虚构问题输入：登录页打不开及低风险检查范围。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/df9531be3447fa9aa43bbfa7a94df1bb4a2bda30f63e092832d37856813b4f5d.jpg",
+          "name": "service-input.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "industry-data-input": {
+      "caption": "数据练习虚构销量输入：前三天 10、8、12 本。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/71935978b4f41b5e39bc75806d25e1ed81c87d0f602176a01acc54b4d8e9f41a.jpg",
+          "name": "data-input.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    },
+    "industry-web-input": {
+      "caption": "网页练习虚构需求输入：单页内容和缺失素材。",
+      "alt": "本地教程练习材料截图",
+      "product": "本地文件预览",
+      "system": "Windows",
+      "version": "本地练习材料",
+      "date": "2026-09-11",
+      "hidden": false,
+      "scope": "site",
+      "images": [
+        {
+          "data": "/screenshots/b10c3114a4a0e78477558f3c735db9594c263c14d6554319c0764480930d6636.jpg",
+          "name": "web-input.jpg",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    }
+  },
+  "updatedAt": 1789116420350
+}

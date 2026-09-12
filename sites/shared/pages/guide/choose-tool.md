@@ -8,7 +8,7 @@ description: 先按任务选一个入口，分清模型平台、编辑器、命�
 
 | 你要做什么 | 建议先看 |
 | --- | --- |
-| 使用 Codex 理解材料、协助文件或项目任务 | [OpenAI / Codex 接入](/clients/codex)，接上后读 [零基础课程](/learn/codex/) |
+| 使用 Codex 理解材料、协助文件或项目任务 | [OpenAI / Codex 接入](/clients/codex)，接上后读 [Codex 零基础](/learn/codex/) |
 | 使用 Claude 的编程工具 | [Claude Code](/clients/claude-code) |
 | 在终端使用 Gemini | [Gemini CLI](/clients/gemini-cli) |
 | 使用 xAI 的终端编程工具 | [Grok Build](/clients/grok-build) |

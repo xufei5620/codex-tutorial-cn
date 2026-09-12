@@ -4,7 +4,7 @@ description: 准备本站余额和调用令牌，配置工具并核对用量。
 ---
 # 注册、充值与令牌
 
-官网：<https://xm.solov.cc>。账户余额、令牌限制和模型价格请以本站控制台为准。已连接成功的用户可以进入 [Codex 零基础课程](/learn/codex/)学习实际使用。
+官网：<https://xm.solov.cc>。账户余额、令牌限制和模型价格请以本站控制台为准。已连接成功的用户可以进入 [Codex 零基础](/learn/codex/)学习实际使用。
 
 <SupportCard />
 
@@ -38,4 +38,4 @@ description: 准备本站余额和调用令牌，配置工具并核对用量。
 
 ## 6. 接上以后学什么
 
-[11 章零基础课程](/learn/codex/) · [第一次任务](/learn/first-task) · [文件夹练习](/learn/working-with-files) · [检查结果与修改](/learn/review-and-revise)。
+[Codex 零基础](/learn/codex/) · [第一次任务](/learn/first-task) · [文件夹练习](/learn/working-with-files) · [检查结果与修改](/learn/review-and-revise)。

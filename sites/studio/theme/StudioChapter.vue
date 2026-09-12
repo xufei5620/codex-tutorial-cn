@@ -1,13 +1,72 @@
 <script setup>
-import {computed,ref,onMounted} from 'vue'
+import {computed,ref,onMounted,onBeforeUnmount,watch,nextTick} from 'vue'
 import {useData} from 'vitepress'
-import HtmlWithShots from './HtmlWithShots.vue'
 import ScreenshotSlot from './ScreenshotSlot.vue'
-const props=defineProps({chapterId:String}),{theme}=useData(),data=computed(()=>theme.value.studio),chapter=computed(()=>data.value.chapters.find(c=>c.id===props.chapterId));const answers=ref({}),checks=ref({});const source=id=>data.value.sources[id];function save(){try{localStorage.setItem('studio-progress-'+data.value.site.id+'-'+props.chapterId,JSON.stringify({answers:answers.value,checks:checks.value}))}catch{}}
-onMounted(()=>{try{const prior=JSON.parse(localStorage.getItem('studio-progress-'+data.value.site.id+'-'+props.chapterId)||'{}');answers.value=prior.answers||{};checks.value=prior.checks||{}}catch{}})
+const props=defineProps({chapterId:String})
+const {theme}=useData()
+const data=computed(()=>theme.value.studio)
+const chapters=computed(()=>data.value.chapters||[])
+const chapter=computed(()=>chapters.value.find(c=>c.id===props.chapterId))
+const index=computed(()=>chapters.value.findIndex(c=>c.id===props.chapterId))
+const prev=computed(()=>index.value>0?chapters.value[index.value-1]:null)
+const next=computed(()=>index.value>=0&&index.value<chapters.value.length-1?chapters.value[index.value+1]:null)
+const titled=computed(()=>(chapter.value?.sections||[]).filter(s=>s.title&&s.title!=='正文'))
+const preview=ref(null)
+const root=ref()
+const targets=ref([])
+function sectionNo(i){return String(i+1).padStart(2,'0')}
+async function bindShots(){
+  targets.value=[]
+  await nextTick()
+  const hosts=[...(root.value?.querySelectorAll('.course-shot[data-shot-id]')||[])]
+  targets.value=hosts.map(host=>({id:host.dataset.shotId,host}))
+}
+function openPreview(e){
+  const img=e.target.closest('.yichen-figure img')
+  if(!img)return
+  preview.value={src:img.currentSrc||img.src,alt:img.alt||'配图预览'}
+}
+function closePreview(){preview.value=null}
+function onKey(e){if(e.key==='Escape'&&preview.value)closePreview()}
+watch(()=>chapter.value?.id,bindShots,{immediate:true})
+onMounted(()=>window.addEventListener('keydown',onKey))
+onBeforeUnmount(()=>window.removeEventListener('keydown',onKey))
 </script>
-<template><article v-if="chapter" class="studio-lesson"><a class="crumb" href="/learn/codex/">← Codex 零基础 · 11 章学习路线</a><p class="eyebrow">CHAPTER {{String(chapter.n).padStart(2,'0')}} / LEARN · TRY · CHECK</p><h1>{{chapter.title}}</h1><p class="lead">{{chapter.lead}}</p><div class="lesson-goal"><span>本章学会</span><p>{{chapter.goal}}</p></div><nav class="section-index" aria-label="本章目录"><a v-for="(s,i) in chapter.sections" :key="s.anchor" :href="'#'+s.anchor">{{chapter.n}}.{{i+1}} {{s.title}}</a></nav>
-<section v-for="(s,i) in chapter.sections" :id="s.anchor" :key="s.anchor" class="course-section"><p class="eyebrow">{{chapter.n}}.{{i+1}} / READ & PRACTICE</p><h2>{{s.title}}</h2><HtmlWithShots :html="s.body" /><details v-if="s.officialRefs?.length" class="source-note"><summary>本节依据与适用范围</summary><p v-for="id in s.officialRefs" :key="id"><a :href="source(id)?.url" target="_blank" rel="noopener noreferrer">{{source(id)?.title||id}} ↗</a></p><small>这是原预览的来源记录，不代表本轮重新核实全部课程。正文是中文学习编排，练习与参考答案为教学示例。</small></details></section>
-<section id="practice" class="practice-panel"><p class="eyebrow">YOUR TURN</p><h2>现在，做一件小事。</h2><p>{{chapter.exercise}}</p><ScreenshotSlot :slot-id="chapter.id+'-practice'" /><h3>完成检查</h3><label v-for="(text,i) in chapter.checks" :key="i" class="check-row"><input type="checkbox" v-model="checks[i]" @change="save">{{text}}</label><small class="muted">进度只保存在当前浏览器，不是实机验证或官方证书。</small></section>
-<section class="quiz-panel"><h2>理解后，再往前一步。</h2><div v-for="(q,i) in chapter.quiz" :key="i" class="quiz"><h3>{{q.question}}</h3><label v-for="(option,j) in q.choices" :key="j"><input type="radio" :name="chapter.id+'-quiz-'+i" :value="j" v-model="answers[i]" @change="save">{{option}}</label><p v-if="answers[i]!==undefined" class="edu-note">{{answers[i]===q.answer?'理解正确。':'再想一想。'}}{{q.why}}</p></div></section>
-<nav class="chapter-pager"><a v-if="chapter.n>1" :href="'/learn/codex/ch'+String(chapter.n-1).padStart(2,'0')">← 上一章</a><a href="/learn/codex/">课程目录</a><a v-if="chapter.n<11" :href="'/learn/codex/ch'+String(chapter.n+1).padStart(2,'0')">下一章 →</a></nav></article></template>
+<template>
+<article v-if="chapter" ref="root" class="studio-lesson yichen-lesson" @click="openPreview">
+  <a class="crumb" href="/learn/codex/">← Codex 零基础</a>
+  <header class="lesson-hero">
+    <p class="eyebrow">第 {{chapter.n}} 章 · {{chapter.part}}</p>
+    <h1>{{chapter.shortTitle||chapter.title}}</h1>
+    <p class="lead">{{chapter.blurb||chapter.lead}}</p>
+    <p class="lesson-meta">
+      <span>{{chapter.imageCount||0}} 张配图</span>
+      <span>{{titled.length}} 个小节</span>
+    </p>
+  </header>
+  <nav v-if="titled.length>1" class="section-index" aria-label="本章目录">
+    <a v-for="(s,i) in titled" :key="s.anchor" :href="'#'+s.anchor">
+      <em>{{sectionNo(i)}}</em>
+      <span>{{s.title}}</span>
+    </a>
+  </nav>
+  <section v-for="s in chapter.sections" :id="s.anchor" :key="s.anchor" class="course-section">
+    <h2 v-if="s.title && s.title!=='正文'">{{s.title}}</h2>
+    <div class="yichen-article" v-html="s.body"></div>
+  </section>
+  <nav class="chapter-pager">
+    <a v-if="prev" :href="'/learn/codex/'+prev.id">← {{prev.shortTitle||prev.title}}</a>
+    <a href="/learn/codex/">课程目录</a>
+    <a v-if="next" :href="'/learn/codex/'+next.id">{{next.shortTitle||next.title}} →</a>
+  </nav>
+  <Teleport v-for="target in targets" :key="target.id" :to="target.host">
+    <ScreenshotSlot :slot-id="target.id"/>
+  </Teleport>
+  <Teleport to="body">
+    <div v-if="preview" class="yichen-lightbox" role="dialog" aria-modal="true" aria-label="配图预览" @click.self="closePreview">
+      <button class="yichen-lightbox-close" type="button" @click="closePreview">关闭</button>
+      <img :src="preview.src" :alt="preview.alt">
+    </div>
+  </Teleport>
+</article>
+</template>

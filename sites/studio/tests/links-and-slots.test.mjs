@@ -56,7 +56,7 @@ test('exported course chapter and section links resolve inside the downloaded HT
    snapshot:()=>({siteId:site.id,records:{}}),
    data:{site,manifest:[],chapters:[chapter('ch03',3,[{anchor:'s1',title:'导航',body}]),chapter('ch07',7,[{anchor:'s2',title:'安装',body:'<p>目标小节</p>'}])]}
   },'reader')
-  assert.equal(output.name,'course-'+site.id+'-v5.3-reader.html')
+  assert.equal(output.name,'course-'+site.id+'-v5.4-reader.html')
   const article=output.html.match(/<main id="studio-main">([\s\S]*?)<\/main>/)[1]
   const ids=new Set([...article.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]))
   const localLinks=[...article.matchAll(/href="#([^"]+)"/g)].map(m=>m[1])

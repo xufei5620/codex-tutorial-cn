@@ -1,0 +1,49 @@
+{
+  "title": "Codex 零基础",
+  "howTo": [
+    "先看第一章，把左边、中间、右边和设置页看明白。",
+    "再看第二章，照着做出一份能打开的 Word、PPT 或网页。"
+  ],
+  "parts": [
+    {
+      "id": "part-1",
+      "n": 1,
+      "label": "先认界面",
+      "intro": "先把 Codex App 的界面看懂：左边入口、中间对话、右边结果，再翻一遍设置页。"
+    },
+    {
+      "id": "part-2",
+      "n": 2,
+      "label": "再做交付",
+      "intro": "照着做一次能打开的结果：文档、演示稿、网页。"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "ch01",
+      "n": 1,
+      "title": "从 0 到 1：认清 Codex App 界面",
+      "shortTitle": "认清界面",
+      "part": "先认界面",
+      "partLabel": "先认界面",
+      "partId": "part-1",
+      "blurb": "先把 Codex App 的界面看懂：左边入口、中间对话、右边结果，再翻一遍设置页。",
+      "lead": "最近我发现，很多人第一次接触 Codex App 的反应不是“哇，好强”，而是：",
+      "cover": "/img/shared/yichen/1782645996771_media_HHnH5-xaIAAfPDj.jpg",
+      "imageCount": 18
+    },
+    {
+      "id": "ch02",
+      "n": 2,
+      "title": "实战：办公四件套和本地交付",
+      "shortTitle": "办公四件套",
+      "part": "再做交付",
+      "partLabel": "再做交付",
+      "partId": "part-2",
+      "blurb": "照着做一次能打开的结果：文档、演示稿、网页。",
+      "lead": "地基已经搭建好了，就要开始用 Codex App 干一些真正能提效降本的事情，把它全方位地赋能到业务里面。",
+      "cover": "/img/shared/yichen/1782646136969_media_HIAmjXXbcAAjgqS.jpg",
+      "imageCount": 15
+    }
+  ]
+}

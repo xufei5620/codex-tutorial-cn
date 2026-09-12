@@ -26,7 +26,16 @@ description: 认识 Base URL、完整端点、模型 ID 和认证作用域。
 | Anthropic Messages | `/v1/messages` | 请求格式与认证要求不同 |
 | Gemini | `/v1beta/models/{model}:generateContent` | 不能用普通 OpenAI 地址冒充原生协议 |
 
-端点仅用于理解结构，不代表本站每个分组都开放全部接口。带不带 `/v1` 取决于具体工具如何拼接最终路径；请看对应教程，不要盲目重复添加或删除。
+端点仅用于理解结构，不代表本站每个分组都开放全部接口。本站常用工具请按下面填，不要一套地址用到底：
+
+| 工具 | 本站填写 |
+| --- | --- |
+| [OpenAI / Codex](/clients/codex) | `%%CODEX_BASE_URL%%` |
+| [Claude Code](/clients/claude-code) | `%%BASE_URL%%` |
+| [Gemini CLI](/clients/gemini-cli) | `%%BASE_URL%%` |
+| [OpenClaw](/clients/openclaw) | `%%OPENCLAW_BASE_URL%%` |
+
+两站的 Base URL 不同。看哪一站的教程，就填哪一站的地址。
 
 ## 3. 分开保管不同凭据
 

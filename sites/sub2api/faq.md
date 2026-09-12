@@ -20,7 +20,7 @@
 
 按顺序检查：
 
-1. 接口地址是否写对：Codex / Claude Code / Gemini CLI 填 `https://api.solov.cc`，OpenClaw 填 `https://api.solov.cc/v1`；
+1. 接口地址是否写对：Codex / Claude Code / Gemini CLI 填 `https://api.solov.cc`，OpenClaw 填 `https://api.solov.cc/v1`；不要把按量站 `xm.solov.cc` 的地址抄过来；
 2. 密钥是否复制完整、是否已启用；
 3. 密钥的**分组**是否包含你填的模型（分组决定能用哪些模型）；
 4. 配置文件是否保存成功、格式是否正确（JSON 多一个逗号都会失败）；

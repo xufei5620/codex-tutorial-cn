@@ -20,7 +20,7 @@
 
 按顺序检查：
 
-1. 接口地址是否写对：Codex / Claude Code / Gemini CLI 填 `https://xm.solov.cc`，Cline / OpenCode / Hermes 填 `https://xm.solov.cc/v1`；
+1. 接口地址是否写对：Claude Code / Gemini CLI 填 `https://xm.solov.cc`，Codex / OpenClaw / Cline / OpenCode / Hermes 填 `https://xm.solov.cc/v1`；不要把订阅站 `api.solov.cc` 的地址抄过来；
 2. 令牌是否复制完整、是否已启用、是否过期；
 3. 令牌的**分组**是否包含你填的模型；
 4. 配置文件是否保存成功、格式是否正确（JSON 多一个逗号都会失败）；

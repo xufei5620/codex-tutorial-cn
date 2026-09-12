@@ -1,14 +1,91 @@
 <script setup>
-import {computed,ref} from 'vue'
+import {computed} from 'vue'
 import {useData} from 'vitepress'
-const props=defineProps({kind:{type:String,default:'home'}}),{theme}=useData(),d=computed(()=>theme.value.studio),query=ref(''),filter=ref('all');const tools=[['codex','OpenAI / Codex','从第一次对话，到项目与文件协作。','platform'],['claude-code','Claude Code','先完成连接，再学习受控的终端任务。','platform'],['gemini-cli','Gemini CLI','Google 终端工具的接入与使用。','platform'],['grok-build','Grok Build','先核对可用功能和接入条件。','platform'],['hermes','Hermes','Agent 工作方式与工具连接。','agent'],['openclaw','OpenClaw','模型、消息渠道与助手任务。','agent'],['opencode','OpenCode','按当前产品配置模型提供方。','agent'],['deepseek-harness','DeepSeek Harness','本地 Web 与 Agent 工作流。','agent'],['cursor','Cursor','在代码编辑器中协作。','editor'],['vscode','VS Code','分别理解终端、扩展和工作区。','editor']];const shown=computed(()=>tools.filter(t=>(filter.value==='all'||filter.value===t[3])&&t.join(' ').toLowerCase().includes(query.value.toLowerCase())))
+defineProps({kind:{type:String,default:'home'}})
+const {theme}=useData()
+const d=computed(()=>theme.value.studio)
+const catalog=computed(()=>d.value?.catalog||{howTo:[],parts:[],chapters:[]})
+const courseChapters=computed(()=>d.value?.chapters||[])
 </script>
 <template>
-<div v-if="kind==='home'" class="studio-home"><section class="studio-hero"><p class="eyebrow">A SMALL LIGHT. A CLEARER START.</p><h1>从第一次连接，<br><em>到真正用好 AI。</em></h1><p>不用一口气学会所有。选一条适合你的路线，<br>跟着步骤，完成一件真正的小事。</p><div class="actions"><a href="/learn/codex/ch01" class="gold-button">开始我的第一课 →</a><a href="/tools" class="outline-button">我只想接入工具 ↗</a></div><div class="hero-orbit" aria-hidden="true"><i></i><i></i><b>✦</b></div></section>
-<div class="hub-stat"><span><b>11</b> 章系统学习</span><span><b>{{d.scope.totalSections}}</b> 个学习小节</span><span><b>6</b> 类行业练习</span><a href="/skills">Skill 动手工坊 →</a></div>
-<section><div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR PATH</p><h2>今天，想从哪里开始？</h2></div><a href="/learn/codex/">查看完整课程 →</a></div><div class="path-grid"><a href="/learn/codex/" class="path-card"><span class="number">01</span><h3>我是完全新手</h3><p>先认识工具，再完成第一次请求、文件检查和受控修改。</p><strong>从零学习 Codex →</strong></a><a href="/tools" class="path-card"><span class="number">02</span><h3>把工具接起来</h3><p>按产品找到连接方法，确认认证、模型与本站配置。</p><strong>选择我的工具 →</strong></a><a href="/guide/manager" class="path-card"><span class="number">03</span><h3>少一些手动配置</h3><p>了解管理工具、安装包和配置恢复；适配范围按实际版本。</p><strong>管理工具使用 →</strong></a><a href="/errors" class="path-card"><span class="number">04</span><h3>我遇到了问题</h3><p>按报错文案找原因，先处理配置和额度，再决定是否重试。</p><strong>错误码与排查 →</strong></a></div></section>
-<section class="hub-callout"><div><p class="eyebrow">LEARN BY DOING</p><h2>先做对一次，再把方法留下。</h2><p>Skill 安装、使用、制作与测试；行业材料、参考答案和验收标准。</p></div><div class="actions"><a class="dark-button" href="/skills">进入 Skill 工坊</a><a class="soft-button" href="/industry/">行业实战 →</a></div></section></div>
-<div v-else-if="kind==='course'" class="course-index"><p class="eyebrow">CODEX / A COMPLETE LEARNING PATH</p><h1>一步一步，<br>把工具变成自己的能力。</h1><p class="lead">沿用原来的 11 章路线。每章都有目标、操作、练习与检查，不止教你把接口连上。</p><div class="lesson-goal"><span>建议顺序</span><p>第一次使用：第 1—5 章完成第一轮。已经连接成功：先从第 4 章做一个小任务，再回头补齐界面与权限。</p></div><div class="chapter-grid"><a v-for="ch in d.chapters" :key="ch.id" :href="'/learn/codex/'+ch.id" class="chapter-card"><span class="number">{{String(ch.n).padStart(2,'0')}}</span><div><h2>{{ch.title}}</h2><p>{{ch.goal}}</p><small>{{ch.sections.length}} 个小节 · 含动手练习和完成检查</small></div><b>→</b></a></div><div class="hub-callout"><p>需要先完成本站接入？账户说明与学习课程分别维护。</p><a href="/guide/account">查看本站账户与密钥流程 →</a></div></div>
-<div v-else-if="kind==='tools'"><p class="eyebrow">CONNECT / YOUR EVERYDAY TOOLS</p><h1>找到你的工具，<br>只看对应的那一篇。</h1><p class="lead">同一家产品不硬拆一排 IDE 名称。接入条件按当前产品、版本和本站配置确认。</p><a class="hub-callout" href="/guide/manager"><strong>不想逐项手动配置？</strong><span>了解星芒 AI 管理工具 →</span></a><div class="filter-bar"><input v-model="query" placeholder="搜索工具名称" aria-label="搜索工具"><button v-for="[id,label] in [['all','全部'],['platform','主要平台'],['agent','Agent 工具'],['editor','编辑器']]" :key="id" :class="{active:filter===id}" @click="filter=id">{{label}}</button></div><div class="tool-grid"><a v-for="t in shown" :key="t[0]" :href="'/clients/'+t[0]" class="tool-card"><span class="tool-monogram" aria-hidden="true">{{t[1].slice(0,2)}}</span><h2>{{t[1]}}</h2><p>{{t[2]}}</p><strong>打开对应教程 →</strong></a></div><p v-if="!shown.length" class="edu-note">没有匹配工具，请尝试其他关键词。</p></div>
-<div v-else-if="kind==='industry'"><p class="eyebrow">FROM METHODS TO REAL WORK</p><h1>相同的方法，<br>落在不同的工作里。</h1><p class="lead">每个案例提供虚构材料、请求、作者参考、验收与变式练习。不是业绩承诺，也不自动发送或发布。</p><div class="path-grid"><a v-for="x in d.industries" :key="x.id" :href="'/industry/'+x.id" class="path-card"><p class="eyebrow">{{x.name}}</p><h2>{{x.title}}</h2><p>{{x.pitfall}}</p><strong>开始练习 →</strong></a></div></div>
+<div v-if="kind==='home'" class="studio-home">
+  <section class="studio-hero">
+    <p class="eyebrow">从这里开始</p>
+    <h1>从第一次连接，<br><em>到真正用起来。</em></h1>
+    <p>先用管理工具接上，再跟着 Codex 零基础把界面看懂，做出一份能打开的文件。</p>
+    <div class="actions">
+      <a href="/learn/codex/" class="gold-button">打开 Codex 零基础 →</a>
+      <a href="/guide/manager" class="outline-button">打开管理工具 ↗</a>
+    </div>
+    <div class="hero-orbit" aria-hidden="true"><i></i><i></i><b>✦</b></div>
+  </section>
+  <div class="hub-stat">
+    <span><b>{{d.scope.totalChapters||2}}</b> 章课程</span>
+    <span><b>{{d.scope.totalFigures||0}}</b> 张配图</span>
+    <a href="/skills">Skill 工坊 →</a>
+  </div>
+  <section>
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">选择学习路线</p>
+        <h2>今天，想从哪里开始？</h2>
+      </div>
+      <a href="/learn/codex/">打开 Codex 零基础 →</a>
+    </div>
+    <div class="path-grid">
+      <a href="/learn/codex/" class="path-card">
+        <span class="number">01</span>
+        <h3>先认界面，再交付</h3>
+        <p>看懂左边、中间、右边和设置，再照着做出一份能打开的文件。</p>
+        <strong>打开 Codex 零基础 →</strong>
+      </a>
+      <a href="/guide/manager" class="path-card">
+        <span class="number">02</span>
+        <h3>把工具接起来</h3>
+        <p>用管理工具检测环境、写入本站配置；适配范围以当前版本为准。</p>
+        <strong>管理工具使用 →</strong>
+      </a>
+      <a href="/errors" class="path-card">
+        <span class="number">03</span>
+        <h3>我遇到了问题</h3>
+        <p>按报错文案找原因，先处理配置和额度，再决定是否重试。</p>
+        <strong>错误码与排查 →</strong>
+      </a>
+    </div>
+  </section>
+  <section class="hub-callout">
+    <div>
+      <p class="eyebrow">边做边学</p>
+      <h2>先做对一次，再把方法留下。</h2>
+      <p>把做顺的步骤写成 Skill，下次直接调用，不必从头再讲一遍。</p>
+    </div>
+    <div class="actions">
+      <a class="dark-button" href="/skills">进入 Skill 工坊</a>
+      <a class="soft-button" href="/learn/codex/">Codex 零基础 →</a>
+    </div>
+  </section>
+</div>
+
+<div v-else-if="kind==='course'" class="course-index yichen-catalog">
+  <header class="course-hero">
+    <p class="eyebrow">Codex 零基础</p>
+    <h1>先看懂界面，再做出一份文件</h1>
+    <p class="lead">第一章认清左边、中间、右边和设置；第二章照着做出 Word、PPT 或网页。</p>
+    <ol class="yichen-howto">
+      <li v-for="(item,i) in catalog.howTo" :key="i">{{item}}</li>
+    </ol>
+  </header>
+  <div class="course-pair">
+    <a v-for="ch in courseChapters" :key="ch.id" :href="'/learn/codex/'+ch.id" class="course-card">
+      <span class="course-card-media" aria-hidden="true">
+        <img v-if="ch.cover" :src="ch.cover" alt="">
+      </span>
+      <span class="toc-num">第 {{ch.n}} 章 · {{ch.part}}</span>
+      <strong>{{ch.shortTitle||ch.title}}</strong>
+      <p>{{ch.blurb||ch.lead}}</p>
+      <small>{{ch.imageCount||0}} 张配图</small>
+      <em>开始阅读 →</em>
+    </a>
+  </div>
+</div>
 </template>

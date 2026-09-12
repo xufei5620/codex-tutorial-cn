@@ -4,7 +4,7 @@ description: 完成账户和额度准备，配置工具，再学习实际使用�
 ---
 # 注册、订阅与密钥
 
-官网：<https://api.solov.cc>。第一次使用依次完成账户、订阅或可用额度、密钥和工具配置；已连接成功可以直接阅读 [Codex 零基础课程](/learn/codex/)。
+官网：<https://api.solov.cc>。第一次使用依次完成账户、订阅或可用额度、密钥和工具配置；已连接成功可以直接阅读 [Codex 零基础](/learn/codex/)。
 
 <SupportCard />
 
@@ -44,4 +44,4 @@ description: 完成账户和额度准备，配置工具，再学习实际使用�
 
 ## 5. 接上以后怎么用
 
-[11 章零基础课程](/learn/codex/) · [第一次任务](/learn/first-task) · [文件夹练习](/learn/working-with-files) · [检查结果与修改](/learn/review-and-revise)。
+[Codex 零基础](/learn/codex/) · [第一次任务](/learn/first-task) · [文件夹练习](/learn/working-with-files) · [检查结果与修改](/learn/review-and-revise)。

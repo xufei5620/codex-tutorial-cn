@@ -1,14 +1,14 @@
-name: studio-v53-preview
+name: studio-v54-preview
 on:
   push:
-    branches: [feat/learning-studio-v5-3]
+    branches: [feat/learning-studio-v5-4]
   pull_request:
     paths: ['sites/**', 'src/**', '.github/workflows/studio-preview.yml']
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: studio-v53-${{ github.ref }}
+  group: studio-v54-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   build:
@@ -25,7 +25,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: sites/package-lock.json
-      - name: Original infrastructure and v5.3 regression tests
+      - name: Original infrastructure and v5.4 regression tests
         working-directory: sites
         run: node --test tools/tests/*.test.mjs studio/tests/*.test.mjs
       - name: Install locked build dependencies
@@ -40,7 +40,7 @@ jobs:
       - name: Upload actual site artifacts and reviewable source
         uses: actions/upload-artifact@v4
         with:
-          name: learning-studio-v5.3-${{ github.sha }}
+          name: learning-studio-v5.4-${{ github.sha }}
           path: |
             sites/sub2api/.vitepress/dist
             sites/newapi/.vitepress/dist
@@ -49,4 +49,4 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: No deployment
-        run: echo 'v5.3 preview built. No merge, production deployment or credentials are used.' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'v5.4 preview built. No merge, production deployment or credentials are used.' >> "$GITHUB_STEP_SUMMARY"

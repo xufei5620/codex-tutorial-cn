@@ -100,6 +100,7 @@ collections:
           - {name: site_url, label: 本站首页地址, widget: string}
           - {name: base_url, label: 通用服务根地址, widget: string}
           - {name: codex_base_url, label: Codex 基址（按实际渠道核对）, widget: string}
+          - {name: openclaw_base_url, label: OpenClaw 基址（OpenAI 兼容，按实际渠道核对）, widget: string}
           - {name: codex_endpoint_verified, label: 已完成当前站点 Codex 实测, widget: boolean, default: false}
           - {name: models_url, label: 本站模型与价格地址, widget: string}
           - {name: keys_url, label: 本站密钥页面地址, widget: string}
