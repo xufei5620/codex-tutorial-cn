@@ -15,7 +15,7 @@ pageClass: wide
 
 | 报错文案 | 状态码 | 原因 | 怎么办 |
 |---|---|---|---|
-| `Invalid API key` | 401 | 密钥错误：复制不完整、多了空格、用了别的站的密钥，或密钥已删除 | 到 [API 密钥](https://api.solov.cc/keys) 重新复制完整密钥 |
+| `Invalid API key` | 401 | 密钥错误：复制不完整、多了空格、用了其他平台的密钥，或密钥已删除 | 到 [API 密钥](https://api.solov.cc/keys) 重新复制完整密钥 |
 | `API key is required in Authorization header (Bearer scheme), x-api-key header, or x-goog-api-key header` | 401 | 请求里根本没带密钥 | 检查客户端的密钥字段是否为空、环境变量是否生效 |
 | `API key 额度已用完` | 429 | 这把密钥**自己设置的额度**用完了（不是账户余额） | 到 API 密钥页调高这把密钥的额度，或新建一把 |
 | `Insufficient account balance` / `insufficient balance` | 403 | 账户余额不足。余额卡分组走账户余额，订阅卡分组走订阅额度 | 确认密钥分组是否选对；[充值](https://api.solov.cc/purchase)或续订后重试 |

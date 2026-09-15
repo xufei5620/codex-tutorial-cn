@@ -1,6 +1,6 @@
-# 星芒 Learning Studio v5.4 — 提交与维护
+# 星芒 Learning Studio v5.5 — 提交与维护
 
-这是已确认 v5.4 预览的新学习空间实现，不是合并旧 PR #13 的视觉。通用内容位于 `content/`，两站业务资料仍从各站 site.json、errors.md、faq.md 读取；原始 `src/content/` 不改写。
+这是已确认 v5.5 学习空间实现。通用内容位于 `content/`，两站业务资料仍从各站 site.json、errors.md、faq.md 读取；原始 `src/content/` 不改写。
 
 ## 范围
 
@@ -8,6 +8,7 @@
 - 新深蓝侧栏、浅色阅读区、暖金学习卡片；原有营销首页 HTML 不在本 PR 中改版。
 - 本章有序步骤分别预留截图位；说明小节可隐藏补充图；不以模拟界面替代真实截图。
 - 本站账户页、各工具文章、FAQ、错误码保留独立路由；首页既有 /guide/start、/clients/codex 等路径继续有效。
+- 工具接入是独立页；下载安装包直接打开飞书文档；读者文案按单站书写，不提另一站。
 
 ## 本地编辑与正式保存的区别
 
@@ -29,7 +30,7 @@
 
 自动保存后的新图片无需重建即可在当前本机预览显示。重新启动仍使用同一端口；正式构建时会读取已保存清单。此功能不会 Git commit、push、上传 GitHub 或部署。静态线上页面没有本地写盘接口，仍使用浏览器草稿和手动导出。
 
-导出 JSON 使用 `xingmang-screenshots/1`，包含图片数据，兼容 v5.3 / v5.4 预览备份。找不到的旧ID保留并提示，不静默删除；跨站默认拒绝，只能显式接受允许共用的软件截图。IndexedDB 是本机缓存，导出备份可用于其他设备。
+导出 JSON 使用 `xingmang-screenshots/1`，包含图片数据，兼容 v5.3 / v5.4 / v5.5 预览备份。找不到的旧ID保留并提示，不静默删除；跨站默认拒绝，只能显式接受允许共用的软件截图。IndexedDB 仍使用 `xingmang-studio-v53`，避免清掉本机草稿。
 
 要把本地截图发布进站点：先构建，再执行（默认只检查）
 
@@ -37,7 +38,7 @@
 cd sites
 npm ci
 npm run build
-node studio/import-screenshots.mjs --site sub2api --file /path/to/screenshots-sub2api-v5.4.json
+node studio/import-screenshots.mjs --site sub2api --file /path/to/screenshots-sub2api-v5.5.json
 # 确认位置和站点正确以后，才加 --apply
 ```
 
@@ -46,6 +47,7 @@ node studio/import-screenshots.mjs --site sub2api --file /path/to/screenshots-su
 ## 编写正文与业务配置
 
 - 章节：`content/yichen/catalog.json` 与 `content/yichen/chapters/`。
+- 接入教程：`sites/shared/pages/clients/`。
 - 下载网址、版本、架构、客服链接：各站site.json。空网址不生成假下载按钮。
 - FAQ和错误码仍为各站独立Markdown。
 

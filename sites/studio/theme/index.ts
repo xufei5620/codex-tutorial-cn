@@ -8,6 +8,7 @@ import ScreenshotSlot from './ScreenshotSlot.vue'
 import LearningDiagram from './LearningDiagram.vue'
 import SupportPanel from './SupportPanel.vue'
 import DownloadCards from '../../shared/theme/DownloadCards.vue'
+import DownloadLink from './DownloadLink.vue'
 import './studio.css'
 import './clarity.css'
-export default {Layout:StudioLayout,enhanceApp({app}){for(const [name,component]of Object.entries({StudioChapter,StudioHub,SkillWorkshop,ScreenshotCatalog,ScreenshotSlot,LearningDiagram,SupportCard:SupportPanel,DownloadCards}))app.component(name,component)}} satisfies Theme
+export default {Layout:StudioLayout,enhanceApp({app}){for(const [name,component]of Object.entries({StudioChapter,StudioHub,SkillWorkshop,ScreenshotCatalog,ScreenshotSlot,LearningDiagram,SupportCard:SupportPanel,DownloadCards,DownloadLink}))app.component(name,component)}} satisfies Theme

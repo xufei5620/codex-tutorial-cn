@@ -5,16 +5,44 @@ import {addShots,integrate,attachCourseFigures} from '../prepare.mjs'
 import {safeRecord,parseSnapshot} from '../theme/shot-schema.mjs'
 const catalog=JSON.parse(fs.readFileSync(new URL('../content/yichen/catalog.json',import.meta.url)))
 const chapters=catalog.chapters.map(meta=>JSON.parse(fs.readFileSync(new URL('../content/yichen/chapters/'+meta.id+'.json',import.meta.url))))
-test('tool connection goes through manager instead of a tools hub',()=>{
+test('tools hub lists clients and keeps manager as the auto-config path',()=>{
   const hub=fs.readFileSync(new URL('../theme/StudioHub.vue',import.meta.url),'utf8')
   const layout=fs.readFileSync(new URL('../theme/StudioLayout.vue',import.meta.url),'utf8')
   const prepare=fs.readFileSync(new URL('../prepare.mjs',import.meta.url),'utf8')
-  assert.equal(hub.includes("kind==='tools'"),false)
-  assert.equal(hub.includes('href="/tools"'),false)
-  assert.equal(layout.includes("['◇','工具接入','/tools']"),false)
+  assert.ok(hub.includes("kind==='tools'"))
+  assert.ok(hub.includes('href="/tools"'))
+  assert.ok(layout.includes("['◇','工具接入','/tools']"))
   assert.ok(layout.includes('/guide/manager'))
-  assert.equal(prepare.includes('StudioHub kind="tools"'),false)
-  assert.ok(prepare.includes('/guide/manager'))
+  assert.ok(prepare.includes('StudioHub kind="tools"'))
+  assert.ok(hub.includes('toolBase'))
+  assert.ok(hub.includes("id==='openclaw'"))
+  assert.equal(hub.includes('两站'),false)
+  const manager=fs.readFileSync(new URL('../../shared/pages/guide/manager.md',import.meta.url),'utf8')
+  const download=fs.readFileSync(new URL('../../shared/pages/guide/download.md',import.meta.url),'utf8')
+  assert.ok(manager.indexOf('<DownloadLink')<manager.indexOf('一次装好'))
+  assert.equal(manager.includes('/guide/download'),false)
+  assert.ok(download.includes("location.replace('%%DOWNLOAD_URL%%')"))
+  assert.equal(download.includes('DownloadCards'),false)
+})
+test('reader copy does not mention a second site',()=>{
+  const banned=/两站|另一站|订阅站|按量站|另一套站点|同一套站点|哪一站|只填这一站/
+  const files=[
+    new URL('../theme/StudioHub.vue',import.meta.url),
+    new URL('../../shared/pages/guide/connection-basics.md',import.meta.url),
+    new URL('../../shared/pages/guide/manager.md',import.meta.url),
+    new URL('../../shared/pages/clients/codex.md',import.meta.url),
+    new URL('../../shared/pages/clients/openclaw.md',import.meta.url),
+    new URL('../../shared/pages/clients/claude-code.md',import.meta.url),
+    new URL('../../shared/pages/clients/gemini-cli.md',import.meta.url),
+    new URL('../../newapi/faq.md',import.meta.url),
+    new URL('../../sub2api/faq.md',import.meta.url),
+    new URL('../../sub2api/errors.md',import.meta.url)
+  ]
+  for(const file of files){
+    const text=fs.readFileSync(file,'utf8')
+    assert.equal(banned.test(text),false,file.pathname)
+    assert.equal(text.includes('这一页要填的基址'),false,file.pathname)
+  }
 })
 test('course figures become locally replaceable slots instead of hardcoded images',()=>{
   const manifest=[]

@@ -35,8 +35,6 @@ description: 认识 Base URL、完整端点、模型 ID 和认证作用域。
 | [Gemini CLI](/clients/gemini-cli) | `%%BASE_URL%%` |
 | [OpenClaw](/clients/openclaw) | `%%OPENCLAW_BASE_URL%%` |
 
-两站的 Base URL 不同。看哪一站的教程，就填哪一站的地址。
-
 ## 3. 分开保管不同凭据
 
 官网密码用于登录账户；本站%%KEY_WORD%%用于调用本站 API；官方平台密钥用于官方服务；插件或网关令牌用于它们自己的功能。不能交叉替代，也不要在公开截图中展示。

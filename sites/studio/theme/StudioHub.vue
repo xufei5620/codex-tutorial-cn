@@ -1,11 +1,23 @@
 <script setup>
-import {computed} from 'vue'
+import {computed,ref} from 'vue'
 import {useData} from 'vitepress'
 defineProps({kind:{type:String,default:'home'}})
 const {theme}=useData()
 const d=computed(()=>theme.value.studio)
 const catalog=computed(()=>d.value?.catalog||{howTo:[],parts:[],chapters:[]})
 const courseChapters=computed(()=>d.value?.chapters||[])
+const site=computed(()=>d.value?.site||{})
+const origin=computed(()=>site.value.base_url||site.value.site_url||'')
+const query=ref('')
+const filter=ref('all')
+const tools=[['codex','OpenAI / Codex','从第一次对话，到项目与文件协作。','platform'],['claude-code','Claude Code','先完成连接，再学习受控的终端任务。','platform'],['gemini-cli','Gemini CLI','Google 终端工具的接入与使用。','platform'],['grok-build','Grok Build','先核对可用功能和接入条件。','platform'],['hermes','Hermes','Agent 工作方式与工具连接。','agent'],['openclaw','OpenClaw','模型、消息渠道与助手任务。','agent'],['opencode','OpenCode','按当前产品配置模型提供方。','agent'],['deepseek-harness','DeepSeek Harness','本地 Web 与 Agent 工作流。','agent'],['cursor','Cursor','在代码编辑器中协作。','editor'],['vscode','VS Code','分别理解终端、扩展和工作区。','editor']]
+const shown=computed(()=>tools.filter(t=>(filter.value==='all'||filter.value===t[3])&&t.join(' ').toLowerCase().includes(query.value.toLowerCase())))
+function toolBase(id){
+  if(id==='codex')return site.value.codex_base_url||origin.value
+  if(id==='openclaw')return site.value.openclaw_base_url||(origin.value?origin.value.replace(/\/$/,'')+'/v1':'')
+  if(id==='claude-code'||id==='gemini-cli')return origin.value
+  return ''
+}
 </script>
 <template>
 <div v-if="kind==='home'" class="studio-home">
@@ -39,11 +51,11 @@ const courseChapters=computed(()=>d.value?.chapters||[])
         <p>看懂左边、中间、右边和设置，再照着做出一份能打开的文件。</p>
         <strong>打开 Codex 零基础 →</strong>
       </a>
-      <a href="/guide/manager" class="path-card">
+      <a href="/tools" class="path-card">
         <span class="number">02</span>
         <h3>把工具接起来</h3>
-        <p>用管理工具检测环境、写入本站配置；适配范围以当前版本为准。</p>
-        <strong>管理工具使用 →</strong>
+        <p>按产品找到连接方法，确认认证、模型与本站配置。</p>
+        <strong>打开工具接入 →</strong>
       </a>
       <a href="/errors" class="path-card">
         <span class="number">03</span>
@@ -87,5 +99,37 @@ const courseChapters=computed(()=>d.value?.chapters||[])
       <em>开始阅读 →</em>
     </a>
   </div>
+</div>
+
+<div v-else-if="kind==='tools'" class="tools-hub">
+  <header class="page-hero">
+    <p class="eyebrow">工具接入</p>
+    <h1>找到你的工具，<br>只看对应的那一篇。</h1>
+    <p class="lead">同一家产品不硬拆一排 IDE 名称。接入条件按当前产品、版本和本站配置确认。</p>
+  </header>
+  <aside v-if="origin" class="base-map">
+    <p class="eyebrow">要填的基址</p>
+    <ul>
+      <li><a href="/clients/codex">OpenAI / Codex</a><code>{{toolBase('codex')}}</code></li>
+      <li><a href="/clients/claude-code">Claude Code</a><code>{{toolBase('claude-code')}}</code></li>
+      <li><a href="/clients/gemini-cli">Gemini CLI</a><code>{{toolBase('gemini-cli')}}</code></li>
+      <li><a href="/clients/openclaw">OpenClaw</a><code>{{toolBase('openclaw')}}</code></li>
+    </ul>
+  </aside>
+  <a class="hub-callout" href="/guide/manager"><strong>不想逐项手动配置？</strong><span>了解星芒 AI 管理工具 →</span></a>
+  <div class="filter-bar">
+    <input v-model="query" placeholder="搜索工具名称" aria-label="搜索工具">
+    <button v-for="[id,label] in [['all','全部'],['platform','主要平台'],['agent','Agent 工具'],['editor','编辑器']]" :key="id" :class="{active:filter===id}" @click="filter=id">{{label}}</button>
+  </div>
+  <div class="tool-grid">
+    <a v-for="t in shown" :key="t[0]" :href="'/clients/'+t[0]" class="tool-card">
+      <span class="tool-monogram" aria-hidden="true">{{t[1].slice(0,2)}}</span>
+      <h2>{{t[1]}}</h2>
+      <p>{{t[2]}}</p>
+      <code v-if="toolBase(t[0])" class="tool-url">{{toolBase(t[0])}}</code>
+      <strong>打开对应教程 →</strong>
+    </a>
+  </div>
+  <p v-if="!shown.length" class="edu-note">没有匹配工具，请尝试其他关键词。</p>
 </div>
 </template>

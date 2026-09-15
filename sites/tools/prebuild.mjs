@@ -57,7 +57,11 @@ export function build(id,root=ROOT){
  }
  const course=stageCourse(path.dirname(root))
  const origin=new URL(site.base_url).origin
- const vars={SITE_NAME:site.name,SITE_URL:site.site_url,BASE_URL:site.base_url,CODEX_BASE_URL:site.codex_base_url||site.base_url,OPENCLAW_BASE_URL:site.openclaw_base_url||origin+'/v1',KEYS_URL:site.keys_url,MODELS_URL:site.models_url,CONSOLE_URL:site.console_url,DOCS_URL:'https://'+site.domain,KEY_WORD:site.key_word||'API 密钥',HOURS:site.contact?.hours||''}
+ let downloadUrl=''
+ for(const item of Object.values(site.downloads||{})){
+  if(item.enabled!==false&&item.url){downloadUrl=item.url;break}
+ }
+ const vars={SITE_NAME:site.name,SITE_URL:site.site_url,BASE_URL:site.base_url,CODEX_BASE_URL:site.codex_base_url||site.base_url,OPENCLAW_BASE_URL:site.openclaw_base_url||origin+'/v1',KEYS_URL:site.keys_url,MODELS_URL:site.models_url,CONSOLE_URL:site.console_url,DOCS_URL:'https://'+site.domain,KEY_WORD:site.key_word||'API 密钥',HOURS:site.contact?.hours||'',DOWNLOAD_URL:downloadUrl||'/contact'}
  https(vars.CODEX_BASE_URL,'Codex base URL')
  https(vars.OPENCLAW_BASE_URL,'OpenClaw base URL')
  const outputs=[]
@@ -99,6 +103,6 @@ export function build(id,root=ROOT){
  console.log(JSON.stringify({site:id,generated:outputPaths.length,courseChapters:course.sources.filter(x=>x.id.startsWith('ch')).length,sourceVersion:course.version}))
  return outputPaths
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+if(process.argv[1]&&fs.realpathSync(path.resolve(process.argv[1]))===fs.realpathSync(fileURLToPath(import.meta.url))){
  try{build(process.argv[2])}catch(error){console.error(error.message);process.exitCode=1}
 }

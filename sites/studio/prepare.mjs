@@ -1,4 +1,4 @@
-// v5.4 implementation of the approved learning preview. No publishing or network writes.
+// v5.5 implementation of the approved learning preview. No publishing or network writes.
 import fs from 'node:fs'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
@@ -50,7 +50,7 @@ export function addDocumentShots(text,{rel,route,title},manifest){
    step++
    if(codeLine)continue
    const label=plain(line.replace(/^\d+[.)]\s+/,''))
-   manifest.push({id:'doc-'+rel.replace(/\.md$/,'').replaceAll('/','-')+'-s'+String(section||1).padStart(2,'0')+'-step'+String(step).padStart(2,'0'),route,group:title,section:label,title:label.slice(0,90),target:label,highlight:'本站操作截图不能带入另一站。',optional:false,capturePolicy:'required',siteOnly:true})
+   manifest.push({id:'doc-'+rel.replace(/\.md$/,'').replaceAll('/','-')+'-s'+String(section||1).padStart(2,'0')+'-step'+String(step).padStart(2,'0'),route,group:title,section:label,title:label.slice(0,90),target:label,highlight:'只拍本页真实操作。',optional:false,capturePolicy:'required',siteOnly:true})
   }
  }
 }
@@ -132,7 +132,7 @@ export function prepare(id){build(id);const dir=path.join(ROOT,id),site=json(pat
  // Preserve the existing site-specific account text separately from the new dashboard.
  write('guide/account.md',markGenerated(fs.readFileSync(path.join(dir,'guide/start.md'),'utf8')));
  write('skills.md',markGenerated('---\ntitle: Skill 动手工坊\noutline: false\n---\n<SkillWorkshop />\n'));
- write('tools.md',markGenerated('---\ntitle: 管理工具\noutline: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0;url=/guide/manager\n---\n<script setup>\nimport { onMounted } from \'vue\'\nonMounted(()=>{location.replace(\'/guide/manager\')})\n</script>\n\n本页已并入 [管理工具](/guide/manager)。\n'));
+ write('tools.md',markGenerated('---\ntitle: 工具接入\noutline: false\n---\n<StudioHub kind="tools" />\n'));
  write('screenshots.md',markGenerated('---\ntitle: 截图管理\noutline: false\nsearch: false\n---\n<ScreenshotCatalog />\n'));
  const industryDir=path.join(dir,'industry')
  if(fs.existsSync(industryDir)){
@@ -144,9 +144,9 @@ export function prepare(id){build(id);const dir=path.join(ROOT,id),site=json(pat
  // Supplement all legacy operation pages, without changing their Markdown or business answers.
  const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.name.startsWith('.')||['public','overrides'].includes(e.name)?[]:e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)]);
  const docs=[];for(const f of walk(dir).filter(f=>f.endsWith('.md'))){const rel=path.relative(dir,f).replaceAll('\\','/'),route='/'+rel.replace(/index\.md$/,'').replace(/\.md$/,'');if(rel.startsWith('learn/codex/')||rel.startsWith('industry/')||['skills.md','screenshots.md','tools.md'].includes(rel))continue;const text=fs.readFileSync(f,'utf8'),title=text.match(/^#\s+(.+)$/m)?.[1]||rel;docs.push({route,title,text:plain(text).slice(0,22000)});if(['errors.md','faq.md','contact.md'].includes(rel))continue;addDocumentShots(text,{rel,route,title},manifest)}
- const images=path.join(HERE,'screenshots',id+'.json');const shots=fs.existsSync(images)?json(images):{schema:'xingmang-screenshots/1',version:'5.4',siteId:id,records:{}};if(shots.siteId!==id)throw Error('Screenshot site mismatch');
- const data={version:'5.4',site:{...publicSite,console_url:site.console_url,keys_url:site.keys_url,models_url:site.models_url},catalog,chapters,industries:[],sources,manifest,docs,shots,scope:{adaptedUnits:units.length,totalChapters:chapters.length,totalSections:chapters.reduce((n,c)=>n+c.sections.length,0),totalFigures:chapters.reduce((n,c)=>n+(c.imageCount||0),0),note:'课程目录与配图按逸尘图文教程组织；购买、套餐、中转和线下引流正文未收录。'}};
+ const images=path.join(HERE,'screenshots',id+'.json');const shots=fs.existsSync(images)?json(images):{schema:'xingmang-screenshots/1',version:'5.5',siteId:id,records:{}};if(shots.siteId!==id)throw Error('Screenshot site mismatch');
+ const data={version:'5.5',site:{...publicSite,console_url:site.console_url,keys_url:site.keys_url,models_url:site.models_url},catalog,chapters,industries:[],sources,manifest,docs,shots,scope:{adaptedUnits:units.length,totalChapters:chapters.length,totalSections:chapters.reduce((n,c)=>n+c.sections.length,0),totalFigures:chapters.reduce((n,c)=>n+(c.imageCount||0),0),note:'课程目录与配图按逸尘图文教程组织；购买、套餐、中转和线下引流正文未收录。'}};
  if(new Set(manifest.map(s=>s.id)).size!==manifest.length)throw Error('Duplicate screenshot ID');
  write('studio.generated.json',JSON.stringify(data));write('public/studio/screenshot-map.json',JSON.stringify(manifest));console.log('STUDIO '+id+': '+chapters.length+' chapters / '+data.scope.totalSections+' sections / '+data.scope.totalFigures+' figures / '+manifest.length+' screenshot slots');return data
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))prepare(process.argv[2])
+if(process.argv[1]&&fs.realpathSync(path.resolve(process.argv[1]))===fs.realpathSync(fileURLToPath(import.meta.url)))prepare(process.argv[2])
