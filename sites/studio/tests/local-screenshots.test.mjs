@@ -11,7 +11,7 @@ import {createLocalScreenshotStore,createLocalScreenshotMiddleware} from '../loc
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jSocAAAAASUVORK5CYII=','base64')
 const image={data:'data:image/png;base64,'+png.toString('base64'),name:'操作截图.png',width:1,height:1}
 const imagePath='/screenshots/'+crypto.createHash('sha256').update(png).digest('hex')+'.png'
-const snapshot=(records={},extra={})=>({schema:'xingmang-screenshots/1',version:'5.4',siteId:'newapi',hideMissing:false,records,...extra})
+const snapshot=(records={},extra={})=>({schema:'xingmang-screenshots/1',version:'5.5',siteId:'newapi',hideMissing:false,records,...extra})
 
 async function fixture(t,initial=snapshot()){
  const root=await fs.mkdtemp(path.join(os.tmpdir(),'studio-local-shots-'))

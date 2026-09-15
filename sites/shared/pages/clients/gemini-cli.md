@@ -6,12 +6,6 @@ description: 使用 Gemini API Key 模式和对应基址，不把不同协议混
 
 本篇对应终端中的 Gemini CLI。Gemini 网页、Google 官方账号登录与本站 API Key 并不是同一条认证路径。
 
-::: tip 本站这一页要填的基址
-`%%BASE_URL%%`
-
-不要加 `/v1`。Gemini CLI 会自己拼 Gemini 原生路径。也不要把 Codex 或 OpenClaw 的地址抄过来。
-:::
-
 ## 1. 安装并确认
 
 按 [官方快速开始](https://geminicli.com/docs/get-started/)检查所需 Node.js 版本；使用 npm 安装时：

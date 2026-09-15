@@ -25,7 +25,7 @@ export async function startLocalScreenshotPreview(siteId='newapi',requestedPort)
  return server
 }
 
-if(process.argv[1]&&path.resolve(process.argv[1])===filename){
+if(process.argv[1]&&(await fs.realpath(path.resolve(process.argv[1])))===(await fs.realpath(filename))){
  try{
   if(process.argv.length>4)throw Error('用法：node studio/local-preview.mjs [newapi|sub2api] [端口]')
   const server=await startLocalScreenshotPreview(process.argv[2],process.argv[3])

@@ -17,12 +17,6 @@ openclaw-cn onboard --install-daemon
 
 首次向导选本机练习目录，保留默认访问保护。界面加载慢或打不开时，再执行 `openclaw-cn gateway` 后刷新本地页面。
 
-::: tip 本站这一页要填的基址
-`%%OPENCLAW_BASE_URL%%`
-
-这是 OpenAI 兼容地址。不要抄 Codex、Claude Code 或 Gemini CLI 的基址，两站也不要互相抄。
-:::
-
 ## 2. 选择本站兼容的提供方
 
 准备 [本站密钥](%%KEYS_URL%%)和允许的 [模型 ID](%%MODELS_URL%%)。向导若要求 OpenAI 兼容 Base URL，填：

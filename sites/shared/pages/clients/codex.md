@@ -8,12 +8,6 @@ description: 区分官方账号与本站 API 接入，用最小配置验证 Code
 
 [想先了解怎么使用？阅读 Codex 零基础](/learn/codex/)；不想手动配置可先看 [管理工具说明](/guide/manager)。
 
-::: tip 本站这一页要填的基址
-`%%CODEX_BASE_URL%%`
-
-两站地址不同，不要从另一站教程或旧截图照抄。Claude Code、Gemini CLI 的基址也不要套到 Codex 上。
-:::
-
 ## 1. 安装与准备
 
 使用 [官方 CLI 安装说明](https://developers.openai.com/codex/cli/)。采用 npm 方式时，先完成 [Node.js 准备](/clients/nodejs)：
@@ -33,21 +27,36 @@ codex --version
 
 ```json
 {
-  "OPENAI_API_KEY": "REPLACE_WITH_YOUR_SITE_KEY"
+  "OPENAI_API_KEY": "换成你从网站获取的%%KEY_WORD%%"
 }
 ```
 
-`config.toml` 里提供方和基址按本站填写。模型名从 [本站列表](%%MODELS_URL%%)复制，不要照抄旧截图：
+`config.toml` 可先按下面这份示例改。模型名以 [本站列表](%%MODELS_URL%%)为准，分组里没有的不要硬填：
 
 ```toml
-model_provider = "mycodex"
-model = "REPLACE_WITH_MODEL_ID"
+model_provider = "XingmangAI"
+model = "gpt-6-astra"
+review_model = "gpt-6-astra"
 
-[model_providers.mycodex]
-name = "mycodex"
+model_reasoning_effort = "xhigh"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+disable_response_storage = true
+network_access = "enabled"
+windows_wsl_setup_acknowledged = true
+
+model_context_window = 1000000
+model_auto_compact_token_limit = 900000
+
+[model_providers.XingmangAI]
+name = "XingmangAI"
 base_url = "%%CODEX_BASE_URL%%"
 wire_api = "responses"
 requires_openai_auth = true
+
+[features]
+goals = true
 ```
 
 ::: warning 先确认基址

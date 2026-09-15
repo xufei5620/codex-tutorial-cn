@@ -14,10 +14,10 @@ export function installShots(raw) {
   saveError:'',saveDirectory:'',localAvailable:false})
  let timer,dbPromise,applying=false,ready=Promise.resolve()
  const say=m=>{state.message=m;clearTimeout(timer);timer=setTimeout(()=>state.message='',6500)}
- const snapshot=()=>({schema:SCHEMA,version:'5.4',siteId:data.site.id,updatedAt:Date.now(),hideMissing:state.hideMissing,records:JSON.parse(JSON.stringify(state.records))})
+ const snapshot=()=>({schema:SCHEMA,version:'5.5',siteId:data.site.id,updatedAt:Date.now(),hideMissing:state.hideMissing,records:JSON.parse(JSON.stringify(state.records))})
  const normalize=s=>{
   const r=parseSnapshot(s,data.site.id,specs)
-  return {schema:SCHEMA,version:'5.4',siteId:data.site.id,updatedAt:s.updatedAt||null,hideMissing:r.hideMissing,records:r.records}
+  return {schema:SCHEMA,version:'5.5',siteId:data.site.id,updatedAt:s.updatedAt||null,hideMissing:r.hideMissing,records:r.records}
  }
  function applySnapshot(s) {
   const r=parseSnapshot(s,data.site.id,specs)
@@ -90,7 +90,7 @@ export function installShots(raw) {
      const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('读取截图失败。'));reader.readAsDataURL(blob)
     })
    }
-   download('screenshots-'+data.site.id+(current?'-chapter':'')+'-v5.4.json',JSON.stringify(s,null,2))
+   download('screenshots-'+data.site.id+(current?'-chapter':'')+'-v5.5.json',JSON.stringify(s,null,2))
    say('已导出包含图片的本机备份；不会提交或发布网站。')
   } catch(e){say(e.message)}
  }
