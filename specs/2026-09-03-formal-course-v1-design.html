@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>Codex 中文正式课程 V1 设计</title></head>
+<body>
+<main><article>
+<h1>Codex 中文正式课程 V1 设计</h1>
+<p><strong>状态：</strong>用户已确认继续；实施按 GitHub 分支和 Pull Request 进行。</p>
+<p><strong>设计日期：</strong>2026-09-03。</p>
+
+<section>
+<h2>1. 成果定义</h2>
+<p>把现有 11 章正文和提示词库从“完整草稿”推进为可长期维护、可公开学习、证据状态诚实的正式课程。课程继续面向第一次接触 AI 与 Codex、没有编程或命令行基础的中文读者。</p>
+<p>正式课程分成两个明确阶段：</p>
+<ol>
+  <li><strong>1.0 Beta：</strong>全部必需正文、示例、来源、权利、安全、离线阅读和无障碍审校完成；尚未实测的产品操作仍明确标注 unverified。</li>
+  <li><strong>1.0 Stable：</strong>Beta 的关键操作路径在 Windows 和 macOS 真实环境完成验证，失败或过期项已经修订、隔离或移除。</li>
+</ol>
+</section>
+
+<section>
+<h2>2. 内容范围</h2>
+<p>V1 保留 11 章主结构：导读、AI 与 Codex、安装与界面、基础对话、日常协作、插件、Skill、常见任务、完整案例、排错、安全与参考维护。行业提示词库继续作为独立入口，不作为第 12 章。</p>
+<p>Claude 已写出的 11 章和 6 张通用提示词卡全部保留为 draft seed。它们是正式课程的输入，不自动获得“已完成”或“已验证”状态。</p>
+<p>软件开发、CLI、IDE、API、SDK、Git 教学与 Linux 操作不进入 V1 主课程。Skill/插件开发只保留概念入口，不作为零基础必修路径。</p>
+</section>
+
+<section>
+<h2>3. 内容单元与状态</h2>
+<p>章节只是导航容器；可审校和可发布的最小单位是课程模块或提示词卡。每个单元必须拥有稳定 ID、标题、章节、平台、风险、来源、权利、验证状态和最近复核日期。</p>
+<p>内容生产状态统一为：</p>
+<pre>outline → draft → source-and-rights-review → editorial-reviewed → verification → acceptance-ready → stable → retired</pre>
+<p>产品验证状态只使用：</p>
+<pre>verified / verified-with-limitations / verification-failed / unverified / unsupported / verification-expired</pre>
+<p>内容生产状态与产品验证状态不得互相替代。Beta 可以包含清楚标注的 unverified 操作模块；Stable 的必经路径不可以。</p>
+</section>
+
+<section>
+<h2>4. 课程质量合同</h2>
+<p>每个操作模块至少包含：目标、适用条件、准备材料、步骤、预期结果、风险与停止条件、检查方法、一次受控修正、平台差异、来源和验证状态。</p>
+<p>每个事实性产品断言必须链接到具体官方来源并记录查阅日期。易变界面、套餐、权限、安装和扩展行为还必须记录适用平台与版本；没有证据时使用条件措辞，不猜按钮名称。</p>
+<p>所有案例只使用虚构数据或明确可再分发材料。读者不需要访问 GitHub 才能完成课程。外部发送、授权、支付、发布、删除、真实账号和个人数据操作必须设置停止点。</p>
+</section>
+
+<section>
+<h2>5. 技术与发行架构</h2>
+<ol>
+  <li><code>src/</code> 是课程源码与维护数据入口。</li>
+  <li>在线预览是源码生成物；它不是第二份可手改正文。</li>
+  <li>离线 ZIP 在独立暂存树中生成，拥有与实际文件集合一致的 manifest 和 SHA256SUMS。</li>
+  <li>读者端无 JavaScript、无远程运行资源、无账号、无追踪；主动点击官方来源链接可以联网。</li>
+  <li>GitHub 是开发协作和版本权威；所有改动走分支、检查和 PR。</li>
+  <li>GitHub Pages 与服务器部署保持可选，不是课程正式化的必要条件。</li>
+  <li>Notion 只作为私有维护台账和未来只读投影，不是内容权威。</li>
+</ol>
+</section>
+
+<section>
+<h2>6. GitHub 开发阶段</h2>
+<ol>
+  <li><strong>阶段 A：工程基线。</strong>修复跨平台构建、离线包、严格检查、状态表述和 CI。</li>
+  <li><strong>阶段 B：模块目录。</strong>把现有章内小节登记为稳定模块，统一生命周期、来源和验证字段。</li>
+  <li><strong>阶段 C：基础篇审校。</strong>完成第 1–5 章的来源、语言、示例和安全审校。</li>
+  <li><strong>阶段 D：扩展篇审校。</strong>完成插件与 Skill，删除未经证实的固定界面行为。</li>
+  <li><strong>阶段 E：场景、案例与提示词库。</strong>完善第 8–9 章、26 张行业卡和合法效果资源。</li>
+  <li><strong>阶段 F：排错、参考与 Beta。</strong>完成第 10–11 章、全站无障碍、离线包和 1.0 Beta。</li>
+  <li><strong>阶段 G：真实设备验证。</strong>用户参与 Windows/macOS 高风险步骤，形成 1.0 Stable。</li>
+</ol>
+<p>每个阶段使用独立 PR。PR #2 只承担阶段 A，避免把工程重构和大规模正文修订混在一起。</p>
+</section>
+
+<section>
+<h2>7. Beta 验收门槛</h2>
+<ul>
+  <li>11 章均无占位、无内部矛盾、无未解释必需术语。</li>
+  <li>每个公开单元具有来源、权利、风险、状态和平台记录。</li>
+  <li>所有演示输入和结果均为虚构/自有/已清权；提示词卡有真实可打开结果。</li>
+  <li>公开 HTML、离线 ZIP、manifest、checksum、链接、搜索、键盘路径、缩放和打印检查通过。</li>
+  <li>所有未实测操作在正文与维护记录中同时标记 unverified，不以 Beta 名义伪装验证。</li>
+  <li>公开仓库和发行物不含秘密、个人信息、本机绝对路径或内部会话记录。</li>
+</ul>
+</section>
+
+<section>
+<h2>8. Stable 验收门槛</h2>
+<ul>
+  <li>Windows 与 macOS 必经路径分别拥有环境、版本、日期、观察结果和证据。</li>
+  <li>安装、登录、权限、文件修改、插件、Skill、完整案例和排错路径不存在失败、过期或未验证的必需项。</li>
+  <li>只有不影响关键学习结果和安全边界的限制，才允许标记 verified-with-limitations。</li>
+  <li>用户批准最终候选后再创建稳定标签和不可变发行包。</li>
+</ul>
+</section>
+
+<section>
+<h2>9. 用户参与边界</h2>
+<p>编辑审校、构建、链接、许可、虚构案例和自动化检查由维护代理完成。登录、身份、验证码、第三方授权、付费、真实发送、真实发布以及需要读取实际界面的高风险步骤由用户操作或明确授权；代理不得推断结果。</p>
+</section>
+
+<section>
+<h2>10. 当前分支处理</h2>
+<p><code>main@aea1078</code> 是当前正式开发基线。<code>v0.2.2@baa6c24</code> 中的 LF 修复、验证表和虚构素材可逐项借鉴，但不直接合并，因为交接文件含本机路径，且它没有修复离线包闭环。历史清理、分支删除和许可证选择需要用户单独决定。</p>
+</section>
+</article></main>
+</body>
+</html>
