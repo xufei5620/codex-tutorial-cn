@@ -5,7 +5,7 @@ import {createAutosave, reconcileDraft} from '../theme/shot-autosave.mjs'
 const copy=value=>JSON.parse(JSON.stringify(value))
 const image={data:'data:image/png;base64,AAAA',name:'第一步.png',width:1,height:1}
 const record=caption=>({images:[image],caption})
-const snapshot=(records={},extra={})=>({schema:'xingmang-screenshots/1',version:'5.5',siteId:'newapi',records,hideMissing:false,...extra})
+const snapshot=(records={},extra={})=>({schema:'xingmang-screenshots/1',version:'5.6',siteId:'newapi',records,hideMissing:false,...extra})
 const remote=(value=snapshot(),revision='revision-0')=>({snapshot:copy(value),revision,savedAt:value.updatedAt||null,directory:'E:/教程/sites/studio/screenshots'})
 const deferred=()=>{let resolve,reject;const promise=new Promise((ok,no)=>{resolve=ok;reject=no});return {promise,resolve,reject}}
 

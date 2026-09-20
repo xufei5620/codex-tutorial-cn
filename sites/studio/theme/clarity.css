@@ -98,8 +98,24 @@
 .page-doc .vp-doc,.page-help .vp-doc{max-width:860px}
 .page-doc .vp-doc>h1,.page-help .vp-doc>h1{margin:0 0 14px;font-size:clamp(32px,4vw,42px);line-height:1.2;letter-spacing:-.03em}
 .page-doc .vp-doc>h2,.page-help .vp-doc>h2{margin:32px 0 12px;padding-top:22px;border-top:1px solid #e8eef4;font-size:20px}
-.page-doc .vp-doc a{color:inherit;font-weight:inherit;text-decoration:underline;text-decoration-color:#c5ced8;text-underline-offset:3px}
-.page-doc .vp-doc a:hover{color:#4a5d70;text-decoration-color:#8a9aab}
+.studio-shell{--link-color:#35658a;--link-hover:#244b6b;--link-underline:#a6bac9}
+/* Text links remain recognizable in prose, lists, tables and shared page chrome. */
+.studio-shell :is(.vp-doc :is(p,li,td,th,dd,figcaption),.lesson-prose,.yichen-article,.top-actions,.hub-stat,.section-heading,.studio-footer) a[href]:not(:where(.header-anchor,.gold-button,.dark-button,.outline-button,.soft-button,.dl-button,.xm-support-button,.yichen-toc a)),
+.studio-shell a.crumb[href]{
+  color:var(--link-color);
+  font-weight:500;
+  text-decoration-line:underline;
+  text-decoration-color:var(--link-underline);
+  text-decoration-thickness:1px;
+  text-underline-offset:.2em;
+  text-decoration-skip-ink:auto;
+}
+.studio-shell :is(.vp-doc :is(p,li,td,th,dd,figcaption),.lesson-prose,.yichen-article,.top-actions,.hub-stat,.section-heading,.studio-footer) a[href]:not(:where(.header-anchor,.gold-button,.dark-button,.outline-button,.soft-button,.dl-button,.xm-support-button,.yichen-toc a)):is(:hover,:focus-visible),
+.studio-shell a.crumb[href]:is(:hover,:focus-visible){
+  color:var(--link-hover);
+  text-decoration-color:currentColor;
+}
+.studio-shell :is(.studio-rail nav,.reading-toc,.section-index,.chapter-pager) a[href]{font-weight:600}
 .page-doc .vp-doc a.gold-button{color:#243047;font-weight:600;text-decoration:none;min-height:44px}
 .page-doc .vp-doc a.gold-button:hover{color:#243047;text-decoration:none}
 .manager-download{margin:4px 0 20px}

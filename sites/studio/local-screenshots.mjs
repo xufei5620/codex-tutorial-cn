@@ -43,13 +43,13 @@ export function createLocalScreenshotStore(siteDirectory){
   catch(error){
    if(error.code!=='ENOENT')throw error
    exists=false
-   bytes=Buffer.from(JSON.stringify({schema:SCHEMA,version:'5.5',siteId,hideMissing:false,records:{}}))
+   bytes=Buffer.from(JSON.stringify({schema:SCHEMA,version:'5.6',siteId,hideMissing:false,records:{}}))
   }
   let data,parsed
   try{data=JSON.parse(bytes.toString('utf8'));parsed=parseSnapshot(data,siteId,new Map())}
   catch(error){throw failure(500,'本地截图清单无法读取，原文件已保留：'+error.message)}
   const savedAt=Number.isFinite(data.updatedAt)&&data.updatedAt>0?data.updatedAt:null
-  const snapshot={schema:SCHEMA,version:'5.5',siteId,hideMissing:parsed.hideMissing,records:parsed.records,updatedAt:savedAt}
+  const snapshot={schema:SCHEMA,version:'5.6',siteId,hideMissing:parsed.hideMissing,records:parsed.records,updatedAt:savedAt}
   return {bytes,exists,response:{snapshot,revision:hash(bytes),savedAt,directory}}
  }
 
@@ -103,7 +103,7 @@ export function createLocalScreenshotStore(siteDirectory){
   const previous=current.response.snapshot
   if(incoming.hideMissing===previous.hideMissing&&JSON.stringify(records)===JSON.stringify(previous.records))return current.response
   const savedAt=Date.now()
-  const output={schema:SCHEMA,version:'5.5',siteId,hideMissing:incoming.hideMissing,records,updatedAt:savedAt}
+  const output={schema:SCHEMA,version:'5.6',siteId,hideMissing:incoming.hideMissing,records,updatedAt:savedAt}
   const bytes=Buffer.from(JSON.stringify(output,null,2)+'\n')
   // Validate every record and image before creating files; keep old images for recovery.
   await fs.mkdir(directory,{recursive:true})
