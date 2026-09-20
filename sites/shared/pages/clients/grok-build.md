@@ -6,6 +6,11 @@ description: 识别官方终端工具，按当前配置协议设置模型并验�
 
 本页针对 xAI 官方 Grok Build，不把所有名为 Grok CLI 的社区项目混为同一个工具。已有不同来源的 CLI 时，先核对项目和版本。
 
+::: tip 使用管理工具
+不想手动配置可先看 [管理工具说明](/guide/manager)。
+:::
+
+
 ## 1. 获取官方版本
 
 从 [官方开始页面](https://docs.x.ai/build/overview)选择对应系统的安装方式。安装后使用该版本帮助页中的版本查看方法确认，不运行来源不明的同名安装脚本。
@@ -26,7 +31,7 @@ default = "xingmang"
 
 [model.xingmang]
 name = "星芒 AI"
-model = "REPLACE_WITH_MODEL_ID"
+model = "grok-4.6"
 base_url = "%%BASE_URL%%/v1"
 env_key = "XINGMANG_API_KEY"
 api_backend = "responses"
@@ -34,13 +39,35 @@ api_backend = "responses"
 
 已经存在 `[models]` 时合并，不重复建表。模型从 [本站列表](%%MODELS_URL%%)选择；如果渠道要求其他协议，先核对工具支持的 `api_backend` 与服务要求，不盲目修改。
 
-在可信环境中设置 `XINGMANG_API_KEY` 并重新启动。不要将真实密钥放进项目仓库。
+`env_key` 填的是环境变量名，不是密钥本身。在启动 Grok 的同一个终端里设置密钥：
+
+Windows PowerShell：
+
+```powershell
+$env:XINGMANG_API_KEY = "换成你创建的%%KEY_WORD%%"
+```
+
+macOS / Linux：
+
+```bash
+export XINGMANG_API_KEY="换成你创建的%%KEY_WORD%%"
+```
+
+以上设置仅对当前终端及其启动的程序生效；重新打开终端后需再次设置。
+
+
 
 ## 4. 验证并开始使用
 
-使用 [首次调用验证](/guide/verify)确认文本和控制台记录，再测试文件理解等实际功能。未明确支持的搜索、工具调用和上下文参数不要照抄官方服务示例。
 
-遇到服务或客户端限制时按说明使用允许的方式，不靠伪造客户端信息解决。
+```PowerShell
+grok
+```
+cli终端
+![image\.png](../../img/clients/grok-cli-1.png)
+![image\.png](../../img/clients/grok-cli-2.png)
+
+
 
 [排错顺序](/guide/troubleshooting) · [本站客服](/contact)
 

@@ -107,15 +107,6 @@ function toolBase(id){
     <h1>找到你的工具，<br>只看对应的那一篇。</h1>
     <p class="lead">同一家产品不硬拆一排 IDE 名称。接入条件按当前产品、版本和本站配置确认。</p>
   </header>
-  <aside v-if="origin" class="base-map">
-    <p class="eyebrow">要填的基址</p>
-    <ul>
-      <li><a href="/clients/codex">OpenAI / Codex</a><code>{{toolBase('codex')}}</code></li>
-      <li><a href="/clients/claude-code">Claude Code</a><code>{{toolBase('claude-code')}}</code></li>
-      <li><a href="/clients/gemini-cli">Gemini CLI</a><code>{{toolBase('gemini-cli')}}</code></li>
-      <li><a href="/clients/openclaw">OpenClaw</a><code>{{toolBase('openclaw')}}</code></li>
-    </ul>
-  </aside>
   <a class="hub-callout" href="/guide/manager"><strong>不想逐项手动配置？</strong><span>了解星芒 AI 管理工具 →</span></a>
   <div class="filter-bar">
     <input v-model="query" placeholder="搜索工具名称" aria-label="搜索工具">

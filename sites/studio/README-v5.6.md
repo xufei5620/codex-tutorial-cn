@@ -1,6 +1,6 @@
-# 星芒 Learning Studio v5.5 — 提交与维护
+# 星芒 Learning Studio v5.6 — 提交与维护
 
-这是已确认 v5.5 学习空间实现。通用内容位于 `content/`，两站业务资料仍从各站 site.json、errors.md、faq.md 读取；原始 `src/content/` 不改写。
+这是 v5.6 学习空间实现。通用内容位于 `content/`，两站业务资料仍从各站 site.json、errors.md、faq.md 读取；原始 `src/content/` 不改写。
 
 ## 范围
 
@@ -30,7 +30,7 @@
 
 自动保存后的新图片无需重建即可在当前本机预览显示。重新启动仍使用同一端口；正式构建时会读取已保存清单。此功能不会 Git commit、push、上传 GitHub 或部署。静态线上页面没有本地写盘接口，仍使用浏览器草稿和手动导出。
 
-导出 JSON 使用 `xingmang-screenshots/1`，包含图片数据，兼容 v5.3 / v5.4 / v5.5 预览备份。找不到的旧ID保留并提示，不静默删除；跨站默认拒绝，只能显式接受允许共用的软件截图。IndexedDB 仍使用 `xingmang-studio-v53`，避免清掉本机草稿。
+v5.6 导出 JSON 使用 `xingmang-screenshots/1`，包含图片数据，继续兼容 v5.3 / v5.4 / v5.5 预览备份。找不到的旧ID保留并提示，不静默删除；跨站默认拒绝，只能显式接受允许共用的软件截图。IndexedDB 仍使用 `xingmang-studio-v53`，避免清掉本机草稿。
 
 要把本地截图发布进站点：先构建，再执行（默认只检查）
 
@@ -38,7 +38,7 @@
 cd sites
 npm ci
 npm run build
-node studio/import-screenshots.mjs --site sub2api --file /path/to/screenshots-sub2api-v5.5.json
+node studio/import-screenshots.mjs --site sub2api --file /path/to/screenshots-sub2api-v5.6.json
 # 确认位置和站点正确以后，才加 --apply
 ```
 
@@ -50,6 +50,18 @@ node studio/import-screenshots.mjs --site sub2api --file /path/to/screenshots-su
 - 接入教程：`sites/shared/pages/clients/`。
 - 下载网址、版本、架构、客服链接：各站site.json。空网址不生成假下载按钮。
 - FAQ和错误码仍为各站独立Markdown。
+
+### 本地编辑教程配图
+
+在 VS Code 里预览工具接入教程时，图片使用相对于正文文件的路径。例如图片放在 `sites/shared/img/clients/nodejs-download-win.png`，在 `sites/shared/pages/clients/codex.md` 中写：
+
+```markdown
+![Windows Node.js 下载截图](../../img/clients/nodejs-download-win.png)
+```
+
+VS Code 会直接读取本机图片；网站的 Markdown 渲染会按源文件位置解析这条相对路径，并自动转换成 `/img/shared/clients/nodejs-download-win.png`。两个站点都支持这种写法，已有 `/img/shared/...` 网站路径也继续可用。此转换针对 Markdown 图片；HTML `<img>` 仍使用网站路径。
+
+修改正文或添加图片后，在 `sites` 目录执行 `npm run build`，再刷新 4183 / 4184 本地预览。图片文件名、扩展名和大小写要与引用一致；不要引用尚未复制进项目的外部附件。
 
 ### 逸尘图文整合说明
 
