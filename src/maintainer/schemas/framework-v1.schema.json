@@ -5,7 +5,9 @@
   "description": "校验 registry/framework-v1.json（由 src/build.py 从 src/maintainer/framework-v1.json 生成）。只约束结构与枚举，不把标题等自由文本钉死，日常更新状态无需改 schema。",
   "type": "object",
   "required": [
-    "version",
+    "frameworkVersion",
+    "contentVersion",
+    "artifactVersion",
     "status",
     "authority",
     "audience",
@@ -23,14 +25,22 @@
     "currentSeedContent"
   ],
   "properties": {
-    "version": {
+    "frameworkVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "contentVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "artifactVersion": {
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
     "status": {
       "enum": [
         "framework-review",
-        "draft-complete-unverified",
+        "draft-seed-unverified",
         "reviewed",
         "platform-verified",
         "stable"
@@ -566,6 +576,7 @@
         "outline",
         "draft",
         "source-and-rights-review",
+        "editorial-reviewed",
         "verification",
         "acceptance-ready",
         "stable",

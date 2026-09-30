@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>正式课程阶段 A：工程基线实施计划</title></head>
+<body>
+<main><article>
+<h1>正式课程阶段 A：工程基线实施计划</h1>
+<blockquote>
+  <p><strong>给代理执行者：</strong>必须使用 subagent-driven-development 或 executing-plans，按任务逐项执行；每个复选框都是独立步骤。</p>
+</blockquote>
+<p><strong>目标：</strong>把 <code>main@aea1078</code> 加固为可在 GitHub 上持续完成正式课程的可信构建与发行基线。</p>
+<p><strong>架构：</strong><code>src/</code> 继续作为源码入口；根目录是在线预览生成物；离线 ZIP 使用独立暂存树和独立清单。严格检查在 Windows/Linux CI 上证明源码同步、schema、站内链接和离线包闭环。</p>
+<p><strong>技术栈：</strong>Python 3.12 标准库；维护/CI 额外使用固定版 <code>jsonschema</code>；GitHub Actions；静态 HTML/CSS。</p>
+<p><strong>规格：</strong><code>src/maintainer/specs/2026-09-03-formal-course-v1-design.html</code> 与 <code>src/maintainer/specs/2026-09-03-github-baseline-hardening-design.html</code>。</p>
+
+<section>
+<h2>全局约束</h2>
+<ul>
+  <li>所有改动只进入 <code>codex/baseline-hardening</code> 和 PR #2；不直接改 <code>main</code>。</li>
+  <li>不合并 <code>v0.2.2</code>；只从中借鉴已验证的 LF 思路。</li>
+  <li>不逐章修改正文，不改变任何模块为 verified。</li>
+  <li>读者运行时仍然无 Python、无 JavaScript、无远程资源和无第三方依赖。</li>
+  <li>维护工具必须支持 Windows 与 Linux；所有生成文本固定 UTF-8、LF、末尾换行。</li>
+  <li>不重写历史、不删除分支、不选择许可证、不部署服务器。</li>
+</ul>
+</section>
+
+<section>
+<h2>任务 1：建立可重复的维护测试入口</h2>
+<p><strong>文件：</strong>新建 <code>tests/test_build.py</code>、<code>tests/test_check.py</code>、<code>requirements-dev.txt</code>；修改 <code>.gitignore</code>。</p>
+<p><strong>产出接口：</strong><code>python -m unittest discover -s tests -v</code> 是本阶段统一测试命令。</p>
+<ol>
+  <li><label><input type="checkbox" disabled> 写失败测试：在临时仓库运行构建两次，文本必须全部 LF，第二次树哈希不变。</label></li>
+  <li><label><input type="checkbox" disabled> 写失败测试：解压当前离线 ZIP 后，首页下载链接、manifest 文件集合和 SHA256SUMS 必须闭合；当前版本应失败。</label></li>
+  <li><label><input type="checkbox" disabled> 写失败测试：GBK/非 TTY 环境运行检查器不得因输出字符崩溃；当前版本应失败。</label></li>
+  <li><label><input type="checkbox" disabled> 固定维护依赖为 <code>jsonschema==4.25.1</code>；说明它只用于维护/CI，不进入读者包。</label></li>
+  <li><label><input type="checkbox" disabled> 运行 <code>python -m unittest discover -s tests -v</code>，记录预期失败及其对应缺陷。</label></li>
+  <li><label><input type="checkbox" disabled> 提交 <code>test: capture baseline build and package failures</code>。</label></li>
+</ol>
+<pre><code>class BaselineBuildTests(unittest.TestCase):
+    def test_offline_manifest_matches_zip_entries(self):
+        entries = package_entries(self.zip_path)
+        declared = manifest_paths_from_zip(self.zip_path)
+        self.assertEqual(declared, entries - {"manifest.json", "SHA256SUMS.txt"})
+</code></pre>
+</section>
+
+<section>
+<h2>任务 2：固定跨平台文本和版本身份</h2>
+<p><strong>文件：</strong>修改 <code>src/build.py</code>、<code>.gitattributes</code>、<code>src/maintainer/framework-v1.json</code>、<code>schemas/framework-v1.schema.json</code> 及其生成副本。</p>
+<p><strong>产出接口：</strong><code>write_text(relative_path, text)</code> 统一写 UTF-8/LF；登记表明确 <code>frameworkVersion</code>、<code>contentVersion</code>、<code>artifactVersion</code>。</p>
+<ol>
+  <li><label><input type="checkbox" disabled> 增加失败测试：含 CRLF 的生成文件或相同字段混用一个版本号时失败。</label></li>
+  <li><label><input type="checkbox" disabled> 在构建器中加入统一写入函数：</label></li>
+</ol>
+<pre><code>def write_text(path, text):
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n").rstrip("\n") + "\n"
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(normalized)
+</code></pre>
+<ol start="3">
+  <li><label><input type="checkbox" disabled> 所有生成文本改走 <code>write_text</code>，二进制 ZIP 保持字节写入。</label></li>
+  <li><label><input type="checkbox" disabled> 添加 <code>*.html text eol=lf</code>、<code>*.json text eol=lf</code>、<code>*.py text eol=lf</code>、<code>*.md text eol=lf</code>。</label></li>
+  <li><label><input type="checkbox" disabled> 修复 README 模板，使生成文本显示字面量 <code>{{link:ch04}}</code>，而不是单花括号。</label></li>
+  <li><label><input type="checkbox" disabled> 运行任务 2 测试与完整 unittest；提交 <code>build: make generated text cross-platform deterministic</code>。</label></li>
+</ol>
+</section>
+
+<section>
+<h2>任务 3：重建闭合的离线发行包</h2>
+<p><strong>文件：</strong>修改 <code>src/build.py</code>、<code>tests/test_build.py</code>、<code>README.md</code> 模板文字。</p>
+<p><strong>产出接口：</strong><code>build_offline_stage(temp_root)</code> 返回精确文件清单；<code>build_offline_zip(stage_root, zip_path)</code> 只打包该树；生成 <code>&lt;zip&gt;.sha256</code>。</p>
+<ol>
+  <li><label><input type="checkbox" disabled> 增加失败测试：离线首页不得链接包内不存在的 <code>downloads/*.zip</code>。</label></li>
+  <li><label><input type="checkbox" disabled> 增加失败测试：离线 manifest/SHA 不得包含未进入包的 <code>deploy/*</code>。</label></li>
+  <li><label><input type="checkbox" disabled> 为首页生成增加明确的 online/offline 变体；offline 显示“当前已是离线版”，不生成下载链接。</label></li>
+  <li><label><input type="checkbox" disabled> 在 <code>tempfile.TemporaryDirectory</code> 内组装离线树，再基于该树生成离线专属 manifest 与 SHA256SUMS。</label></li>
+  <li><label><input type="checkbox" disabled> ZIP 写入固定日期、排序和 0644 权限；完成后写外部 <code>.sha256</code>。</label></li>
+  <li><label><input type="checkbox" disabled> 解包逐文件验证路径、大小、哈希和本地链接；运行两次确认 ZIP 字节一致。</label></li>
+  <li><label><input type="checkbox" disabled> 提交 <code>build: make offline release self-contained</code>。</label></li>
+</ol>
+</section>
+
+<section>
+<h2>任务 4：让检查器成为真实发布门禁</h2>
+<p><strong>文件：</strong>修改 <code>src/check.py</code>、<code>src/build.py</code>、<code>tests/test_check.py</code>。</p>
+<p><strong>产出接口：</strong><code>python src/check.py --strict --verify-generated</code>；成功只输出 ASCII <code>[OK]</code>，失败输出 <code>[ERROR]</code> 并退出 1。</p>
+<ol>
+  <li><label><input type="checkbox" disabled> 测试递归扫描全部公开 HTML、嵌套模板和规格页。</label></li>
+  <li><label><input type="checkbox" disabled> 测试缺少 <code>jsonschema</code> 时 strict 模式退出失败，不打印“全部通过”。</label></li>
+  <li><label><input type="checkbox" disabled> 测试修改一个 <code>src/content</code> 片段但不重建时，<code>--verify-generated</code> 能发现漂移。</label></li>
+  <li><label><input type="checkbox" disabled> 抽出 <code>check_site_tree(root)</code>、<code>check_manifest(root)</code>、<code>check_offline_zip(zip_path)</code> 和 <code>check_generated_sync(repo_root)</code>。</label></li>
+  <li><label><input type="checkbox" disabled> <code>check_generated_sync</code> 在临时副本运行构建并比较受管生成文件，不修改调用者工作树。</label></li>
+  <li><label><input type="checkbox" disabled> 同时验证根 manifest/SHA、离线 manifest/SHA、ZIP 外部哈希、链接、锚点、脚本/内联样式/远程资源。</label></li>
+  <li><label><input type="checkbox" disabled> 在 GBK 和 UTF-8 环境运行；提交 <code>build: enforce strict release checks</code>。</label></li>
+</ol>
+</section>
+
+<section>
+<h2>任务 5：统一公开状态文案</h2>
+<p><strong>文件：</strong>修改 <code>src/build.py</code> 的首页/README 模板、<code>src/chapters.json</code>、<code>src/maintainer/framework-v1.json</code>、相关生成物；只修正第 11 章已知版本文字，不做其他正文审校。</p>
+<ol>
+  <li><label><input type="checkbox" disabled> 写测试，要求首页与 README 同时包含“草稿种子”“不算完成课程”“尚未逐条复核或实测”。</label></li>
+  <li><label><input type="checkbox" disabled> 将“正文草稿已完成 11/11”改成“11/11 已有草稿种子；正式审校 0/11”。</label></li>
+  <li><label><input type="checkbox" disabled> 保留全部章节 <code>draft</code> 和验证 <code>unverified</code>，不提升状态。</label></li>
+  <li><label><input type="checkbox" disabled> 将服务器部署描述标为“可选在线预览”，离线 HTML 仍为主要交付。</label></li>
+  <li><label><input type="checkbox" disabled> 修正第 11 章残留的 0.2.0 小结为当前 0.2.1；重新生成并严格检查。</label></li>
+  <li><label><input type="checkbox" disabled> 提交 <code>docs: label all current lessons as unverified draft seeds</code>。</label></li>
+</ol>
+</section>
+
+<section>
+<h2>任务 6：建立 GitHub 双平台质量门禁</h2>
+<p><strong>文件：</strong>新建 <code>.github/workflows/quality.yml</code>；修改 <code>README.md</code> 构建说明。</p>
+<ol>
+  <li><label><input type="checkbox" disabled> 工作流矩阵固定 <code>ubuntu-latest</code>、<code>windows-latest</code> 与 Python 3.12。</label></li>
+  <li><label><input type="checkbox" disabled> 安装 <code>requirements-dev.txt</code>，运行 unittest 和 <code>python src/check.py --strict --verify-generated</code>。</label></li>
+  <li><label><input type="checkbox" disabled> CI 检查构建后 <code>git diff --exit-code</code>；任何生成物漂移阻止合并。</label></li>
+  <li><label><input type="checkbox" disabled> 运行本机完整测试和严格检查，确认 PR 只包含预期文件。</label></li>
+  <li><label><input type="checkbox" disabled> 提交 <code>ci: verify course builds on Windows and Linux</code>。</label></li>
+</ol>
+<pre><code>strategy:
+  matrix:
+    os: [ubuntu-latest, windows-latest]
+steps:
+  - uses: actions/checkout@v4
+  - uses: actions/setup-python@v5
+    with: { python-version: '3.12' }
+  - run: python -m pip install -r requirements-dev.txt
+  - run: python -m unittest discover -s tests -v
+  - run: python src/check.py --strict --verify-generated
+  - run: git diff --exit-code
+</code></pre>
+</section>
+
+<section>
+<h2>任务 7：PR 交接与下一阶段建项</h2>
+<ol>
+  <li><label><input type="checkbox" disabled> 更新 PR #2 描述，列出测试、平台、离线 ZIP 哈希和剩余限制。</label></li>
+  <li><label><input type="checkbox" disabled> 对 PR #2 做独立代码审查；Critical/Important 清零后转为 Ready for review。</label></li>
+  <li><label><input type="checkbox" disabled> 在 GitHub 创建后续阶段 B–G 的独立 issues；不在本 PR 实施这些阶段。</label></li>
+  <li><label><input type="checkbox" disabled> 保持 <code>main</code> 未修改，等待用户批准合并。</label></li>
+</ol>
+</section>
+
+<section>
+<h2>计划自检</h2>
+<ul>
+  <li>规格中的跨平台、离线闭环、严格检查、草稿状态和 GitHub PR 要求均有对应任务。</li>
+  <li>阶段 A 不包含逐章内容审校、真实账号操作、历史重写、许可证或部署。</li>
+  <li>所有接口名称在首次出现时定义，后续任务复用同名接口。</li>
+  <li>未保留未决占位标记或没有验收条件的实现步骤。</li>
+</ul>
+</section>
+</article></main>
+</body>
+</html>

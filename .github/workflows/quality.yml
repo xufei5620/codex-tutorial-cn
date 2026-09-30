@@ -1,0 +1,40 @@
+name: Course quality
+
+on:
+  push:
+    branches:
+      - codex/baseline-hardening
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ${{ matrix.os }} / Python 3.12
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install maintainer dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Run strict release checks
+        run: python src/check.py --strict --verify-generated
+      - name: Rebuild generated artifacts
+        run: python src/build.py
+      - name: Confirm generated tree is committed
+        run: git diff --exit-code
