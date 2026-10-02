@@ -274,7 +274,10 @@ export async function loadCatalogIndex(product, { fetchImpl = fetch, signal, ups
     // A standard HTTP header keeps the shared browser/edge reader portable.
     stage = 'transport'; code = 'fetch-failed'
     const response = await abortable(Promise.resolve().then(() => fetchImpl(url, {
-      method: 'GET', credentials: 'omit', redirect: 'error',
+      method: 'GET', redirect: 'error',
+      // Workers send only the constructed headers; browser requests also
+      // explicitly exclude their cookie jar through the credentials mode.
+      ...(!upstream ? { credentials: 'omit' } : {}),
       headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, signal: controller.signal
     })), controller.signal)
     stage = 'response'; code = 'metadata'
