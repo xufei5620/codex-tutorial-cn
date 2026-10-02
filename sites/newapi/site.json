@@ -20,9 +20,6 @@
     "wecom_qr":"/img/contact/wecom.png",
     "qr_mode":"auto"
   },
-  "downloads":{
-    "windows":{"label":"Windows","architecture":"以发布说明为准","enabled":true,"url":"https://s4621e8xzb.feishu.cn/wiki/WpBUwh4PhiAs2skvWfmcnM5vnDb?from=from_copylink","version":"","date":"","checksum":"","notes_url":"","notes":""},
-    "macos-arm64":{"label":"macOS · Apple 芯片","architecture":"arm64","enabled":true,"url":"https://s4621e8xzb.feishu.cn/wiki/WpBUwh4PhiAs2skvWfmcnM5vnDb?from=from_copylink","version":"","date":"","checksum":"","notes_url":"","notes":""},
-    "macos-x64":{"label":"macOS · Intel","architecture":"x64","enabled":true,"url":"https://s4621e8xzb.feishu.cn/wiki/WpBUwh4PhiAs2skvWfmcnM5vnDb?from=from_copylink","version":"","date":"","checksum":"","notes_url":"","notes":""}
-  }
+  "download_page_url":"/guide/manager#download-installers",
+  "download_indexes":{"manager":"/cos-download-index/xingmang.json","chatgpt":"/cos-download-index/chatgpt.json","claude":"/cos-download-index/claude.json"}
 }

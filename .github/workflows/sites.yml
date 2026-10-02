@@ -27,15 +27,21 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: sites/package-lock.json
+      # Component tests use the exact locked Vue compiler shipped by VitePress.
+      - name: Install locked dependencies
+        run: npm ci
       - name: Unit and route checks
         run: |
-          node --test tools/tests/*.test.mjs studio/tests/*.test.mjs
+          node --test tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs
           node tools/prebuild.mjs sub2api
           node tools/prebuild.mjs newapi
           node tools/check-routes.mjs
-      - run: npm ci
       - name: Build both sites
         run: npm run build
+      - name: Compile download index Functions without deploying
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: npx wrangler pages functions build --outdir "${{ runner.temp }}/cos-download-functions"
       - name: Check final studio routes
         run: node tools/check-routes.mjs
       - name: Deploy docs-sub.solov.cc

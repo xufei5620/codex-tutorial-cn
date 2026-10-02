@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stageCourse } from './course-bridge.mjs'
+import { INDEX_ROUTES } from '../downloads/catalog.mjs'
 import { createRequire } from 'node:module'
 const require=createRequire(import.meta.url)
 require('./vendor/qr-local.cjs')
@@ -40,6 +41,11 @@ export function qrSVG(value){
  modules.forEach((row,y)=>row.forEach((dark,x)=>{if(dark)shape+=`M${x+4} ${y+4}h1v1h-1z`}))
  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><rect width="${size}" height="${size}" fill="white"/><path fill="black" d="${shape}"/></svg>`
 }
+export function validateDownloadConfiguration(site){
+ if(site.download_page_url!=='/guide/manager#download-installers')throw Error('Download page must use the same-site installer selector')
+ const indexes=site.download_indexes
+ if(!indexes||typeof indexes!=='object'||Array.isArray(indexes)||Object.keys(indexes).length!==3||Object.entries(INDEX_ROUTES).some(([product,route])=>!Object.hasOwn(indexes,product)||indexes[product]!==route))throw Error('Download indexes must use the three fixed same-site routes')
+}
 export function build(id,root=ROOT){
  if(!['sub2api','newapi'].includes(id))throw Error('Choose sub2api or newapi')
  const directory=path.join(root,id),shared=path.join(root,'shared')
@@ -50,6 +56,7 @@ export function build(id,root=ROOT){
  const other=id==='sub2api'?'xm.solov.cc':'api.solov.cc'
  for(const key of ['site_url','base_url','codex_base_url','openclaw_base_url','keys_url','models_url','console_url'])if(site[key]&&new URL(site[key]).hostname===other)throw Error('Cross-site URL: '+key)
  if(site.domain===(id==='sub2api'?'docs-new.solov.cc':'docs-sub.solov.cc'))throw Error('Cross-site docs hostname')
+ validateDownloadConfiguration(site)
  for(const item of Object.values(site.downloads||{})){
   if(item.url)https(item.url,'Download URL')
   if(item.notes_url)https(item.notes_url,'Release notes URL')
@@ -57,11 +64,7 @@ export function build(id,root=ROOT){
  }
  const course=stageCourse(path.dirname(root))
  const origin=new URL(site.base_url).origin
- let downloadUrl=''
- for(const item of Object.values(site.downloads||{})){
-  if(item.enabled!==false&&item.url){downloadUrl=item.url;break}
- }
- const vars={SITE_NAME:site.name,SITE_URL:site.site_url,BASE_URL:site.base_url,CODEX_BASE_URL:site.codex_base_url||site.base_url,OPENCLAW_BASE_URL:site.openclaw_base_url||origin+'/v1',KEYS_URL:site.keys_url,MODELS_URL:site.models_url,CONSOLE_URL:site.console_url,DOCS_URL:'https://'+site.domain,KEY_WORD:site.key_word||'API 密钥',HOURS:site.contact?.hours||'',DOWNLOAD_URL:downloadUrl||'/contact'}
+ const vars={SITE_NAME:site.name,SITE_URL:site.site_url,BASE_URL:site.base_url,CODEX_BASE_URL:site.codex_base_url||site.base_url,OPENCLAW_BASE_URL:site.openclaw_base_url||origin+'/v1',KEYS_URL:site.keys_url,MODELS_URL:site.models_url,CONSOLE_URL:site.console_url,DOCS_URL:'https://'+site.domain,KEY_WORD:site.key_word||'API 密钥',HOURS:site.contact?.hours||'',DOWNLOAD_URL:site.download_page_url}
  https(vars.CODEX_BASE_URL,'Codex base URL')
  https(vars.OPENCLAW_BASE_URL,'OpenClaw base URL')
  const outputs=[]
@@ -81,10 +84,11 @@ export function build(id,root=ROOT){
  const sourceNav=JSON.parse(fs.readFileSync(path.join(directory,'nav.json'),'utf8'))
  const courseNav={text:'Codex 零基础课程',items:[{text:'完整课程目录',link:'/learn/codex/'},...course.sidebar,{text:'第一次任务练习',link:'/learn/first-task'},{text:'文件夹练习',link:'/learn/working-with-files'},{text:'检查结果与修改',link:'/learn/review-and-revise'}]}
  const nav={nav:sourceNav.nav,sidebar:[sourceNav.sidebar[0],courseNav,...sourceNav.sidebar.slice(1)]}
- const publicSite={id:site.id,name:site.name,title:site.title,description:site.description,domain:site.domain,site_url:site.site_url,base_url:site.base_url,codex_base_url:vars.CODEX_BASE_URL,openclaw_base_url:vars.OPENCLAW_BASE_URL,contact,downloads:site.downloads||{}}
+ const publicSite={id:site.id,name:site.name,title:site.title,description:site.description,domain:site.domain,site_url:site.site_url,base_url:site.base_url,codex_base_url:vars.CODEX_BASE_URL,openclaw_base_url:vars.OPENCLAW_BASE_URL,contact,downloads:site.downloads||{},download_page_url:site.download_page_url,download_indexes:site.download_indexes}
  outputs.push(['site.generated.json',JSON.stringify(publicSite,null,2)],['nav.generated.json',JSON.stringify(nav,null,2)],['course-provenance.generated.json',JSON.stringify({version:course.version,sources:course.sources},null,2)])
  const parent=new URL(site.site_url).origin
  outputs.push(['public/_headers',`/*\n  Content-Security-Policy: frame-ancestors 'self' ${parent}\n  Referrer-Policy: no-referrer\n  X-Content-Type-Options: nosniff\n`])
+ outputs.push(['public/_routes.json',JSON.stringify({version:1,include:Object.values(INDEX_ROUTES),exclude:[]},null,2)+'\n'])
  const outputPaths=[]
  for(const [name,body]of outputs){
   if(path.isAbsolute(name)||name.split(/[\\/]/).includes('..'))throw Error('Invalid output path')
