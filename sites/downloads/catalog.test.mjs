@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { COS_ROOT, INDEX_ROUTES, validateManagerIndex, validateChatgptIndex, fetchCatalog, projectPublicIndex } from './catalog.mjs'
+import { COS_ROOT, INDEX_ROUTES, validateManagerIndex, validateChatgptIndex, validateClaudeIndex, fetchCatalog, projectPublicIndex } from './catalog.mjs'
 
 const HASH = 'a'.repeat(64)
 
@@ -31,6 +31,11 @@ export function chatgptFixture() {
       }
     }
   }
+}
+
+export function claudeFixture() {
+  const key = `claude/windows-x64/sha256-${HASH}/Claude-x64.msix`
+  return { schemaVersion: 1, product: 'claude-desktop', files: [{ fileName: 'Claude-x64.msix', version: '1.0.0.0', platform: 'windows', architecture: 'x64', format: 'msix', kind: 'installer', key, url: `${COS_ROOT}/${key}`, size: 500000000, sha256: HASH, type: 'application/vnd.ms-appx', verification: 'windows-authenticode-msix-identity' }] }
 }
 
 function jsonResponse(value, options = {}) {
@@ -143,6 +148,77 @@ test('macOS ZIP and Linux deb use hash directories without Windows fallback or i
   assert.equal(items.some(item => item.licenseUrl), false)
   platforms['macos-arm64'].artifact.key = platforms['macos-arm64'].artifact.key.replace(`sha256-${HASH}`, '26.930.1')
   assert.throws(() => validateChatgptIndex({ schemaVersion: 1, product: 'chatgpt', platforms }))
+})
+
+test('Claude full Windows MSIX exposes no license and public projection removes source internals', () => {
+  const value = claudeFixture()
+  value.files[0].source = { cookie: 'must not project' }
+  const [item] = validateClaudeIndex(value)
+  assert.equal(item.id, 'windows-x64')
+  assert.equal(item.format, 'msix')
+  assert.equal(item.licenseUrl, undefined)
+  const projected = projectPublicIndex('claude', value)
+  assert.deepEqual(validateClaudeIndex(projected), [item])
+  assert.equal(JSON.stringify(projected).includes('must not project'), false)
+  assert.deepEqual(validateClaudeIndex({ schemaVersion: 1, product: 'claude-desktop', files: [] }), [])
+})
+
+test('Claude official platform formats keep two Windows architectures, universal Mac packages and Linux DEB', () => {
+  const files = []
+  for (const [id, platform, architecture, format, fileName, type, verification, version] of [
+    ['windows-x64', 'windows', 'x64', 'msix', 'Claude-x64.msix', 'application/vnd.ms-appx', 'windows-authenticode-msix-identity', '1.0.0.0'],
+    ['windows-arm64', 'windows', 'arm64', 'msix', 'Claude-arm64.msix', 'application/vnd.ms-appx', 'windows-authenticode-msix-identity', '1.0.0.0'],
+    ['macos-dmg-universal', 'macos', 'universal', 'dmg', 'Claude-universal.dmg', 'application/x-apple-diskimage', 'macos-codesign-universal', '1.0.0'],
+    ['macos-pkg-universal', 'macos', 'universal', 'pkg', 'Claude-universal.pkg', 'application/vnd.apple.installer+xml', 'macos-installer-signature', '1.0.0'],
+    ['linux-deb-x64', 'linux', 'x64', 'deb', 'claude-desktop-amd64.deb', 'application/vnd.debian.binary-package', 'official-https-package-index-sha256', '1.0.0-1'],
+    ['linux-deb-arm64', 'linux', 'arm64', 'deb', 'claude-desktop-arm64.deb', 'application/vnd.debian.binary-package', 'official-https-package-index-sha256', '1:1.0.0-1']
+  ]) {
+    const key = `claude/${id}/sha256-${HASH}/${fileName}`
+    files.push({ fileName, version, platform, architecture, format, kind: 'installer', key, url: `${COS_ROOT}/${key}`, size: 10, sha256: HASH, type, verification })
+  }
+  const value = { schemaVersion: 1, product: 'claude-desktop', files }
+  const items = validateClaudeIndex(value)
+  assert.deepEqual(items.map(item => item.id), ['windows-x64', 'windows-arm64', 'macos-dmg-universal', 'macos-pkg-universal', 'linux-deb-x64', 'linux-deb-arm64'])
+  assert.equal(items.filter(item => item.platform === 'macos').every(item => item.architecture === 'universal'), true)
+  assert.equal(items.some(item => item.licenseUrl), false)
+  assert.deepEqual(validateClaudeIndex(projectPublicIndex('claude', value)), items)
+})
+
+test('Claude rejects bootstrap names, fabricated platforms, unsupported signatures and mismatched immutable keys', () => {
+  for (const mutate of [
+    value => { value.product = 'chatgpt' },
+    value => { value.schemaVersion = 2 },
+    value => { value.files.push(value.files[0]) },
+    value => { value.files[0].fileName = 'ClaudeSetup.exe' },
+    value => { value.files[0].format = 'exe' },
+    value => { value.files[0].platform = 'linux'; value.files[0].format = 'rpm' },
+    value => { value.files[0].architecture = 'universal' },
+    value => { value.files[0].verification = 'official-https-sha256' },
+    value => { value.files[0].version = 'unknown' },
+    value => { value.files[0].licenseUrl = `${COS_ROOT}/chatgpt/license.xml` },
+    value => { value.files[0].key = value.files[0].key.replace(`sha256-${HASH}`, '1.0.0.0') },
+    value => { value.files[0].sha256 = 'b'.repeat(64) },
+    value => { value.files[0].url += '?token=secret' },
+    value => { value.files[0].url = value.files[0].url.replace('.myqcloud.com/', '.myqcloud.com.evil.example/') },
+    value => { value.files[0].size = 0 },
+    value => { value.files[0].type = 'text/plain' },
+    value => { value.files[0].kind = 'manifest' }
+  ]) {
+    const value = claudeFixture()
+    mutate(value)
+    assert.throws(() => validateClaudeIndex(value))
+  }
+})
+
+test('Claude catalog reads only the fixed same-origin route and retains an empty state on 404', async () => {
+  const items = await fetchCatalog('claude', { fetchImpl: async (url, options) => {
+    assert.equal(url, '/cos-download-index/claude.json')
+    assert.equal(options.credentials, 'omit')
+    assert.equal(options.redirect, 'error')
+    return jsonResponse(claudeFixture())
+  } })
+  assert.equal(items[0].fileName, 'Claude-x64.msix')
+  assert.deepEqual(await fetchCatalog('claude', { fetchImpl: async () => new Response(null, { status: 404 }) }), [])
 })
 
 test('fetchCatalog uses fixed same-origin routes and omits account credentials', async () => {

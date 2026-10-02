@@ -1,7 +1,7 @@
 <script setup>
 import {ref,onMounted,onBeforeUnmount} from 'vue'
 import {fetchCatalog,INDEX_ROUTES} from '../../downloads/catalog.mjs'
-const products=[{id:'manager',title:'星芒 AI 管理工具',description:'先下载管理工具；ChatGPT 等应用通常在管理工具内按正常流程安装与配置。'},{id:'chatgpt',title:'ChatGPT 桌面端离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择；Windows 需一并下载许可文件。'}]
+const products=[{id:'manager',title:'星芒 AI 管理工具',description:'先下载管理工具，按工具内的正常流程安装与配置所需工具。'},{id:'chatgpt',title:'ChatGPT 桌面端离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择；Windows 需一并下载许可文件。'},{id:'claude',title:'Claude Desktop 离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择官方安装包。'}]
 const catalogs=ref(Object.fromEntries(products.map(product=>[product.id,{status:'idle',items:[]}]))),controllers=new Map()
 let disposed=false
 async function load(product){
@@ -21,6 +21,7 @@ async function load(product){
 }
 function bytes(value){return value>=1024**3?(value/1024**3).toFixed(2)+' GB':(value/1024**2).toFixed(1)+' MB'}
 function windowsCommand(item){return "Add-AppxProvisionedPackage -Online -PackagePath '.\\"+item.fileName+"' -LicensePath '.\\"+item.licenseFileName+"' -Regions all"}
+function claudeWindowsCommand(item){return "Add-AppxProvisionedPackage -Online -PackagePath '.\\"+item.fileName+"' -SkipLicense -Regions all"}
 onMounted(()=>{for(const product of products)if(catalogs.value[product.id].status==='idle')load(product.id)})
 onBeforeUnmount(()=>{disposed=true;for(const controller of controllers.values())controller.abort();controllers.clear()})
 </script>
@@ -37,7 +38,7 @@ onBeforeUnmount(()=>{disposed=true;for(const controller of controllers.values())
  <details class="installer-more">
  <summary class="soft-button">安装说明与文件校验 <span aria-hidden="true">⌄</span></summary>
  <div class="installer-options">
-  <p class="installer-intro">按上方按钮对应的系统、芯片与版本核对文件。两组产品各自提供的系统版本可能不同。</p>
+  <p class="installer-intro">按上方按钮对应的系统、芯片与版本核对文件。各产品提供的系统版本可能不同。</p>
   <p v-if="products.every(product=>!catalogs[product.id].items.length)" role="status">安装说明与校验信息会随可下载版本一并显示。</p>
   <section v-for="product in products" :key="product.id" class="installer-product" :aria-labelledby="'download-instructions-'+product.id" :hidden="!catalogs[product.id].items.length">
    <h3 :id="'download-instructions-'+product.id">{{product.title}}</h3>
@@ -46,8 +47,12 @@ onBeforeUnmount(()=>{disposed=true;for(const controller of controllers.values())
      <div class="installer-heading"><strong>{{item.label}}</strong><span>{{item.architecture}} · {{item.version||'版本见安装包'}}</span></div>
      <p class="installer-meta">{{item.format.toUpperCase()}} · {{bytes(item.bytes)}}</p>
      <div v-if="product.id==='chatgpt'&&item.format==='msix'&&item.licenseUrl" class="installer-instructions"><p>将安装包与许可文件放在同一文件夹。在该目录打开管理员 PowerShell，执行：</p><pre><code>{{windowsCommand(item)}}</code></pre><p>许可文件必须与上方安装包的版本和架构一致。该命令用于离线安装，不需要进入微软商店。</p></div>
+     <div v-else-if="product.id==='claude'&&item.format==='msix'" class="installer-instructions"><p>在安装包所在目录打开管理员 PowerShell，执行：</p><pre><code>{{claudeWindowsCommand(item)}}</code></pre><p>Claude 官方 MSIX 使用 SkipLicense，不需要下载单独的许可文件。</p></div>
+     <p v-else-if="product.id==='claude'&&item.format==='dmg'">macOS：打开 DMG，将 Claude 拖入“应用程序”。Universal 包同时适用于 Apple 芯片与 Intel。</p>
+     <p v-else-if="product.id==='claude'&&item.format==='pkg'">macOS：打开 PKG，按系统安装器提示安装。Universal 包同时适用于 Apple 芯片与 Intel。</p>
      <p v-else-if="product.id==='chatgpt'&&item.format==='zip'">macOS：解压 ZIP 后将应用放入“应用程序”，再打开。</p>
      <p v-else-if="product.id==='chatgpt'&&['deb','rpm'].includes(item.format)">Linux：使用系统的软件安装器打开对应的 {{item.format.toUpperCase()}} 包。</p>
+     <p v-else-if="product.id==='claude'&&item.format==='deb'">Linux 测试版：适用于 Ubuntu 22.04+ 或 Debian 12+。使用系统的软件安装器打开对应架构的 DEB 包，缺失依赖时仍需通过 APT 安装。</p>
      <details class="installer-checksum"><summary>核对 SHA-256</summary><code>{{item.sha256}}</code><template v-if="item.licenseSha256"><p>许可文件：</p><code>{{item.licenseSha256}}</code></template></details>
     </li>
    </ul>

@@ -44,7 +44,7 @@ export function qrSVG(value){
 export function validateDownloadConfiguration(site){
  if(site.download_page_url!=='/guide/manager#download-installers')throw Error('Download page must use the same-site installer selector')
  const indexes=site.download_indexes
- if(!indexes||Array.isArray(indexes)||Object.keys(indexes).length!==2||Object.entries(INDEX_ROUTES).some(([product,route])=>indexes[product]!==route))throw Error('Download indexes must use the two fixed same-site routes')
+ if(!indexes||typeof indexes!=='object'||Array.isArray(indexes)||Object.keys(indexes).length!==3||Object.entries(INDEX_ROUTES).some(([product,route])=>!Object.hasOwn(indexes,product)||indexes[product]!==route))throw Error('Download indexes must use the three fixed same-site routes')
 }
 export function build(id,root=ROOT){
  if(!['sub2api','newapi'].includes(id))throw Error('Choose sub2api or newapi')

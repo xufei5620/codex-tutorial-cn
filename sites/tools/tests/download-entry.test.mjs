@@ -39,20 +39,20 @@ test('primary download links compile outside the secondary installer details',()
  assert.equal(source.includes('v-html'),false)
  assert.equal(source.includes('feishu.cn'),false)
 })
-test('mount loads both catalogs once and installation details do not trigger extra requests',async()=>{
+test('mount loads all three catalogs once and installation details do not trigger extra requests',async()=>{
  const calls=[],fixture=setup(async(product,options)=>{calls.push({product,options});return []})
  assert.equal(calls.length,0)
  fixture.mount()
  await flush()
- assert.deepEqual(calls.map(call=>call.product),['manager','chatgpt'])
+ assert.deepEqual(calls.map(call=>call.product),['manager','chatgpt','claude'])
  fixture.mount()
  assert.equal(descriptor.template.content.includes('@toggle'),false)
  render(fixture.state)
- assert.deepEqual(calls.map(call=>call.product),['manager','chatgpt'])
+ assert.deepEqual(calls.map(call=>call.product),['manager','chatgpt','claude'])
  for(const call of calls)assert.equal(call.options.signal.aborted,false)
  assert.equal(fixture.state.catalogs.value.manager.status,'ready')
  assert.equal(fixture.state.catalogs.value.manager.items.length,0)
- assert.equal(calls.length,2)
+ assert.equal(calls.length,3)
  fixture.destroy()
 })
 test('provided system buttons link straight to COS without choosing Windows for the reader',async()=>{
@@ -82,6 +82,19 @@ test('ChatGPT installation and matching license links appear directly beside the
  assert.ok(html.includes('Add-AppxProvisionedPackage'))
  fixture.destroy()
 })
+test('Claude is a separate fallback group with complete MSIX and SkipLicense instructions',async()=>{
+ const item={id:'windows-arm64',label:'Windows ARM64',architecture:'arm64',version:'1.0.0.0',fileName:'Claude-arm64.msix',url:COS_ROOT+'/claude/windows-arm64/sha256-'+ 'a'.repeat(64)+'/Claude-arm64.msix',bytes:500000000,format:'msix',sha256:'a'.repeat(64)}
+ const fixture=setup(async product=>product==='claude'?[item]:[])
+ fixture.mount();await flush()
+ const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))
+ assert.ok(primary.includes('Claude Desktop 离线包（备用）'))
+ assert.ok(primary.includes('href="'+item.url+'"'))
+ assert.ok(primary.includes('下载 Windows ARM64'))
+ assert.ok(html.includes('-SkipLicense -Regions all'))
+ assert.equal(html.includes('-LicensePath'),false)
+ assert.equal(primary.includes('href="'+COS_ROOT+'/chatgpt/'),false)
+ fixture.destroy()
+})
 test('an empty index renders preparation and retry without a guessed download URL',async()=>{
  const fixture=setup(async()=>[])
  fixture.mount()
@@ -99,6 +112,7 @@ test('an unavailable product keeps a retryable state without hiding the other pr
  await flush()
  assert.equal(fixture.state.catalogs.value.manager.status,'error')
  assert.equal(fixture.state.catalogs.value.chatgpt.status,'ready')
+ assert.equal(fixture.state.catalogs.value.claude.status,'ready')
  failed=false
  await fixture.state.load('manager')
  assert.equal(fixture.state.catalogs.value.manager.status,'ready')
@@ -124,7 +138,7 @@ test('Windows offline instructions use the selected architecture and matching li
  assert.equal(fixture.state.windowsCommand({fileName:'ChatGPT-arm64.msix',licenseFileName:'ChatGPT-License.xml'}),"Add-AppxProvisionedPackage -Online -PackagePath '.\\ChatGPT-arm64.msix' -LicensePath '.\\ChatGPT-License.xml' -Regions all")
  fixture.destroy()
 })
-test('site configuration restricts download routing to the manager anchor and exactly two indexes',()=>{
+test('site configuration restricts download routing to the manager anchor and exactly three indexes',()=>{
  const site={download_page_url:'/guide/manager#download-installers',download_indexes:{...INDEX_ROUTES}}
  validateDownloadConfiguration(site)
  for(const download_page_url of ['/guide/download','https://example.invalid/file','//example.invalid/file'])assert.throws(()=>validateDownloadConfiguration({...site,download_page_url}))

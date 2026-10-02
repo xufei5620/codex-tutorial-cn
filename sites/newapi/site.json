@@ -21,5 +21,5 @@
     "qr_mode":"auto"
   },
   "download_page_url":"/guide/manager#download-installers",
-  "download_indexes":{"manager":"/cos-download-index/xingmang.json","chatgpt":"/cos-download-index/chatgpt.json"}
+  "download_indexes":{"manager":"/cos-download-index/xingmang.json","chatgpt":"/cos-download-index/chatgpt.json","claude":"/cos-download-index/claude.json"}
 }

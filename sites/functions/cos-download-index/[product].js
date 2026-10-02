@@ -1,6 +1,6 @@
 import { loadCatalogIndex, projectPublicIndex } from '../../downloads/catalog.mjs'
 
-const PRODUCTS = Object.freeze({ 'xingmang.json': 'manager', 'chatgpt.json': 'chatgpt' })
+const PRODUCTS = Object.freeze({ 'xingmang.json': 'manager', 'chatgpt.json': 'chatgpt', 'claude.json': 'claude' })
 
 function response(body, status, head = false, extraHeaders = {}) {
   return new Response(head ? null : JSON.stringify(body), {

@@ -1,9 +1,10 @@
 export const COS_ROOT = 'https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com'
 export const INDEX_ROUTES = Object.freeze({
   manager: '/cos-download-index/xingmang.json',
-  chatgpt: '/cos-download-index/chatgpt.json'
+  chatgpt: '/cos-download-index/chatgpt.json',
+  claude: '/cos-download-index/claude.json'
 })
-const INDEX_KEYS = Object.freeze({ manager: 'xingmang/latest.json', chatgpt: 'chatgpt/latest.json' })
+const INDEX_KEYS = Object.freeze({ manager: 'xingmang/latest.json', chatgpt: 'chatgpt/latest.json', claude: 'claude/latest.json' })
 const MAX_INDEX_BYTES = 256 * 1024
 const TIMEOUT_MS = 10000
 const SHA256 = /^[a-f0-9]{64}$/
@@ -25,6 +26,14 @@ const CHATGPT_PLATFORMS = Object.freeze({
   'linux-rpm-x64': { platform: 'linux', architecture: 'x64', label: 'Linux x64 · Fedora', format: 'rpm', fileName: 'chatgpt.x86_64.rpm', contentType: 'application/x-rpm' },
   'linux-rpm-arm64': { platform: 'linux', architecture: 'arm64', label: 'Linux ARM64 · Fedora', format: 'rpm', fileName: 'chatgpt.aarch64.rpm', contentType: 'application/x-rpm' }
 })
+const CLAUDE_PLATFORMS = Object.freeze([
+  { id: 'windows-x64', platform: 'windows', architecture: 'x64', label: 'Windows x64', format: 'msix', fileName: 'Claude-x64.msix', contentType: 'application/vnd.ms-appx', verification: 'windows-authenticode-msix-identity' },
+  { id: 'windows-arm64', platform: 'windows', architecture: 'arm64', label: 'Windows ARM64', format: 'msix', fileName: 'Claude-arm64.msix', contentType: 'application/vnd.ms-appx', verification: 'windows-authenticode-msix-identity' },
+  { id: 'macos-dmg-universal', platform: 'macos', architecture: 'universal', label: 'macOS 通用（Intel / Apple 芯片）· DMG', format: 'dmg', fileName: 'Claude-universal.dmg', contentType: 'application/x-apple-diskimage', verification: 'macos-codesign-universal' },
+  { id: 'macos-pkg-universal', platform: 'macos', architecture: 'universal', label: 'macOS 通用（Intel / Apple 芯片）· PKG', format: 'pkg', fileName: 'Claude-universal.pkg', contentType: 'application/vnd.apple.installer+xml', verification: 'macos-installer-signature' },
+  { id: 'linux-deb-x64', platform: 'linux', architecture: 'x64', label: 'Linux 测试版 x64 · Ubuntu / Debian', format: 'deb', fileName: 'claude-desktop-amd64.deb', contentType: 'application/vnd.debian.binary-package', verification: 'official-https-package-index-sha256' },
+  { id: 'linux-deb-arm64', platform: 'linux', architecture: 'arm64', label: 'Linux 测试版 ARM64 · Ubuntu / Debian', format: 'deb', fileName: 'claude-desktop-arm64.deb', contentType: 'application/vnd.debian.binary-package', verification: 'official-https-package-index-sha256' }
+])
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -139,9 +148,34 @@ export function validateChatgptIndex(value) {
   return Object.keys(CHATGPT_PLATFORMS).flatMap(id => items.filter(item => item.id === id))
 }
 
+function claudeVersion(version, platform) {
+  if (platform === 'windows') return windowsVersion(version)
+  if (typeof version !== 'string' || version.length > 64) return false
+  if (platform === 'macos') return /^\d+(?:\.\d+){1,3}(?:[-+][0-9A-Za-z.-]+)?$/.test(version)
+  return /^[0-9][0-9A-Za-z.+:~_-]*$/.test(version)
+}
+
+export function validateClaudeIndex(value) {
+  if (!isObject(value) || value.schemaVersion !== 1 || value.product !== 'claude-desktop'
+    || !Array.isArray(value.files) || value.files.length > CLAUDE_PLATFORMS.length) throw new Error('Claude Desktop 安装包清单无效')
+  const items = new Map()
+  for (const entry of value.files) {
+    if (!isObject(entry) || entry.kind !== 'installer') throw new Error('Claude Desktop 安装包条目无效')
+    const platform = CLAUDE_PLATFORMS.find(item => item.platform === entry.platform && item.architecture === entry.architecture && item.format === entry.format)
+    if (!platform || items.has(platform.id) || entry.fileName !== platform.fileName
+      || entry.verification !== platform.verification || !claudeVersion(entry.version, platform.platform)
+      || entry.license !== undefined || entry.licenseUrl !== undefined) throw new Error('Claude Desktop 安装包系统或校验记录无效')
+    validateArtifact({ ...entry, bytes: entry.size, contentType: entry.type }, `claude/${platform.id}/sha256-${entry.sha256}/${platform.fileName}`, platform.contentType, 2 * 1024 * 1024 * 1024)
+    items.set(platform.id, { ...platform, version: entry.version, key: entry.key, url: entry.url, bytes: entry.size, sha256: entry.sha256 })
+  }
+  return CLAUDE_PLATFORMS.flatMap(platform => items.has(platform.id) ? [items.get(platform.id)] : [])
+}
+
 function validateIndex(product, value) {
   if (!Object.hasOwn(INDEX_ROUTES, product)) throw new Error('安装包类型无效')
-  return product === 'manager' ? validateManagerIndex(value) : validateChatgptIndex(value)
+  if (product === 'manager') return validateManagerIndex(value)
+  if (product === 'chatgpt') return validateChatgptIndex(value)
+  return validateClaudeIndex(value)
 }
 
 function abortable(promise, signal) {
@@ -230,6 +264,10 @@ export function projectPublicIndex(product, value) {
   if (product === 'manager') return {
     schemaVersion: 1, product: 'xingmang-ai-manager', version: value.version,
     files: items.map(item => ({ fileName: item.fileName, version: item.version, platform: item.platform, architecture: item.architecture, kind: 'installer', key: item.key, url: item.url, size: item.bytes, sha256: item.sha256, type: item.contentType }))
+  }
+  if (product === 'claude') return {
+    schemaVersion: 1, product: 'claude-desktop',
+    files: items.map(item => ({ fileName: item.fileName, version: item.version, platform: item.platform, architecture: item.architecture, format: item.format, kind: 'installer', key: item.key, url: item.url, size: item.bytes, sha256: item.sha256, type: item.contentType, verification: item.verification }))
   }
   const platforms = {}
   for (const item of items) {

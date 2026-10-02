@@ -40,20 +40,47 @@ test('ChatGPT fixed route returns a schema-compatible public manifest', async ()
   assert.deepEqual(validateChatgptIndex(await result.json()), [])
 })
 
+test('Claude fixed route returns an empty public manifest without guessing installer links', async () => {
+  const handler = createHandler({ fetchImpl: async (url, options) => {
+    assert.equal(url, `${COS_ROOT}/claude/latest.json`)
+    assert.deepEqual(options.headers, { Accept: 'application/json' })
+    assert.equal(options.credentials, 'omit')
+    assert.equal(options.redirect, 'error')
+    return jsonResponse({ schemaVersion: 1, product: 'claude-desktop', files: [] })
+  } })
+  const result = await handler(context('claude.json'))
+  assert.equal(result.status, 200)
+  assert.deepEqual(await result.json(), { schemaVersion: 1, product: 'claude-desktop', files: [] })
+})
+
+test('unpublished Claude manifests remain 404', async () => {
+  const result = await createHandler({ fetchImpl: async url => {
+    assert.equal(url, `${COS_ROOT}/claude/latest.json`)
+    return new Response(null, { status: 404 })
+  } })(context('claude.json'))
+  assert.equal(result.status, 404)
+  assert.deepEqual(await result.json(), { error: '安装包清单尚未发布' })
+})
+
 test('unknown routes, encoded routes, query inputs and unsupported methods never fetch upstream', async () => {
   let calls = 0
   const handler = createHandler({ fetchImpl: async () => { calls += 1; throw new Error('should not fetch') } })
   assert.equal((await handler(context('other.json'))).status, 404)
   assert.equal((await handler(context('xingmang.json', 'GET', '?url=https://evil.example'))).status, 404)
+  assert.equal((await handler(context('claude.json', 'GET', '?url=https://evil.example'))).status, 404)
   const encoded = context()
   encoded.request = new Request('https://docs-new.example/cos-download-index/%78ingmang.json')
   assert.equal((await handler(encoded)).status, 404)
+  const encodedClaude = context('claude.json')
+  encodedClaude.request = new Request('https://docs-new.example/cos-download-index/%63laude.json')
+  assert.equal((await handler(encodedClaude)).status, 404)
   const array = context()
   array.params.product = ['xingmang.json']
   assert.equal((await handler(array)).status, 404)
   const posted = await handler(context('xingmang.json', 'POST'))
   assert.equal(posted.status, 405)
   assert.equal(posted.headers.get('Allow'), 'GET, HEAD')
+  assert.equal((await handler(context('claude.json', 'POST'))).status, 405)
   assert.equal(calls, 0)
 })
 
@@ -65,6 +92,30 @@ test('HEAD validates the complete upstream index and returns no body', async () 
   const result = await handler(context('xingmang.json', 'HEAD'))
   assert.equal(result.status, 200)
   assert.equal(await result.text(), '')
+})
+
+test('Claude HEAD validates the upstream manifest and returns no body', async () => {
+  const handler = createHandler({ fetchImpl: async (url, options) => {
+    assert.equal(url, `${COS_ROOT}/claude/latest.json`)
+    assert.equal(options.method, 'GET')
+    return jsonResponse({ schemaVersion: 1, product: 'claude-desktop', files: [] })
+  } })
+  const result = await handler(context('claude.json', 'HEAD'))
+  assert.equal(result.status, 200)
+  assert.equal(await result.text(), '')
+})
+
+test('Claude rejects another product manifest and upstream failures without reflecting credentials', async () => {
+  for (const fetchImpl of [
+    async () => jsonResponse({ schemaVersion: 1, product: 'chatgpt', platforms: {} }),
+    async () => new Response(null, { status: 302 }),
+    async () => new Response(new Uint8Array(262145), { headers: { 'Content-Type': 'application/json' } }),
+    async () => { throw new Error('upstream secret-value') }
+  ]) {
+    const result = await createHandler({ fetchImpl })(context('claude.json'))
+    assert.equal(result.status, 502)
+    assert.equal((await result.text()).includes('secret-value'), false)
+  }
 })
 
 test('missing upstream manifests remain 404 and malformed or oversized manifests fail closed', async () => {
