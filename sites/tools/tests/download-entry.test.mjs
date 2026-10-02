@@ -68,12 +68,14 @@ test('provided system buttons link straight to COS without choosing Windows for 
  assert.equal(primary.includes('/guide/manager'),false)
  fixture.destroy()
 })
-test('ChatGPT installation and matching license links appear directly beside their system label',async()=>{
+test('Codex display name keeps the original package and matching license links beside their system label',async()=>{
  const directory=COS_ROOT+'/chatgpt/windows-arm64/26.930.2377.0/'
  const item={id:'windows-arm64',label:'Windows ARM64',architecture:'arm64',version:'26.930.2377.0',fileName:'ChatGPT-arm64.msix',licenseFileName:'ChatGPT-License.xml',url:directory+'ChatGPT-arm64.msix',licenseUrl:directory+'ChatGPT-License.xml',bytes:900000000,format:'msix',sha256:'a'.repeat(64),licenseSha256:'b'.repeat(64)}
  const fixture=setup(async product=>product==='chatgpt'?[item]:[])
  fixture.mount();await flush()
  const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))
+ assert.ok(primary.includes('Codex 桌面端离线包（备用）'))
+ assert.equal(primary.includes('ChatGPT 桌面端'),false)
  assert.ok(primary.includes('href="'+item.url+'"'))
  assert.ok(primary.includes('href="'+item.licenseUrl+'"'))
  assert.ok(primary.includes('下载 Windows ARM64'))

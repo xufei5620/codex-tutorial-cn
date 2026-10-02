@@ -1,7 +1,7 @@
 <script setup>
 import {ref,onMounted,onBeforeUnmount} from 'vue'
 import {fetchCatalog,INDEX_ROUTES} from '../../downloads/catalog.mjs'
-const products=[{id:'manager',title:'星芒 AI 管理工具',description:'先下载管理工具，按工具内的正常流程安装与配置所需工具。'},{id:'chatgpt',title:'ChatGPT 桌面端离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择；Windows 需一并下载许可文件。'},{id:'claude',title:'Claude Desktop 离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择官方安装包。'}]
+const products=[{id:'manager',title:'星芒 AI 管理工具',description:'先下载管理工具，按工具内的正常流程安装与配置所需工具。'},{id:'chatgpt',title:'Codex 桌面端离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择；Windows 需一并下载许可文件。'},{id:'claude',title:'Claude Desktop 离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择官方安装包。'}]
 const catalogs=ref(Object.fromEntries(products.map(product=>[product.id,{status:'idle',items:[]}]))),controllers=new Map()
 let disposed=false
 async function load(product){
