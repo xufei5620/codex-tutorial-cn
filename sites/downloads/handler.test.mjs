@@ -26,7 +26,7 @@ test('legacy Worker runtimes without RequestInit.cache can read every fixed inde
       // This matches the documented error before cache_option_enabled.
       if (Object.hasOwn(options, 'cache')) throw new Error("The 'cache' field on 'RequestInitializerDict' is not implemented.")
       assert.deepEqual(options.headers, { Accept: 'application/json', 'Cache-Control': 'no-cache' })
-      assert.equal(options.credentials, 'omit')
+      assert.equal(Object.hasOwn(options, 'credentials'), false)
       assert.equal(options.redirect, 'error')
       return jsonResponse(value)
     } })
@@ -41,7 +41,7 @@ test('Pages handler requests only the fixed COS object without forwarding cookie
   const handler = createHandler({ fetchImpl: async (url, options) => {
     assert.equal(url, `${COS_ROOT}/xingmang/latest.json`)
     assert.deepEqual(options.headers, { Accept: 'application/json', 'Cache-Control': 'no-cache' })
-    assert.equal(options.credentials, 'omit')
+    assert.equal(Object.hasOwn(options, 'credentials'), false)
     assert.equal(options.redirect, 'error')
     return jsonResponse(managerFixture())
   } })
@@ -66,7 +66,7 @@ test('Claude fixed route returns an empty public manifest without guessing insta
   const handler = createHandler({ fetchImpl: async (url, options) => {
     assert.equal(url, `${COS_ROOT}/claude/latest.json`)
     assert.deepEqual(options.headers, { Accept: 'application/json', 'Cache-Control': 'no-cache' })
-    assert.equal(options.credentials, 'omit')
+    assert.equal(Object.hasOwn(options, 'credentials'), false)
     assert.equal(options.redirect, 'error')
     return jsonResponse({ schemaVersion: 1, product: 'claude-desktop', files: [] })
   } })
@@ -194,14 +194,35 @@ test('request signal getter failures are identified before fetch without exposin
   assert.equal(result.headers.get('X-Xingmang-Upstream-Status'), null)
 })
 
-test('simulated legacy fetch option errors remain transport diagnostics rather than assumed causes', async () => {
-  for (const field of ['credentials', 'signal']) {
+test('Worker requests succeed when the runtime rejects the browser credentials option', async () => {
+  for (const [name, value] of [
+    ['xingmang.json', managerFixture()],
+    ['chatgpt.json', { schemaVersion: 1, product: 'chatgpt', platforms: {} }],
+    ['claude.json', { schemaVersion: 1, product: 'claude-desktop', files: [] }]
+  ]) {
+    let calls = 0
+    const result = await createHandler({ fetchImpl: async (url, options) => {
+      calls += 1
+      if (Object.hasOwn(options, 'credentials')) throw new TypeError('private-runtime-credentials-error')
+      assert.ok(url.startsWith(COS_ROOT + '/'))
+      assert.equal(options.method, 'GET')
+      assert.equal(options.redirect, 'error')
+      assert.ok(options.signal instanceof AbortSignal)
+      assert.deepEqual(options.headers, { Accept: 'application/json', 'Cache-Control': 'no-cache' })
+      return jsonResponse(value)
+    } })(context(name))
+    assert.equal(result.status, 200)
+    assert.equal(calls, 1)
+    assert.equal(result.headers.get('Cache-Control'), 'no-store')
+  }
+})
+
+test('the preserved cancellation signal still reports simulated runtime transport failures safely', async () => {
     const result = await createHandler({ fetchImpl: async (_url, options) => {
-      if (Object.hasOwn(options, field)) throw new TypeError('private-authorization ' + field)
+      if (Object.hasOwn(options, 'signal')) throw new TypeError('private-runtime-signal-error')
       return jsonResponse(managerFixture())
     } })(context())
     assert.deepEqual(await result.json(), { error: '安装包清单暂不可用，请稍后重试', stage: 'transport', code: 'fetch-failed' })
-  }
 })
 
 test('upstream statuses, redirects and response API failures have bounded diagnostics', async () => {

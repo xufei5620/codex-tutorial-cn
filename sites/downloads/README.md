@@ -29,7 +29,7 @@
 
 阶段包括 `init`（尚未发起 fetch）、`transport`（fetch 调用失败）、`response`（响应元数据或重定向）、`status`（非预期 HTTP 状态）、`body`（类型、大小、流或 JSON）、`schema`（产品清单校验）和 `internal`。诊断不会返回原始异常、上游 URL、查询参数、请求头、Cookie 或令牌。只有收到合法 HTTP 状态时才提供 100–599 的数字。
 
-入站 `Request.signal`、自建取消控制器和 `credentials: omit` 保持原实现；这些固定阶段用于现场区分问题，不代表已经确认某个 Worker API 不兼容。仓库和部署工作流没有设置运行时兼容日期，实际值仍可能来自 Pages dashboard。
+入站 `Request.signal` 和自建取消控制器保持原实现。浏览器请求保留 `credentials: omit`；Worker 上游请求仅使用固定 URL 和构造的 Accept/no-cache 头，不携带浏览器专用 credentials 字段，不转发入站 Cookie/Authorization。这一单字段对照用于定位 transport 失败，不代表已经确认某个 Worker API 不兼容。仓库和部署工作流没有设置运行时兼容日期，实际值仍可能来自 Pages dashboard。
 
 ## 验证
 
