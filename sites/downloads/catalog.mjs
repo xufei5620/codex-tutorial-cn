@@ -7,6 +7,43 @@ export const INDEX_ROUTES = Object.freeze({
 const INDEX_KEYS = Object.freeze({ manager: 'xingmang/latest.json', chatgpt: 'chatgpt/latest.json', claude: 'claude/latest.json' })
 const MAX_INDEX_BYTES = 256 * 1024
 const TIMEOUT_MS = 10000
+const FAILURE_DETAILS = new WeakMap()
+const FAILURE_CODES = Object.freeze({
+  init: ['setup', 'request-signal', 'product'],
+  transport: ['fetch-failed'],
+  response: ['metadata', 'redirect', 'url-mismatch'],
+  status: ['upstream-status'],
+  body: ['size-limit', 'content-type', 'missing-stream', 'invalid-content', 'read-failed'],
+  schema: ['invalid-schema', 'projection'],
+  internal: ['unexpected']
+})
+
+function failureDetails(stage, code, upstreamStatus) {
+  if (!Object.hasOwn(FAILURE_CODES, stage) || (!FAILURE_CODES[stage].includes(code) && !['timeout', 'cancelled'].includes(code))) return { stage: 'internal', code: 'unexpected' }
+  return { stage, code, ...(Number.isInteger(upstreamStatus) && upstreamStatus >= 100 && upstreamStatus <= 599 ? { upstreamStatus } : {}) }
+}
+
+function failureError(message, stage, code, upstreamStatus) {
+  const error = new Error(message)
+  FAILURE_DETAILS.set(error, failureDetails(stage, code, upstreamStatus))
+  return error
+}
+
+// Never derive public diagnostics from an upstream error's message or fields.
+export function catalogFailureDiagnostics(error, fallback = { stage: 'internal', code: 'unexpected' }) {
+  const detail = FAILURE_DETAILS.get(error) || fallback
+  return failureDetails(detail.stage, detail.code, detail.upstreamStatus)
+}
+
+function capturedFailure(error, stage, code, upstreamStatus) {
+  const known = FAILURE_DETAILS.get(error)
+  if (known) {
+    FAILURE_DETAILS.set(error, failureDetails(known.stage, known.code, upstreamStatus ?? known.upstreamStatus))
+    return error
+  }
+  const message = stage === 'transport' ? '安装包清单暂时无法连接，请稍后重试' : '安装包清单读取失败，请稍后重试'
+  return failureError(message, stage, code, upstreamStatus)
+}
 const SHA256 = /^[a-f0-9]{64}$/
 const MANAGER_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/
 const MANAGER_PLATFORMS = Object.freeze([
@@ -189,11 +226,11 @@ function abortable(promise, signal) {
 
 async function readJsonResponse(response, signal) {
   const length = response.headers.get('Content-Length')
-  if (length !== null && (!/^\d+$/.test(length) || Number(length) > MAX_INDEX_BYTES)) throw new Error('安装包清单过大')
+  if (length !== null && (!/^\d+$/.test(length) || Number(length) > MAX_INDEX_BYTES)) throw failureError('安装包清单过大', 'body', 'size-limit')
   const type = response.headers.get('Content-Type') || ''
-  if (!/^application\/json(?:\s*;|$)/i.test(type)) throw new Error('安装包清单响应类型无效')
+  if (!/^application\/json(?:\s*;|$)/i.test(type)) throw failureError('安装包清单响应类型无效', 'body', 'content-type')
   const reader = response.body?.getReader()
-  if (!reader) throw new Error('无法读取安装包清单')
+  if (!reader) throw failureError('无法读取安装包清单', 'body', 'missing-stream')
   const decoder = new TextDecoder('utf-8', { fatal: true })
   let bytes = 0
   let text = ''
@@ -202,55 +239,64 @@ async function readJsonResponse(response, signal) {
       const chunk = await abortable(reader.read(), signal)
       if (chunk.done) break
       bytes += chunk.value.byteLength
-      if (bytes > MAX_INDEX_BYTES) throw new Error('安装包清单过大')
+      if (bytes > MAX_INDEX_BYTES) throw failureError('安装包清单过大', 'body', 'size-limit')
       text += decoder.decode(chunk.value, { stream: true })
     }
     text += decoder.decode()
     return JSON.parse(text)
   } catch (error) {
     // A stalled underlying stream must not delay the deadline while cancelling.
-    Promise.resolve(reader.cancel()).catch(() => {})
+    try { Promise.resolve(reader.cancel()).catch(() => {}) } catch {}
     if (signal.aborted) throw signal.reason
-    if (error instanceof SyntaxError || error instanceof TypeError) throw new Error('安装包清单格式无效')
+    if (error instanceof SyntaxError || error instanceof TypeError) throw failureError('安装包清单格式无效', 'body', 'invalid-content')
     throw error
   } finally {
-    reader.releaseLock()
+    // Cleanup failures must not replace the original bounded-read diagnostic.
+    try { reader.releaseLock() } catch {}
   }
 }
 
 // Both browser requests and the Pages Function use this reader. The upstream
 // option chooses only a fixed key; it never accepts a user supplied proxy URL.
 export async function loadCatalogIndex(product, { fetchImpl = fetch, signal, upstream = false } = {}) {
-  if (!Object.hasOwn(INDEX_ROUTES, product)) throw new Error('安装包类型无效')
-  const controller = new AbortController()
-  function cancelled() { controller.abort(new Error('安装包清单读取已取消')) }
-  if (signal?.aborted) cancelled()
-  else signal?.addEventListener('abort', cancelled, { once: true })
-  const timer = setTimeout(() => controller.abort(new Error('安装包清单读取超时，请稍后重试')), TIMEOUT_MS)
-  const url = upstream ? `${COS_ROOT}/${INDEX_KEYS[product]}` : INDEX_ROUTES[product]
+  let controller, timer, attached = false
+  let stage = 'init', code = 'setup', upstreamStatus
+  function cancelled() { controller.abort(failureError('安装包清单读取已取消', stage, 'cancelled', upstreamStatus)) }
   try {
+    if (!Object.hasOwn(INDEX_ROUTES, product)) throw failureError('安装包类型无效', 'init', 'product')
+    controller = new AbortController()
+    if (signal?.aborted) cancelled()
+    else if (signal) { signal.addEventListener('abort', cancelled, { once: true }); attached = true }
+    timer = setTimeout(() => controller.abort(failureError('安装包清单读取超时，请稍后重试', stage, 'timeout', upstreamStatus)), TIMEOUT_MS)
+    const url = upstream ? `${COS_ROOT}/${INDEX_KEYS[product]}` : INDEX_ROUTES[product]
     if (controller.signal.aborted) throw controller.signal.reason
     // RequestInit.cache requires a compatibility flag in older Workers.
     // A standard HTTP header keeps the shared browser/edge reader portable.
+    stage = 'transport'; code = 'fetch-failed'
     const response = await abortable(Promise.resolve().then(() => fetchImpl(url, {
       method: 'GET', credentials: 'omit', redirect: 'error',
       headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, signal: controller.signal
     })), controller.signal)
+    stage = 'response'; code = 'metadata'
+    const status = response.status
+    if (Number.isInteger(status) && status >= 100 && status <= 599) upstreamStatus = status
     const expectedUrl = upstream ? url : typeof location !== 'undefined' ? new URL(url, location.origin).href : url
-    if (response.redirected || response.status >= 300 && response.status < 400
-      || (response.url && response.url !== expectedUrl)) throw new Error('安装包清单发生重定向')
-    if (response.status === 404) return null
-    if (response.status !== 200) throw new Error(`安装包清单暂不可用（${response.status}）`)
+    if (response.redirected || status >= 300 && status < 400) throw failureError('安装包清单发生重定向', 'response', 'redirect', upstreamStatus)
+    if (response.url && response.url !== expectedUrl) throw failureError('安装包清单发生重定向', 'response', 'url-mismatch', upstreamStatus)
+    stage = 'status'; code = 'upstream-status'
+    if (status === 404) return null
+    if (status !== 200) throw failureError(upstreamStatus ? `安装包清单暂不可用（${upstreamStatus}）` : '安装包清单响应状态无效', stage, code, upstreamStatus)
+    stage = 'body'; code = 'read-failed'
     const value = await readJsonResponse(response, controller.signal)
+    stage = 'schema'; code = 'invalid-schema'
     validateIndex(product, value)
     return value
   } catch (error) {
-    if (controller.signal.aborted) throw controller.signal.reason
-    if (error instanceof TypeError) throw new Error('安装包清单暂时无法连接，请稍后重试')
-    throw error
+    if (controller?.signal.aborted) throw capturedFailure(controller.signal.reason, stage, code, upstreamStatus)
+    throw capturedFailure(error, stage, code, upstreamStatus)
   } finally {
     clearTimeout(timer)
-    signal?.removeEventListener('abort', cancelled)
+    if (attached) { try { signal.removeEventListener('abort', cancelled) } catch {} }
   }
 }
 

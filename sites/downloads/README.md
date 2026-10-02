@@ -23,6 +23,14 @@
 
 后续只更新 COS 索引即可更新下载选项，教程无需随每次发布修改文件 URL。关闭生产同步不会删除已发布对象。教程源码验证不代表已部署，下载通过也不等于用户安装成功。
 
+## 索引读取诊断
+
+502 响应仍使用固定中文错误，另外提供固定枚举 `stage`、`code` 和可选数字 `upstreamStatus`。对应响应头是 `X-Xingmang-Index-Stage`、`X-Xingmang-Index-Code`、`X-Xingmang-Upstream-Status`；HEAD 仅返回头。
+
+阶段包括 `init`（尚未发起 fetch）、`transport`（fetch 调用失败）、`response`（响应元数据或重定向）、`status`（非预期 HTTP 状态）、`body`（类型、大小、流或 JSON）、`schema`（产品清单校验）和 `internal`。诊断不会返回原始异常、上游 URL、查询参数、请求头、Cookie 或令牌。只有收到合法 HTTP 状态时才提供 100–599 的数字。
+
+入站 `Request.signal`、自建取消控制器和 `credentials: omit` 保持原实现；这些固定阶段用于现场区分问题，不代表已经确认某个 Worker API 不兼容。仓库和部署工作流没有设置运行时兼容日期，实际值仍可能来自 Pages dashboard。
+
 ## 验证
 
 在 `sites` 目录执行：

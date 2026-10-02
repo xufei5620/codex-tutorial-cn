@@ -1,4 +1,4 @@
-import { loadCatalogIndex, projectPublicIndex } from '../../downloads/catalog.mjs'
+import { loadCatalogIndex, projectPublicIndex, catalogFailureDiagnostics } from '../../downloads/catalog.mjs'
 
 const PRODUCTS = Object.freeze({ 'xingmang.json': 'manager', 'chatgpt.json': 'chatgpt', 'claude.json': 'claude' })
 
@@ -22,14 +22,23 @@ export function createHandler({ fetchImpl = fetch } = {}) {
     const url = new URL(request.url)
     if (typeof name !== 'string' || !Object.hasOwn(PRODUCTS, name)
       || url.pathname !== `/cos-download-index/${name}` || url.search) return response({ error: '安装包清单地址无效' }, 404, head)
+    let fallback = { stage: 'init', code: 'request-signal' }
     try {
       const product = PRODUCTS[name]
-      const value = await loadCatalogIndex(product, { fetchImpl, signal: request.signal, upstream: true })
+      const signal = request.signal
+      fallback = { stage: 'internal', code: 'unexpected' }
+      const value = await loadCatalogIndex(product, { fetchImpl, signal, upstream: true })
       if (value === null) return response({ error: '安装包清单尚未发布' }, 404, head)
+      fallback = { stage: 'schema', code: 'projection' }
       return response(projectPublicIndex(product, value), 200, head)
-    } catch {
+    } catch (error) {
       // Never reflect arbitrary upstream errors, URLs or request credentials.
-      return response({ error: '安装包清单暂不可用，请稍后重试' }, 502, head)
+      const diagnostic = catalogFailureDiagnostics(error, fallback)
+      return response({ error: '安装包清单暂不可用，请稍后重试', ...diagnostic }, 502, head, {
+        'X-Xingmang-Index-Stage': diagnostic.stage,
+        'X-Xingmang-Index-Code': diagnostic.code,
+        ...(diagnostic.upstreamStatus === undefined ? {} : { 'X-Xingmang-Upstream-Status': String(diagnostic.upstreamStatus) })
+      })
     }
   }
 }
