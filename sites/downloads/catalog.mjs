@@ -230,9 +230,11 @@ export async function loadCatalogIndex(product, { fetchImpl = fetch, signal, ups
   const url = upstream ? `${COS_ROOT}/${INDEX_KEYS[product]}` : INDEX_ROUTES[product]
   try {
     if (controller.signal.aborted) throw controller.signal.reason
+    // RequestInit.cache requires a compatibility flag in older Workers.
+    // A standard HTTP header keeps the shared browser/edge reader portable.
     const response = await abortable(Promise.resolve().then(() => fetchImpl(url, {
-      method: 'GET', credentials: 'omit', redirect: 'error', cache: 'no-store',
-      headers: { Accept: 'application/json' }, signal: controller.signal
+      method: 'GET', credentials: 'omit', redirect: 'error',
+      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, signal: controller.signal
     })), controller.signal)
     const expectedUrl = upstream ? url : typeof location !== 'undefined' ? new URL(url, location.origin).href : url
     if (response.redirected || response.status >= 300 && response.status < 400

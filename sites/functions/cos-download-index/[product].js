@@ -8,7 +8,7 @@ function response(body, status, head = false, extraHeaders = {}) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'X-Content-Type-Options': 'nosniff',
-      'Cache-Control': status === 200 ? 'public, max-age=60' : 'no-store',
+      'Cache-Control': 'no-store',
       ...extraHeaders
     }
   })

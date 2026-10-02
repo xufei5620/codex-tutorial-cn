@@ -227,7 +227,7 @@ test('fetchCatalog uses fixed same-origin routes and omits account credentials',
     assert.equal(options.method, 'GET')
     assert.equal(options.credentials, 'omit')
     assert.equal(options.redirect, 'error')
-    assert.deepEqual(options.headers, { Accept: 'application/json' })
+    assert.deepEqual(options.headers, { Accept: 'application/json', 'Cache-Control': 'no-cache' })
     assert.equal(options.signal.aborted, false)
     return jsonResponse(managerFixture())
   } })
