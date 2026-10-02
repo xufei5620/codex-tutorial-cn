@@ -1,7 +1,7 @@
 <script setup>
 import {ref,onMounted,onBeforeUnmount} from 'vue'
 import {fetchCatalog,INDEX_ROUTES} from '../../downloads/catalog.mjs'
-const products=[{id:'manager',title:'星芒 AI 管理工具',description:'按系统与芯片选择；安装后登录并配置工具。'},{id:'chatgpt',title:'ChatGPT 桌面端离线包',description:'按系统与芯片选择官方离线包；Windows 需一并下载许可文件。'}]
+const products=[{id:'manager',title:'星芒 AI 管理工具',description:'先下载管理工具；ChatGPT 等应用通常在管理工具内按正常流程安装与配置。'},{id:'chatgpt',title:'ChatGPT 桌面端离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择；Windows 需一并下载许可文件。'}]
 const catalogs=ref(Object.fromEntries(products.map(product=>[product.id,{status:'idle',items:[]}]))),controllers=new Map()
 let disposed=false
 async function load(product){
