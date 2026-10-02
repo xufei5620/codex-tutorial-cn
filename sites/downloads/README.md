@@ -1,6 +1,6 @@
 # Learning Studio v5.6 的 COS 下载入口
 
-两站的管理工具教程沿用 v5.6 学习空间布局。金色「下载安装包」按钮展开系统选择区，不再打开飞书，也不默认下载第一个 Windows 包。
+两站的管理工具教程沿用 v5.6 学习空间布局，直接提供两组按系统和架构标注的安装包按钮：星芒 AI 管理工具、ChatGPT 离线包。按钮直接访问对应 COS 文件，不再打开飞书；Windows 官方安装包与许可文件并列。
 
 - 按量站：`https://docs-new.solov.cc/guide/manager#download-installers`
 - 订阅站：`https://docs-sub.solov.cc/guide/manager#download-installers`
@@ -12,7 +12,7 @@
 
 浏览器读取同源 `/cos-download-index/xingmang.json` 与 `/cos-download-index/chatgpt.json`。`sites/functions/` 中的 Cloudflare Pages Function 只允许这两个公开索引，限制超时、响应体和重定向，不使用上传密钥，不转发用户 Cookie 或 Authorization。生成的 `_routes.json` 只包含两个索引路径。
 
-索引或安装包还未上传时，不会编造下载地址。页面显示同步状态，并提供重试和本站客服入口。提供哪个系统以实际清单为准，不根据文件名猜测；Mac 官方完整 ZIP 与星芒 DMG 分开说明。
+页面初始化只读取两份小清单，安装说明与摘要区不再触发请求。索引或安装包还未上传时，不会编造下载地址。页面显示准备状态，并提供重试和本站客服入口。提供哪个系统以实际清单为准，不根据文件名猜测；Mac 官方完整 ZIP 与星芒 DMG 分开说明。
 
 ## 首次上线顺序
 
