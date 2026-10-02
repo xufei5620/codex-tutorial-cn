@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { COS_ROOT, INDEX_ROUTES, validateManagerIndex, validateChatgptIndex, validateClaudeIndex, fetchCatalog, projectPublicIndex } from './catalog.mjs'
+import { COS_ROOT, INDEX_ROUTES, validateManagerIndex, validateChatgptIndex, validateClaudeIndex, fetchCatalog, projectPublicIndex, catalogFailureDiagnostics } from './catalog.mjs'
 
 const HASH = 'a'.repeat(64)
 
@@ -283,6 +283,10 @@ test('an already cancelled request does not start a network request', async () =
 
 test('the total ten-second deadline also covers a body that never finishes', { timeout: 12000 }, async () => {
   const start = Date.now()
-  await assert.rejects(fetchCatalog('manager', { fetchImpl: async () => new Response(new ReadableStream({ start() {} }), { headers: { 'Content-Type': 'application/json' } }) }), /超时/)
+  await assert.rejects(fetchCatalog('manager', { fetchImpl: async () => new Response(new ReadableStream({ start() {} }), { headers: { 'Content-Type': 'application/json' } }) }), error => {
+    assert.match(error.message, /超时/)
+    assert.deepEqual(catalogFailureDiagnostics(error), { stage: 'body', code: 'timeout', upstreamStatus: 200 })
+    return true
+  })
   assert.ok(Date.now() - start < 11500)
 })

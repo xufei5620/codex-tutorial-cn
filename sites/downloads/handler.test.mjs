@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createHandler } from '../functions/cos-download-index/[product].js'
-import { COS_ROOT, validateManagerIndex, validateChatgptIndex } from './catalog.mjs'
+import { COS_ROOT, validateManagerIndex, validateChatgptIndex, catalogFailureDiagnostics } from './catalog.mjs'
 
 const HASH = 'b'.repeat(64)
 function managerFixture() {
@@ -181,4 +181,101 @@ test('cancelled requests interrupt a stalled upstream body', async () => {
   const result = createHandler({ fetchImpl: async () => new Response(new ReadableStream({ start() {} }), { headers: { 'Content-Type': 'application/json' } }) })({ request, params: { product: 'xingmang.json' } })
   controller.abort()
   assert.equal((await result).status, 502)
+})
+
+test('request signal getter failures are identified before fetch without exposing the error', async () => {
+  const fixture = context()
+  Object.defineProperty(fixture.request, 'signal', { get() { throw new Error('private-cookie https://private.example/?key=private-key') } })
+  let calls = 0
+  const result = await createHandler({ fetchImpl: async () => { calls += 1; return jsonResponse(managerFixture()) } })(fixture)
+  assert.equal(calls, 0)
+  assert.deepEqual(await result.json(), { error: '安装包清单暂不可用，请稍后重试', stage: 'init', code: 'request-signal' })
+  assert.equal(result.headers.get('X-Xingmang-Index-Stage'), 'init')
+  assert.equal(result.headers.get('X-Xingmang-Upstream-Status'), null)
+})
+
+test('simulated legacy fetch option errors remain transport diagnostics rather than assumed causes', async () => {
+  for (const field of ['credentials', 'signal']) {
+    const result = await createHandler({ fetchImpl: async (_url, options) => {
+      if (Object.hasOwn(options, field)) throw new TypeError('private-authorization ' + field)
+      return jsonResponse(managerFixture())
+    } })(context())
+    assert.deepEqual(await result.json(), { error: '安装包清单暂不可用，请稍后重试', stage: 'transport', code: 'fetch-failed' })
+  }
+})
+
+test('upstream statuses, redirects and response API failures have bounded diagnostics', async () => {
+  for (const [fetchImpl, stage, code, upstreamStatus] of [
+    [async () => new Response(null, { status: 403 }), 'status', 'upstream-status', 403],
+    [async () => new Response(null, { status: 500 }), 'status', 'upstream-status', 500],
+    [async () => new Response(null, { status: 302 }), 'response', 'redirect', 302],
+    [async () => { const r = jsonResponse(managerFixture()); Object.defineProperty(r, 'url', { value: 'https://private.example/?token=private' }); return r }, 'response', 'url-mismatch', 200],
+    [async () => { const r = jsonResponse(managerFixture()); Object.defineProperty(r, 'url', { get() { throw new Error('private-response-url') } }); return r }, 'response', 'metadata', 200]
+  ]) {
+    const result = await createHandler({ fetchImpl })(context())
+    assert.equal(result.status, 502)
+    assert.deepEqual(await result.json(), { error: '安装包清单暂不可用，请稍后重试', stage, code, upstreamStatus })
+    assert.equal(result.headers.get('X-Xingmang-Upstream-Status'), String(upstreamStatus))
+  }
+})
+
+test('body and schema failures expose only fixed codes with the successful upstream status', async () => {
+  for (const [value, stage, code] of [
+    [new Response(null, { headers: { 'Content-Type': 'application/json' } }), 'body', 'missing-stream'],
+    [new Response('private-html', { headers: { 'Content-Type': 'text/html' } }), 'body', 'content-type'],
+    [new Response(new Uint8Array(262145), { headers: { 'Content-Type': 'application/json' } }), 'body', 'size-limit'],
+    [new Response('{private-broken', { headers: { 'Content-Type': 'application/json' } }), 'body', 'invalid-content'],
+    [jsonResponse({ schemaVersion: 1, product: 'private-product', files: [] }), 'schema', 'invalid-schema']
+  ]) {
+    const result = await createHandler({ fetchImpl: async () => value })(context())
+    assert.deepEqual(await result.json(), { error: '安装包清单暂不可用，请稍后重试', stage, code, upstreamStatus: 200 })
+  }
+})
+
+test('HEAD failures keep diagnostics in headers with no body', async () => {
+  const result = await createHandler({ fetchImpl: async () => new Response(null, { status: 403 }) })(context('claude.json', 'HEAD'))
+  assert.equal(await result.text(), '')
+  assert.equal(result.headers.get('X-Xingmang-Index-Stage'), 'status')
+  assert.equal(result.headers.get('X-Xingmang-Index-Code'), 'upstream-status')
+  assert.equal(result.headers.get('X-Xingmang-Upstream-Status'), '403')
+  assert.equal(result.headers.get('Cache-Control'), 'no-store')
+})
+
+test('forged error fields and nonnumeric statuses cannot become public diagnostics', async () => {
+  const forged = Object.assign(new Error('private-message'), { stage: 'private-stage', code: 'private-code', upstreamStatus: 'private-status' })
+  assert.deepEqual(catalogFailureDiagnostics(forged), { stage: 'internal', code: 'unexpected' })
+  const result = await createHandler({ fetchImpl: async () => {
+    const value = jsonResponse(managerFixture())
+    Object.defineProperty(value, 'status', { value: 'private-status' })
+    return value
+  } })(context())
+  assert.deepEqual(await result.json(), { error: '安装包清单暂不可用，请稍后重试', stage: 'status', code: 'upstream-status' })
+  assert.equal(result.headers.get('X-Xingmang-Upstream-Status'), null)
+})
+
+test('signal setup and response stream failures remain distinct and private', async () => {
+  const fixture = context()
+  Object.defineProperty(fixture.request, 'signal', { value: { aborted: false, addEventListener() { throw new Error('private-signal-setup') } } })
+  let calls = 0
+  const early = await createHandler({ fetchImpl: async () => { calls += 1; return jsonResponse(managerFixture()) } })(fixture)
+  assert.equal(calls, 0)
+  assert.deepEqual(await early.json(), { error: '安装包清单暂不可用，请稍后重试', stage: 'init', code: 'setup' })
+  const stream = new ReadableStream({ start(controller) { controller.error(new Error('private-stream-body')) } })
+  const late = await createHandler({ fetchImpl: async () => new Response(stream, { headers: { 'Content-Type': 'application/json' } }) })(context())
+  assert.deepEqual(await late.json(), { error: '安装包清单暂不可用，请稍后重试', stage: 'body', code: 'read-failed', upstreamStatus: 200 })
+})
+
+test('reader cleanup errors cannot replace the original size limit diagnostic', async () => {
+  for (const cleanup of ['cancel', 'releaseLock']) {
+    const value = jsonResponse(managerFixture())
+    const calls = { cancel: 0, releaseLock: 0 }
+    Object.defineProperty(value, 'body', { value: { getReader() { return {
+      async read() { return { done: false, value: new Uint8Array(262145) } },
+      cancel() { calls.cancel += 1; if (cleanup === 'cancel') throw new Error('private-cancel-error') },
+      releaseLock() { calls.releaseLock += 1; if (cleanup === 'releaseLock') throw new Error('private-release-error') }
+    } } } })
+    const result = await createHandler({ fetchImpl: async () => value })(context())
+    assert.deepEqual(await result.json(), { error: '安装包清单暂不可用，请稍后重试', stage: 'body', code: 'size-limit', upstreamStatus: 200 })
+    assert.deepEqual(calls, { cancel: 1, releaseLock: 1 })
+  }
 })
