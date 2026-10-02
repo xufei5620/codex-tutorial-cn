@@ -9,9 +9,8 @@ import EditorBar from './EditorBar.vue'
 const {theme}=useData(),route=useRoute(),data=computed(()=>theme.value.studio),api=installShots(data.value),menu=ref(false),focus=ref(false),search=ref(''),searchDialog=ref(),main=ref(),targets=ref([]),errorQuery=ref('');const current=computed(()=>route.path.replace(/\.html$/,'').replace(/\/$/,'')||'/');const isHome=computed(()=>current.value==='/'||current.value==='/guide/start');const isHelp=computed(()=>['/errors','/faq'].includes(current.value));const chapterId=computed(()=>current.value.match(/\/learn\/codex\/(ch\d+)/)?.[1]);
 const nav=computed(()=>[['⌂','教程总览','/guide/start'],['▣','Codex 零基础','/learn/codex/'],['◇','工具接入','/tools'],['▤','Skill 工坊','/skills'],['▱','管理工具','/guide/manager'],['◷',data.value.site.id==='sub2api'?'订阅与额度':'充值与用量','/guide/account'],['?','常见问题','/faq'],['!','错误码对照','/errors'],['◎','联系客服','/contact']]);
 const pageKind=computed(()=>{if(isHome.value)return 'home';if(current.value.startsWith('/learn/codex'))return 'course';if(current.value==='/tools')return 'tools';if(current.value==='/skills')return 'skills';if(isHelp.value)return 'help';if(['/guide/manager','/guide/account','/contact'].includes(current.value))return 'doc';return 'page'})
-function packageHref(site){for(const item of Object.values(site?.downloads||{})){if(item.enabled===false||!item.url)continue;try{const u=new URL(String(item.url));if(u.protocol==='https:'&&!u.username&&!u.password)return u.href}catch{}}return '/contact'}
 const pageLinks=computed(()=>({
-  '/guide/manager':[['下载安装包',packageHref(data.value.site)],['选择适合你的工具','/guide/choose-tool'],['验证第一次调用','/guide/verify'],['Codex 零基础','/learn/codex/']],
+  '/guide/manager':[['下载安装包',data.value.site.download_page_url],['选择适合你的工具','/guide/choose-tool'],['验证第一次调用','/guide/verify'],['Codex 零基础','/learn/codex/']],
   '/guide/account':[['模型与定价','/guide/models'],['验证第一次调用','/guide/verify'],['Codex 零基础','/learn/codex/']],
   '/faq':[['错误码对照','/errors'],['联系客服','/contact']],
   '/errors':[['常见问题','/faq'],['联系客服','/contact']],

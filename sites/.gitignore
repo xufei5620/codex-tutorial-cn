@@ -19,6 +19,7 @@ node_modules/
 */public/img/course/
 */public/img/contact/wecom-auto.svg
 */public/_headers
+*/public/_routes.json
 */nav.generated.json
 */site.generated.json
 */course-provenance.generated.json

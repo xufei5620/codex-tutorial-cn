@@ -4,7 +4,7 @@ description: 自动配置 Codex、Claude Code、Gemini、Grok 等常用工具。
 ---
 # 星芒 AI 管理工具使用教程
 
-<p class="manager-download"><DownloadLink /></p>
+<DownloadLink />
 
 一次装好，常用 AI 工具会自动配好。不用自己翻配置文件，也不用手填地址和密钥。
 
@@ -25,7 +25,9 @@ description: 自动配置 Codex、Claude Code、Gemini、Grok 等常用工具。
 
 ## 1. 获取适合自己电脑的版本
 
-点页面上方的「下载安装包」，会打开本站的飞书下载文档。按操作系统和芯片架构选一份即可。尚未公开该安装包时，通过[本站客服](/contact)确认版本。
+展开页面上方的「下载安装包」，按操作系统和芯片架构选择存储桶直链。星芒 AI 管理工具与 ChatGPT 桌面端离线包分别列出，版本号、文件大小和 SHA-256 可在下载区核对。尚未提供对应安装包时，通过[本站客服](/contact)确认版本。
+
+Windows 的 ChatGPT 离线安装需要同时下载对应的 MSIX 和许可文件，并按下载区的管理员 PowerShell 命令安装。macOS 使用 ZIP 包，Linux 只显示已准备好的实际安装包。安装包下载成功不代表中转接口已经提供客户端的全部功能，接入后仍需按 [验证第一次调用](/guide/verify)检查。
 
 不要把测试版、旧版本或其他站点的安装包当作当前正式版本。版本号、系统要求与更新说明应以实际安装包发布信息为准。
 

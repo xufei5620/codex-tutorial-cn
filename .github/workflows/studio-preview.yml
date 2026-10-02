@@ -25,15 +25,20 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: sites/package-lock.json
-      - name: Original infrastructure and v5.6 regression tests
-        working-directory: sites
-        run: node --test tools/tests/*.test.mjs studio/tests/*.test.mjs
       - name: Install locked build dependencies
         working-directory: sites
         run: npm ci
+      - name: Original infrastructure and v5.6 regression tests
+        working-directory: sites
+        run: node --test tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs
       - name: Build actual new learning studio for both sites
         working-directory: sites
         run: npm run build
+      - name: Compile download index Functions without deploying
+        working-directory: sites
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: npx wrangler pages functions build --outdir "${{ runner.temp }}/cos-download-functions"
       - name: Check source routes
         working-directory: sites
         run: node tools/check-routes.mjs

@@ -8,7 +8,7 @@
 - 新深蓝侧栏、浅色阅读区、暖金学习卡片；原有营销首页 HTML 不在本 PR 中改版。
 - 本章有序步骤分别预留截图位；说明小节可隐藏补充图；不以模拟界面替代真实截图。
 - 本站账户页、各工具文章、FAQ、错误码保留独立路由；首页既有 /guide/start、/clients/codex 等路径继续有效。
-- 工具接入是独立页；下载安装包直接打开飞书文档；读者文案按单站书写，不提另一站。
+- 工具接入是独立页；下载安装包在管理工具教程中展开系统选择区，使用 COS 清单生成直链；读者文案按单站书写，不提另一站。接入与发布顺序见 `../downloads/README.md`。
 
 ## 本地编辑与正式保存的区别
 
@@ -48,7 +48,7 @@ node studio/import-screenshots.mjs --site sub2api --file /path/to/screenshots-su
 
 - 章节：`content/yichen/catalog.json` 与 `content/yichen/chapters/`。
 - 接入教程：`sites/shared/pages/clients/`。
-- 下载网址、版本、架构、客服链接：各站site.json。空网址不生成假下载按钮。
+- 通用下载入口、同源索引路径与客服链接：各站site.json。安装包版本、架构、直链和摘要来自经过校验的 COS 索引；未提供的平台不生成假下载按钮。
 - FAQ和错误码仍为各站独立Markdown。
 
 ### 本地编辑教程配图

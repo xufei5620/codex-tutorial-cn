@@ -26,21 +26,26 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: sites/package-lock.json
+      - name: Install locked dependencies
+        working-directory: sites
+        run: npm ci
       - name: Unit checks (synthetic fixtures)
         working-directory: sites
-        run: node --test tools/tests/*.test.mjs
+        run: node --test tools/tests/*.test.mjs downloads/*.test.mjs
       - name: Stage actual original courses and check article targets
         working-directory: sites
         run: |
           node tools/prebuild.mjs sub2api
           node tools/prebuild.mjs newapi
           node tools/check-routes.mjs
-      - name: Install locked dependencies
-        working-directory: sites
-        run: npm ci
       - name: Build both documentation sites
         working-directory: sites
         run: npm run build
+      - name: Compile download index Functions without deploying
+        working-directory: sites
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: npx wrangler pages functions build --outdir "${{ runner.temp }}/cos-download-functions"
       - name: Upload exact static builds
         uses: actions/upload-artifact@v4
         with:
