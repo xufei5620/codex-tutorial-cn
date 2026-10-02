@@ -15,10 +15,32 @@ function context(name = 'xingmang.json', method = 'GET', suffix = '') {
 }
 function jsonResponse(value) { return new Response(JSON.stringify(value), { headers: { 'Content-Type': 'application/json' } }) }
 
+test('legacy Worker runtimes without RequestInit.cache can read every fixed index', async () => {
+  const statuses = []
+  for (const [name, value] of [
+    ['xingmang.json', managerFixture()],
+    ['chatgpt.json', { schemaVersion: 1, product: 'chatgpt', platforms: {} }],
+    ['claude.json', { schemaVersion: 1, product: 'claude-desktop', files: [] }]
+  ]) {
+    const handler = createHandler({ fetchImpl: async (_url, options) => {
+      // This matches the documented error before cache_option_enabled.
+      if (Object.hasOwn(options, 'cache')) throw new Error("The 'cache' field on 'RequestInitializerDict' is not implemented.")
+      assert.deepEqual(options.headers, { Accept: 'application/json', 'Cache-Control': 'no-cache' })
+      assert.equal(options.credentials, 'omit')
+      assert.equal(options.redirect, 'error')
+      return jsonResponse(value)
+    } })
+    const result = await handler(context(name))
+    assert.equal(result.headers.get('Cache-Control'), 'no-store')
+    statuses.push(result.status)
+  }
+  assert.deepEqual(statuses, [200, 200, 200])
+})
+
 test('Pages handler requests only the fixed COS object without forwarding cookies or authorization', async () => {
   const handler = createHandler({ fetchImpl: async (url, options) => {
     assert.equal(url, `${COS_ROOT}/xingmang/latest.json`)
-    assert.deepEqual(options.headers, { Accept: 'application/json' })
+    assert.deepEqual(options.headers, { Accept: 'application/json', 'Cache-Control': 'no-cache' })
     assert.equal(options.credentials, 'omit')
     assert.equal(options.redirect, 'error')
     return jsonResponse(managerFixture())
@@ -43,7 +65,7 @@ test('ChatGPT fixed route returns a schema-compatible public manifest', async ()
 test('Claude fixed route returns an empty public manifest without guessing installer links', async () => {
   const handler = createHandler({ fetchImpl: async (url, options) => {
     assert.equal(url, `${COS_ROOT}/claude/latest.json`)
-    assert.deepEqual(options.headers, { Accept: 'application/json' })
+    assert.deepEqual(options.headers, { Accept: 'application/json', 'Cache-Control': 'no-cache' })
     assert.equal(options.credentials, 'omit')
     assert.equal(options.redirect, 'error')
     return jsonResponse({ schemaVersion: 1, product: 'claude-desktop', files: [] })
@@ -51,6 +73,19 @@ test('Claude fixed route returns an empty public manifest without guessing insta
   const result = await handler(context('claude.json'))
   assert.equal(result.status, 200)
   assert.deepEqual(await result.json(), { schemaVersion: 1, product: 'claude-desktop', files: [] })
+})
+
+test('legacy Worker runtimes preserve unpublished indexes as uncached 404 responses', async () => {
+  for (const name of ['xingmang.json', 'chatgpt.json', 'claude.json']) {
+    const handler = createHandler({ fetchImpl: async (_url, options) => {
+      if (Object.hasOwn(options, 'cache')) throw new Error("The 'cache' field on 'RequestInitializerDict' is not implemented.")
+      return new Response(null, { status: 404 })
+    } })
+    const result = await handler(context(name))
+    assert.equal(result.status, 404)
+    assert.equal(result.headers.get('Cache-Control'), 'no-store')
+    assert.deepEqual(await result.json(), { error: '安装包清单尚未发布' })
+  }
 })
 
 test('unpublished Claude manifests remain 404', async () => {
