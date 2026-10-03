@@ -87,8 +87,8 @@ export function build(id,root=ROOT){
  const publicSite={id:site.id,name:site.name,title:site.title,description:site.description,domain:site.domain,site_url:site.site_url,base_url:site.base_url,codex_base_url:vars.CODEX_BASE_URL,openclaw_base_url:vars.OPENCLAW_BASE_URL,contact,downloads:site.downloads||{},download_page_url:site.download_page_url,download_indexes:site.download_indexes}
  outputs.push(['site.generated.json',JSON.stringify(publicSite,null,2)],['nav.generated.json',JSON.stringify(nav,null,2)],['course-provenance.generated.json',JSON.stringify({version:course.version,sources:course.sources},null,2)])
  const parent=new URL(site.site_url).origin
- outputs.push(['public/_headers',`/*\n  Content-Security-Policy: frame-ancestors 'self' ${parent}\n  Referrer-Policy: no-referrer\n  X-Content-Type-Options: nosniff\n`])
- outputs.push(['public/_routes.json',JSON.stringify({version:1,include:Object.values(INDEX_ROUTES),exclude:[]},null,2)+'\n'])
+ outputs.push(['public/_headers',`/*\n  Content-Security-Policy: frame-ancestors 'self' ${parent}\n  Referrer-Policy: no-referrer\n  X-Content-Type-Options: nosniff\n\n`+Object.values(INDEX_ROUTES).map(route=>route+'\n  Content-Type: application/json; charset=utf-8\n  Cache-Control: no-store\n  X-Content-Type-Options: nosniff\n').join('\n')])
+ outputs.push(['public/_routes.json',JSON.stringify({version:1,include:Object.values(INDEX_ROUTES),exclude:Object.values(INDEX_ROUTES)},null,2)+'\n'])
  const outputPaths=[]
  for(const [name,body]of outputs){
   if(path.isAbsolute(name)||name.split(/[\\/]/).includes('..'))throw Error('Invalid output path')
