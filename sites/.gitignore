@@ -20,6 +20,8 @@ node_modules/
 */public/img/contact/wecom-auto.svg
 */public/_headers
 */public/_routes.json
+*/public/cos-download-index/
+/.cos-index-cache/
 */nav.generated.json
 */site.generated.json
 */course-provenance.generated.json

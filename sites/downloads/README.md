@@ -10,7 +10,7 @@
 
 两站读取固定 COS 桶的 `xingmang/latest.json`、`chatgpt/latest.json` 和 `claude/latest.json`。索引由管理工具仓库的发布同步和官方包定时同步工作流生成；安装包来自不可变版本目录。用户下载文件直接访问 COS，教程站仅代理小 JSON。
 
-浏览器读取同源 `/cos-download-index/xingmang.json`、`/cos-download-index/chatgpt.json` 与 `/cos-download-index/claude.json`。`sites/functions/` 中的 Cloudflare Pages Function 只允许这三个公开索引，限制超时、响应体和重定向，不使用上传密钥，不转发用户 Cookie 或 Authorization。生成的 `_routes.json` 只包含三个索引路径。
+浏览器读取同源 `/cos-download-index/xingmang.json`、`/cos-download-index/chatgpt.json` 与 `/cos-download-index/claude.json`。现有 Pages CI 使用 Node 有界读取这三份公开 COS 清单，执行相同的 schema 校验和公开字段投影，写入两站静态资源。`_routes.json` 的 include 与 exclude 都是这三条精确路径；exclude 优先，索引直接由静态 ASSETS 服务，不经过当前失败的 Worker 出网链路。`_headers` 对索引强制 JSON、no-store 和 nosniff。没有新源主机、上传密钥或用户请求头转发。
 
 页面初始化只读取三份小清单，安装说明与摘要区不再触发请求。索引或安装包还未上传时，不会编造下载地址。页面显示准备状态，并提供重试和本站客服入口。提供哪个系统以实际清单为准，不根据文件名猜测；Codex Mac 完整 ZIP、星芒 DMG 与 Claude Mac Universal 包分别说明，不将 Universal 复制成两份架构包。显示名称使用 Codex 桌面端，内部仍保留 `chatgpt` 产品与官方文件名。
 
@@ -23,9 +23,15 @@
 
 后续只更新 COS 索引即可更新下载选项，教程无需随每次发布修改文件 URL。关闭生产同步不会删除已发布对象。教程源码验证不代表已部署，下载通过也不等于用户安装成功。
 
+## 静态镜像自动更新
+
+`sites` 工作流保留 main 推送与手动触发，并每六小时刷新三份公开清单后使用已有 Pages 凭据部署两站。可以手动触发以立即反映刚完成的 COS 同步。读取仅限固定 HTTPS、10 秒、256 KiB，拒绝重定向；源失败或无效 schema 使本次 CI 失败，不发布替代空数据。
+
+首次 404 的产品生成对应合法空清单，页面显示准备中。Actions 缓存仅记录曾读取到的公开规范清单，恢复时再次验证路径、大小和 schema；如果该产品已有有效安装包而源后来 404，则停止部署，保留现有站点。缓存不会作为新的 COS 数据源或绕过读取失败。镜像生成文件和缓存均不进入 Git，缓存不含任何凭据。
+
 ## 索引读取诊断
 
-502 响应仍使用固定中文错误，另外提供固定枚举 `stage`、`code` 和可选数字 `upstreamStatus`。对应响应头是 `X-Xingmang-Index-Stage`、`X-Xingmang-Index-Code`、`X-Xingmang-Upstream-Status`；HEAD 仅返回头。
+保留的 Function 诊断源码中，502 响应仍使用固定中文错误，另外提供固定枚举 `stage`、`code` 和可选数字 `upstreamStatus`。这些 Function 已从三条索引路径排除，当前静态镜像不会产生这些诊断头。对应响应头是 `X-Xingmang-Index-Stage`、`X-Xingmang-Index-Code`、`X-Xingmang-Upstream-Status`；HEAD 仅返回头。
 
 阶段包括 `init`（尚未发起 fetch）、`transport`（fetch 调用失败）、`response`（响应元数据或重定向）、`status`（非预期 HTTP 状态）、`body`（类型、大小、流或 JSON）、`schema`（产品清单校验）和 `internal`。诊断不会返回原始异常、上游 URL、查询参数、请求头、Cookie 或令牌。只有收到合法 HTTP 状态时才提供 100–599 的数字。
 
@@ -38,6 +44,7 @@
 ```sh
 npm ci
 node --test tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs
+node downloads/mirror.mjs
 npm run build
 node tools/check-routes.mjs
 npx wrangler pages functions build --outdir /path/to/private-local-preview

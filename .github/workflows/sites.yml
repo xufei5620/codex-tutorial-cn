@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths: ['sites/**', 'src/content/**', 'src/chapters.json', '.github/workflows/sites.yml']
   workflow_dispatch:
+  schedule:
+    - cron: '31 */6 * * *'
 permissions:
   contents: read
 concurrency:
@@ -36,6 +38,17 @@ jobs:
           node tools/prebuild.mjs sub2api
           node tools/prebuild.mjs newapi
           node tools/check-routes.mjs
+      - uses: actions/cache/restore@v4
+        with:
+          path: sites/.cos-index-cache
+          key: ${{ runner.os }}-cos-index-mirror-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ${{ runner.os }}-cos-index-mirror-v1-
+      - name: Prepare validated public indexes
+        run: node downloads/mirror.mjs
+      - uses: actions/cache/save@v4
+        with:
+          path: sites/.cos-index-cache
+          key: ${{ runner.os }}-cos-index-mirror-v1-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Build both sites
         run: npm run build
       - name: Compile download index Functions without deploying
