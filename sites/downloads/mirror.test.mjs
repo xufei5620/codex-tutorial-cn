@@ -22,6 +22,17 @@ function chatgptFixture(version='26.930.2377.0'){
   license:artifact('ChatGPT-License.xml',10,'official-https-sha256-and-product-identity','application/xml')
  }}}
 }
+function twoWindowsFixture(version='26.930.2377.0'){
+ const value=chatgptFixture(version)
+ const arm=structuredClone(value.platforms['windows-x64'])
+ arm.architecture='arm64'
+ for(const artifact of [arm.artifact,arm.license]){
+  artifact.key=artifact.key.replaceAll('x64','arm64')
+  artifact.url=artifact.url.replaceAll('x64','arm64')
+ }
+ value.platforms['windows-arm64']=arm
+ return value
+}
 test('mirror reads only three fixed anonymous COS indexes and strips source internals',async()=>{
  const urls=[]
  const entries=await prepareMirror({fetchImpl:async(url,options)=>{
@@ -62,6 +73,47 @@ test('any valid upstream ChatGPT index takes precedence over the verified baseli
   assert.equal(entry.pending,false)
   assert.deepEqual(validateChatgptIndex(JSON.parse(entry.json)),validateChatgptIndex(upstream))
  }
+})
+test('an already published baseline stays intact while the first nonempty source lacks a baseline platform',async()=>{
+ const baseline=twoWindowsFixture(),upstream=chatgptFixture('26.930.3930.0')
+ const original=structuredClone(upstream)
+ const fetchImpl=async url=>url.endsWith('/chatgpt/latest.json')?json(upstream):new Response(null,{status:404})
+ const entries=await prepareMirror({chatgptBaseline:baseline,previousIndexes:{chatgpt:baseline},fetchImpl})
+ assert.equal(entries[1].verifiedBaseline,true)
+ assert.equal(entries[1].pending,false)
+ assert.deepEqual(validateChatgptIndex(JSON.parse(entries[1].json)),validateChatgptIndex(baseline))
+ assert.deepEqual(upstream,original)
+ const key=`chatgpt/linux-deb-x64/sha256-${'d'.repeat(64)}/chatgpt_amd64.deb`
+ upstream.platforms['linux-deb-x64']={platform:'linux',architecture:'x64',format:'deb',artifact:{key,url:COS_ROOT+'/'+key,bytes:50,sha256:'d'.repeat(64),contentType:'application/vnd.debian.binary-package',verification:'official-https-sha256'}}
+ const sameCount=await prepareMirror({chatgptBaseline:baseline,previousIndexes:{chatgpt:baseline},fetchImpl})
+ assert.equal(Object.keys(upstream.platforms).length,Object.keys(baseline.platforms).length)
+ assert.equal(sameCount[1].verifiedBaseline,true)
+ assert.deepEqual(validateChatgptIndex(JSON.parse(sameCount[1].json)),validateChatgptIndex(baseline))
+})
+test('the first source covering all baseline platforms replaces the whole baseline',async()=>{
+ const baseline=twoWindowsFixture(),upstream=twoWindowsFixture('26.930.3930.0')
+ const entries=await prepareMirror({chatgptBaseline:baseline,previousIndexes:{chatgpt:baseline},fetchImpl:async url=>url.endsWith('/chatgpt/latest.json')?json(upstream):new Response(null,{status:404})})
+ assert.equal(entries[1].verifiedBaseline,false)
+ const items=validateChatgptIndex(JSON.parse(entries[1].json))
+ assert.deepEqual(items,validateChatgptIndex(upstream))
+ assert.equal(items.every(item=>item.version==='26.930.3930.0'),true)
+})
+test('an explicitly empty valid source clears an already published baseline',async()=>{
+ const baseline=twoWindowsFixture(),upstream={schemaVersion:1,product:'chatgpt',platforms:{}}
+ const entries=await prepareMirror({chatgptBaseline:baseline,previousIndexes:{chatgpt:baseline},fetchImpl:async url=>url.endsWith('/chatgpt/latest.json')?json(upstream):new Response(null,{status:404})})
+ assert.equal(entries[1].verifiedBaseline,false)
+ assert.equal(entries[1].pending,false)
+ assert.deepEqual(validateChatgptIndex(JSON.parse(entries[1].json)),[])
+})
+test('partial sources remain authoritative without baseline history or after switching to a source catalog',async()=>{
+ const baseline=twoWindowsFixture(),upstream=chatgptFixture('26.930.3930.0')
+ const switched=twoWindowsFixture('26.930.3930.0')
+ for(const previousIndexes of [{},{chatgpt:{schemaVersion:1,product:'chatgpt',platforms:{}}},{chatgpt:switched}]){
+  const entries=await prepareMirror({chatgptBaseline:baseline,previousIndexes,fetchImpl:async url=>url.endsWith('/chatgpt/latest.json')?json(upstream):new Response(null,{status:404})})
+  assert.equal(entries[1].verifiedBaseline,false)
+  assert.deepEqual(validateChatgptIndex(JSON.parse(entries[1].json)),validateChatgptIndex(upstream))
+ }
+ await assert.rejects(prepareMirror({chatgptBaseline:baseline,previousIndexes:{chatgpt:switched},fetchImpl:async()=>new Response(null,{status:404})}),/保留现有镜像/)
 })
 test('the baseline never masks transport, HTTP or schema failures',async()=>{
  for(const response of [new Response(null,{status:403}),new Response(null,{status:500}),json({schemaVersion:2})]){

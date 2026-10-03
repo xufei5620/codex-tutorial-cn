@@ -22,17 +22,23 @@ export async function prepareMirror({fetchImpl=fetch,signal,previousIndexes={},c
  const results=await Promise.all(Object.keys(INDEX_ROUTES).map(async product=>{
   const value=await loadCatalogIndex(product,{fetchImpl,signal,upstream:true})
   const fallback=product==='chatgpt'?baseline:null
+  const previouslyBaseline=fallback!==null&&Object.hasOwn(previousIndexes,product)
+   &&JSON.stringify(projectPublicIndex(product,previousIndexes[product]))===JSON.stringify(fallback)
   if(value===null&&Object.hasOwn(previousIndexes,product)&&hasInstallers(product,previousIndexes[product])){
    // Reusing this exact baseline is safe; a different published catalog may
    // contain newer or additional packages and must never be replaced by it.
-   const previous=projectPublicIndex(product,previousIndexes[product])
-   if(!fallback||JSON.stringify(previous)!==JSON.stringify(fallback))throw Error('已发布清单暂时缺失，保留现有镜像')
+   if(!previouslyBaseline)throw Error('已发布清单暂时缺失，保留现有镜像')
   }
-  const resolved=value===null?fallback:value
+  // The first source publication arrives one platform at a time. Keep an
+  // already published baseline intact until the source covers its platforms;
+  // an explicitly empty source still clears it, and later catalogs stand alone.
+  const awaitingPlatforms=previouslyBaseline&&value!==null&&hasInstallers(product,value)
+   &&Object.keys(fallback.platforms).some(id=>!Object.hasOwn(value.platforms,id))
+  const resolved=value===null||awaitingPlatforms?fallback:value
   const projected=projectPublicIndex(product,resolved===null?EMPTY_INDEXES[product]:resolved)
   const json=JSON.stringify(projected,null,2)+'\n'
   if(Buffer.byteLength(json)>256*1024)throw Error('公开安装包清单过大')
-  return {product,route:INDEX_ROUTES[product],pending:resolved===null,verifiedBaseline:value===null&&fallback!==null,json}
+  return {product,route:INDEX_ROUTES[product],pending:resolved===null,verifiedBaseline:(value===null&&fallback!==null)||awaitingPlatforms,json}
  }))
  return results
 }
