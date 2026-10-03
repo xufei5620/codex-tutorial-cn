@@ -7,6 +7,7 @@ export const INDEX_ROUTES = Object.freeze({
 const INDEX_KEYS = Object.freeze({ manager: 'xingmang/latest.json', chatgpt: 'chatgpt/latest.json', claude: 'xingmang/offline/claude/latest.json' })
 const MAX_INDEX_BYTES = 256 * 1024
 const TIMEOUT_MS = 10000
+const DOWNLOAD_SYSTEMS = Object.freeze([['windows', 'Windows'], ['macos', 'macOS']])
 const FAILURE_DETAILS = new WeakMap()
 const FAILURE_CODES = Object.freeze({
   init: ['setup', 'request-signal', 'product'],
@@ -77,10 +78,14 @@ const CLAUDE_PLATFORMS = Object.freeze([
 export function downloadPlatformGroups(product) {
   if (!Object.hasOwn(INDEX_ROUTES, product)) throw new Error('安装包类型无效')
   const platforms = product === 'manager' ? MANAGER_PLATFORMS : product === 'claude' ? CLAUDE_PLATFORMS : Object.entries(CHATGPT_PLATFORMS).map(([id, entry]) => ({ ...entry, id }))
-  return [['windows', 'Windows'], ['macos', 'macOS'], ['linux', 'Linux']].map(([platform, title]) => ({
+  return DOWNLOAD_SYSTEMS.map(([platform, title]) => ({
     platform, title,
     packages: platforms.filter(entry => entry.platform === platform).map(entry => ({ id: entry.id, platform, label: entry.label, architecture: entry.architecture, format: entry.format, requiresLicense: product === 'chatgpt' && platform === 'windows' }))
   }))
+}
+
+function isDownloadPlatform(item) {
+  return DOWNLOAD_SYSTEMS.some(([platform]) => item.platform === platform)
 }
 
 function isObject(value) {
@@ -316,13 +321,15 @@ export async function loadCatalogIndex(product, { fetchImpl = fetch, signal, ups
 
 export async function fetchCatalog(product, options = {}) {
   const value = await loadCatalogIndex(product, options)
-  return value === null ? [] : validateIndex(product, value)
+  return value === null ? [] : validateIndex(product, value).filter(isDownloadPlatform)
 }
 
 // Keep account-independent index responses small and remove source internals
 // and updater-only artifacts before they are exposed by the public function.
 export function projectPublicIndex(product, value) {
-  const items = validateIndex(product, value)
+  // Historical source indexes and cached snapshots can still contain Linux.
+  // Validate them fully, then publish only the systems offered by this page.
+  const items = validateIndex(product, value).filter(isDownloadPlatform)
   if (product === 'manager') return {
     schemaVersion: 1, product: 'xingmang-ai-manager', version: value.version,
     files: items.map(item => ({ fileName: item.fileName, version: item.version, platform: item.platform, architecture: item.architecture, kind: 'installer', key: item.key, url: item.url, size: item.bytes, sha256: item.sha256, type: item.contentType }))

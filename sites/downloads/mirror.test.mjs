@@ -4,7 +4,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import {prepareMirror,writeMirror,readMirrorState,saveMirrorState} from './mirror.mjs'
-import {COS_ROOT,INDEX_ROUTES,validateManagerIndex,validateChatgptIndex,validateClaudeIndex} from './catalog.mjs'
+import {COS_ROOT,INDEX_ROUTES,validateManagerIndex,validateChatgptIndex,validateClaudeIndex,projectPublicIndex} from './catalog.mjs'
 
 function fixture(){
  const version='0.2.13',fileName='XingMang-AI-Manager-0.2.13-Setup.exe',key=`xingmang/releases/${version}/${fileName}`
@@ -146,11 +146,12 @@ test('a malformed or empty baseline fails validation before fetching',async()=>{
   assert.equal(requests,0)
  }
 })
-test('the checked-in baseline exposes only the seven verified packages and their exact versions',async()=>{
+test('the historical baseline exposes only its four Windows and macOS packages with exact versions',async()=>{
  const baseline=JSON.parse(await fs.readFile(new URL('./chatgpt-verified-baseline.json',import.meta.url),'utf8'))
  const entries=await prepareMirror({chatgptBaseline:baseline,fetchImpl:async()=>new Response(null,{status:404})})
  const items=validateChatgptIndex(JSON.parse(entries[1].json))
- assert.deepEqual(items.map(item=>item.id),['windows-x64','windows-arm64','macos-arm64','macos-x64','linux-deb-x64','linux-deb-arm64','linux-rpm-x64'])
+ assert.equal(Object.keys(baseline.platforms).length,7)
+ assert.deepEqual(items.map(item=>item.id),['windows-x64','windows-arm64','macos-arm64','macos-x64'])
  for(const item of items){
   if(item.platform==='windows')assert.equal(item.version,'26.930.2377.0')
   if(item.platform==='macos'){
@@ -160,6 +161,43 @@ test('the checked-in baseline exposes only the seven verified packages and their
  }
  assert.equal(items.filter(item=>item.licenseUrl).length,2)
  assert.equal(entries[1].json.includes('verifiedAt'),false)
+})
+test('seven-platform cached baselines migrate without requiring Linux before the first Windows and Mac source switch',async()=>{
+ const baseline=JSON.parse(await fs.readFile(new URL('./chatgpt-verified-baseline.json',import.meta.url),'utf8'))
+ const cacheDir=await fs.mkdtemp(path.join(os.tmpdir(),'xm-win-mac-migration-'))
+ await fs.writeFile(path.join(cacheDir,'chatgpt.json'),JSON.stringify(baseline))
+ const previousIndexes=await readMirrorState({cacheDir})
+ assert.deepEqual(Object.keys(previousIndexes.chatgpt.platforms),['windows-x64','windows-arm64','macos-arm64','macos-x64'])
+ const missing=await prepareMirror({chatgptBaseline:baseline,previousIndexes,fetchImpl:async()=>new Response(null,{status:404})})
+ assert.equal(missing[1].verifiedBaseline,true)
+ const upstream=projectPublicIndex('chatgpt',baseline)
+ upstream.windows.buildVersion='26.930.3930.0'
+ for(const id of ['windows-x64','windows-arm64']){
+  const entry=upstream.platforms[id]
+  entry.packageVersion=upstream.windows.buildVersion
+  for(const file of [entry.artifact,entry.license]){
+   file.key=file.key.replace('26.930.2377.0',upstream.windows.buildVersion)
+   file.url=file.url.replace('26.930.2377.0',upstream.windows.buildVersion)
+  }
+ }
+ const partial=structuredClone(upstream)
+ delete partial.platforms['macos-x64']
+ const fetchSource=value=>async url=>url.endsWith('/chatgpt/latest.json')?json(value):new Response(null,{status:404})
+ const waiting=await prepareMirror({chatgptBaseline:baseline,previousIndexes,fetchImpl:fetchSource(partial)})
+ assert.equal(waiting[1].verifiedBaseline,true)
+ assert.deepEqual(JSON.parse(waiting[1].json),projectPublicIndex('chatgpt',baseline))
+ const ready=await prepareMirror({chatgptBaseline:baseline,previousIndexes,fetchImpl:fetchSource(upstream)})
+ assert.equal(ready[1].verifiedBaseline,false)
+ assert.deepEqual(JSON.parse(ready[1].json),upstream)
+ await saveMirrorState(ready,{cacheDir})
+ const switched=await readMirrorState({cacheDir})
+ const later=await prepareMirror({chatgptBaseline:baseline,previousIndexes:switched,fetchImpl:fetchSource(partial)})
+ assert.equal(later[1].verifiedBaseline,false)
+ assert.deepEqual(JSON.parse(later[1].json),partial)
+ await assert.rejects(prepareMirror({chatgptBaseline:baseline,previousIndexes:switched,fetchImpl:async()=>new Response(null,{status:404})}),/保留现有镜像/)
+ const empty=await prepareMirror({chatgptBaseline:baseline,previousIndexes,fetchImpl:fetchSource({schemaVersion:1,product:'chatgpt',platforms:{}})})
+ assert.deepEqual(validateChatgptIndex(JSON.parse(empty[1].json)),[])
+ assert.equal(empty[1].verifiedBaseline,false)
 })
 test('transport, non-404 errors and invalid schemas prevent a new mirror',async()=>{
  for(const response of [new Response(null,{status:403}),new Response(null,{status:500}),json({schemaVersion:2}),new Response('{broken',{headers:{'Content-Type':'application/json'}})]){
