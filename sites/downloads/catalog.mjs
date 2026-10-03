@@ -72,6 +72,17 @@ const CLAUDE_PLATFORMS = Object.freeze([
   { id: 'linux-deb-arm64', platform: 'linux', architecture: 'arm64', label: 'Linux 测试版 ARM64 · Ubuntu / Debian', format: 'deb', fileName: 'claude-desktop-arm64.deb', contentType: 'application/vnd.debian.binary-package', verification: 'official-https-package-index-sha256' }
 ])
 
+// Display-only projections share the exact platform definitions with validation.
+// No URL is synthesized for a platform that has not been published.
+export function downloadPlatformGroups(product) {
+  if (!Object.hasOwn(INDEX_ROUTES, product)) throw new Error('安装包类型无效')
+  const platforms = product === 'manager' ? MANAGER_PLATFORMS : product === 'claude' ? CLAUDE_PLATFORMS : Object.entries(CHATGPT_PLATFORMS).map(([id, entry]) => ({ ...entry, id }))
+  return [['windows', 'Windows'], ['macos', 'macOS'], ['linux', 'Linux']].map(([platform, title]) => ({
+    platform, title,
+    packages: platforms.filter(entry => entry.platform === platform).map(entry => ({ id: entry.id, platform, label: entry.label, architecture: entry.architecture, format: entry.format, requiresLicense: product === 'chatgpt' && platform === 'windows' }))
+  }))
+}
+
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

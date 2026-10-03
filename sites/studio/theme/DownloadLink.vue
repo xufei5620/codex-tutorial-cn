@@ -1,6 +1,6 @@
 <script setup>
 import {ref,onMounted,onBeforeUnmount} from 'vue'
-import {fetchCatalog,INDEX_ROUTES} from '../../downloads/catalog.mjs'
+import {fetchCatalog,INDEX_ROUTES,downloadPlatformGroups} from '../../downloads/catalog.mjs'
 const products=[{id:'manager',title:'星芒 AI 管理工具',description:'先下载管理工具，按工具内的正常流程安装与配置所需工具。'},{id:'chatgpt',title:'Codex 桌面端离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择；Windows 需一并下载许可文件。'},{id:'claude',title:'Claude Desktop 离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择官方安装包。'}]
 const catalogs=ref(Object.fromEntries(products.map(product=>[product.id,{status:'idle',items:[]}]))),controllers=new Map()
 let disposed=false
@@ -20,6 +20,8 @@ async function load(product){
  }
 }
 function bytes(value){return value>=1024**3?(value/1024**3).toFixed(2)+' GB':(value/1024**2).toFixed(1)+' MB'}
+function packageGroups(product){return downloadPlatformGroups(product).map(group=>({...group,packages:group.packages.map(definition=>({...definition,item:catalogs.value[product].items.find(item=>item.id===definition.id)}))}))}
+function pendingLabel(product){return product==='manager'?'暂未提供':'准备中'}
 function windowsCommand(item){return "Add-AppxProvisionedPackage -Online -PackagePath '.\\"+item.fileName+"' -LicensePath '.\\"+item.licenseFileName+"' -Regions all"}
 function claudeWindowsCommand(item){return "Add-AppxProvisionedPackage -Online -PackagePath '.\\"+item.fileName+"' -SkipLicense -Regions all"}
 onMounted(()=>{for(const product of products)if(catalogs.value[product.id].status==='idle')load(product.id)})
@@ -30,10 +32,25 @@ onBeforeUnmount(()=>{disposed=true;for(const controller of controllers.values())
  <section v-for="product in products" :key="product.id" class="installer-primary" :aria-labelledby="'download-title-'+product.id" :aria-busy="catalogs[product.id].status==='loading'">
   <h2 :id="'download-title-'+product.id">{{product.title}}</h2>
   <p>{{product.description}}</p>
-  <ul v-if="catalogs[product.id].status==='ready'&&catalogs[product.id].items.length" class="installer-direct-list"><li v-for="item in catalogs[product.id].items" :key="item.id"><div class="installer-actions"><a class="gold-button" :href="item.url" :title="product.title+' '+item.label+' · '+(item.version||'版本见安装包')" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">下载 {{item.label}} ↗</a><a v-if="item.licenseUrl" class="soft-button" :href="item.licenseUrl" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{item.label}} 许可文件 ↗</a></div><small>{{item.format.toUpperCase()}} · {{item.version||'版本见安装包'}} · {{bytes(item.bytes)}}</small></li></ul>
-  <p v-else-if="['idle','loading'].includes(catalogs[product.id].status)" role="status">正在读取安装包下载地址…</p>
+  <p v-if="['idle','loading'].includes(catalogs[product.id].status)" role="status">正在读取安装包下载地址…</p>
   <div v-else-if="catalogs[product.id].status==='error'" class="installer-status" role="status"><p>下载地址暂时无法读取，请重试或联系<a href="/contact">本站客服</a>。</p><button type="button" @click="load(product.id)">重新读取</button></div>
-  <div v-else class="installer-status" role="status"><p>{{product.title}}安装包正在准备，暂时没有可下载版本。</p><button type="button" @click="load(product.id)">重新读取</button></div>
+  <div v-else-if="!catalogs[product.id].items.length" class="installer-status" role="status"><p>安装包正在准备，请按下方系统与架构查看。</p><button type="button" @click="load(product.id)">重新读取</button></div>
+  <div class="installer-system-groups">
+   <section v-for="group in packageGroups(product.id)" :key="group.platform" class="installer-system" :aria-labelledby="'download-system-'+product.id+'-'+group.platform" :data-system="group.platform">
+    <h3 :id="'download-system-'+product.id+'-'+group.platform">{{group.title}}</h3>
+    <ul class="installer-direct-list">
+     <li v-for="entry in group.packages" :key="entry.id" :data-package="entry.id">
+      <div class="installer-package-label"><strong>{{entry.label}}</strong><span>{{entry.architecture}} · {{entry.format.toUpperCase()}}</span></div>
+      <div class="installer-actions">
+       <a v-if="entry.item" class="gold-button" :href="entry.item.url" :title="product.title+' '+entry.label+' · '+(entry.item.version||'版本见安装包')" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">下载 {{entry.label}} ↗</a>
+       <button v-else type="button" class="installer-pending" disabled :aria-label="product.title+' '+entry.label+' '+entry.format.toUpperCase()+' '+pendingLabel(product.id)">{{pendingLabel(product.id)}}</button>
+       <template v-if="entry.requiresLicense"><a v-if="entry.item&&entry.item.licenseUrl" class="soft-button" :href="entry.item.licenseUrl" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{entry.label}} 许可文件 ↗</a><button v-else type="button" class="installer-pending" disabled :aria-label="product.title+' '+entry.label+' 许可文件准备中'">许可文件准备中</button></template>
+      </div>
+      <small v-if="entry.item">{{entry.item.version||'版本见安装包'}} · {{bytes(entry.item.bytes)}}</small>
+     </li>
+    </ul>
+   </section>
+  </div>
  </section>
  <details class="installer-more">
  <summary class="soft-button">安装说明与文件校验 <span aria-hidden="true">⌄</span></summary>
@@ -67,8 +84,16 @@ onBeforeUnmount(()=>{disposed=true;for(const controller of controllers.values())
 .installer-primary>h2{font-size:18px;margin:14px 0 6px}
 .installer-primary>p{font-size:13px;color:var(--muted);margin:6px 0 12px}
 .installer-primary+.installer-primary{margin-top:24px}
-.installer-direct-list{display:flex;gap:16px;flex-wrap:wrap;list-style:none!important;margin:0 0 18px!important;padding:0!important}
+.installer-system-groups{display:grid;gap:14px;margin:14px 0 20px}
+.installer-system{border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.installer-system>h3{font-size:16px;margin:0 0 12px}
+.installer-direct-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;list-style:none!important;margin:0!important;padding:0!important}
 .installer-direct-list>li{margin:0!important;min-width:0}
+.installer-package-label{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;overflow-wrap:anywhere}
+.installer-package-label>strong{font-size:13px}
+.installer-package-label>span{font-size:12px;color:var(--muted)}
+.installer-pending{background:#eef1f5;color:#56677c;border-color:var(--line);font-size:12px}
+.installer-actions>a,.installer-actions>button{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center}
 .installer-direct-list small{display:block;color:var(--muted);margin-top:6px}
 .installer-more>summary{cursor:pointer;gap:12px;min-height:44px;list-style:none}
 .installer-more>summary::-webkit-details-marker{display:none}
@@ -88,5 +113,5 @@ onBeforeUnmount(()=>{disposed=true;for(const controller of controllers.values())
 .installer-checksum>summary{cursor:pointer;color:#6f7f93}
 .installer-checksum code{display:block;overflow-wrap:anywhere;word-break:break-all;margin-top:8px}
 .installer-status button{font-size:12px}
-@media(max-width:760px){.installer-options{padding:14px}.installer-heading{flex-direction:column}.installer-item{padding:13px}.installer-direct-list{display:grid}}
+@media(max-width:760px){.installer-options{padding:14px}.installer-heading{flex-direction:column}.installer-item{padding:13px}.installer-direct-list{grid-template-columns:1fr}.installer-system{padding:12px}}
 </style>
