@@ -6,7 +6,7 @@ import vm from 'node:vm'
 import {parse,compileScript,compileTemplate} from '@vue/compiler-sfc'
 import * as Vue from 'vue'
 import * as ServerRenderer from 'vue/server-renderer'
-import {COS_ROOT,INDEX_ROUTES} from '../../downloads/catalog.mjs'
+import {COS_ROOT,INDEX_ROUTES,downloadPlatformGroups} from '../../downloads/catalog.mjs'
 import {validateDownloadConfiguration} from '../prebuild.mjs'
 const source=fs.readFileSync(new URL('../../studio/theme/DownloadLink.vue',import.meta.url),'utf8')
 const {descriptor}=parse(source)
@@ -14,7 +14,7 @@ const script=compileScript(descriptor,{id:'download-unit'})
 function setup(fetchCatalog){
  let destroy,mount
  const code=script.content.replace(/^import .*$/gm,'').replace('export default {','globalThis.component = {')
- const context={ref:Vue.ref,AbortController,INDEX_ROUTES,fetchCatalog,fetch:()=>{throw Error('Unmocked network is forbidden')},onMounted:callback=>{mount=callback},onBeforeUnmount:callback=>{destroy=callback}}
+ const context={ref:Vue.ref,AbortController,INDEX_ROUTES,downloadPlatformGroups,fetchCatalog,fetch:()=>{throw Error('Unmocked network is forbidden')},onMounted:callback=>{mount=callback},onBeforeUnmount:callback=>{destroy=callback}}
  vm.runInNewContext(code,context)
  return {state:context.component.setup({}, {expose(){}}),destroy:()=>destroy(),mount:()=>mount()}
 }
@@ -80,7 +80,8 @@ test('Codex display name keeps the original package and matching license links b
  assert.ok(primary.includes('href="'+item.licenseUrl+'"'))
  assert.ok(primary.includes('下载 Windows ARM64'))
  assert.ok(primary.includes('Windows ARM64 许可文件'))
- assert.equal(primary.includes('Windows x64'),false)
+ assert.ok(primary.includes('Windows x64'))
+ assert.equal((primary.match(new RegExp('href="'+item.licenseUrl.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'"','g'))||[]).length,1)
  assert.ok(html.includes('Add-AppxProvisionedPackage'))
  fixture.destroy()
 })
@@ -105,6 +106,33 @@ test('an empty index renders preparation and retry without a guessed download UR
  assert.ok(primary.includes('安装包正在准备'))
  assert.ok(primary.includes('重新读取'))
  assert.equal(primary.includes('<a'),false)
+ fixture.destroy()
+})
+test('system and architecture choices stay visible when loading, empty or failed',async()=>{
+ const fixture=setup(async()=>[])
+ for(const status of ['loading','ready','error']){
+  for(const product of ['manager','chatgpt','claude'])fixture.state.catalogs.value[product]={status,items:[]}
+  const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))
+  assert.equal((primary.match(/class="installer-system"/g)||[]).length,9)
+  assert.equal((primary.match(/data-system="windows"/g)||[]).length,3)
+  assert.equal((primary.match(/data-system="macos"/g)||[]).length,3)
+  assert.equal((primary.match(/data-system="linux"/g)||[]).length,3)
+  assert.ok(primary.includes('ARM64'))
+  assert.ok(primary.includes('Apple Silicon'))
+  assert.ok(primary.includes('Fedora'))
+  assert.ok(primary.includes('DMG'))
+  assert.ok(primary.includes('PKG'))
+  assert.ok(primary.includes('ZIP'))
+  assert.ok(primary.includes('DEB'))
+  assert.ok(primary.includes('RPM'))
+  assert.ok(primary.includes(' disabled'))
+  assert.equal(primary.includes('href="'+COS_ROOT),false)
+  const claude=primary.slice(primary.indexOf('aria-labelledby="download-title-claude"'))
+  assert.equal(claude.includes('Fedora'),false)
+  assert.equal(claude.includes('RPM'),false)
+  assert.equal((claude.match(/data-package="macos-dmg-universal"/g)||[]).length,1)
+  assert.equal((claude.match(/data-package="macos-pkg-universal"/g)||[]).length,1)
+ }
  fixture.destroy()
 })
 test('an unavailable product keeps a retryable state without hiding the other product',async()=>{

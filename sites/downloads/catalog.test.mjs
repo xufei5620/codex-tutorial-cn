@@ -1,8 +1,21 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { COS_ROOT, INDEX_ROUTES, validateManagerIndex, validateChatgptIndex, validateClaudeIndex, fetchCatalog, projectPublicIndex, catalogFailureDiagnostics } from './catalog.mjs'
+import { COS_ROOT, INDEX_ROUTES, validateManagerIndex, validateChatgptIndex, validateClaudeIndex, fetchCatalog, projectPublicIndex, catalogFailureDiagnostics, downloadPlatformGroups } from './catalog.mjs'
 
 const HASH = 'a'.repeat(64)
+
+test('display metadata shares exact supported platforms without synthesizing download URLs', () => {
+  const codex = downloadPlatformGroups('chatgpt')
+  const claude = downloadPlatformGroups('claude')
+  assert.deepEqual(codex.map(group => group.title), ['Windows', 'macOS', 'Linux'])
+  assert.deepEqual(codex.map(group => group.packages.length), [2, 2, 4])
+  assert.deepEqual(claude.map(group => group.packages.length), [2, 2, 2])
+  assert.deepEqual(claude[1].packages.map(item => [item.architecture, item.format]), [['universal', 'dmg'], ['universal', 'pkg']])
+  assert.equal(claude[2].packages.some(item => item.format === 'rpm'), false)
+  assert.equal(codex.flatMap(group => group.packages).filter(item => item.requiresLicense).length, 2)
+  assert.equal(JSON.stringify([codex, claude]).includes('https:'), false)
+  assert.throws(() => downloadPlatformGroups('constructor'))
+})
 
 export function managerFixture() {
   const version = '0.2.13'
