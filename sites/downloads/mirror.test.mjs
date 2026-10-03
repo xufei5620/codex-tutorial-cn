@@ -11,6 +11,17 @@ function fixture(){
  return {schemaVersion:1,product:'xingmang-ai-manager',version,internal:'must-not-project',files:[{fileName,version,platform:'windows',architecture:'x64',kind:'installer',key,url:COS_ROOT+'/'+key,size:10,sha256:'a'.repeat(64),type:'application/vnd.microsoft.portable-executable',source:{private:'must-not-project'}}]}
 }
 function json(value){return new Response(JSON.stringify(value),{headers:{'Content-Type':'application/json'}})}
+function chatgptFixture(version='26.930.2377.0'){
+ function artifact(fileName,bytes,verification,contentType){
+  const key=`chatgpt/windows-x64/${version}/${fileName}`
+  return {key,url:COS_ROOT+'/'+key,bytes,sha256:'b'.repeat(64),verification,contentType}
+ }
+ return {schemaVersion:1,product:'chatgpt',windows:{schemaVersion:1,buildVersion:version,packageIdentity:'OpenAI.Codex',storeProductId:'9PLM9XGG6VKS'},platforms:{'windows-x64':{
+  platform:'windows',architecture:'x64',format:'msix',packageVersion:version,
+  artifact:artifact('ChatGPT-x64.msix',100,'windows-authenticode','application/vnd.ms-appx'),
+  license:artifact('ChatGPT-License.xml',10,'official-https-sha256-and-product-identity','application/xml')
+ }}}
+}
 test('mirror reads only three fixed anonymous COS indexes and strips source internals',async()=>{
  const urls=[]
  const entries=await prepareMirror({fetchImpl:async(url,options)=>{
@@ -32,6 +43,71 @@ test('missing products become empty valid indexes without guessed URLs',async()=
  const entries=await prepareMirror({fetchImpl:async()=>new Response(null,{status:404})})
  assert.equal(entries.every(entry=>entry.pending&&!entry.json.includes('https:')),true)
  assert.deepEqual(entries.map(entry=>entry.route),Object.values(INDEX_ROUTES))
+})
+test('a verified baseline restores only ChatGPT packages when its upstream index is missing',async()=>{
+ const entries=await prepareMirror({chatgptBaseline:chatgptFixture(),fetchImpl:async()=>new Response(null,{status:404})})
+ assert.deepEqual(entries.map(entry=>entry.pending),[true,false,true])
+ assert.deepEqual(entries.map(entry=>entry.verifiedBaseline),[false,true,false])
+ const items=validateChatgptIndex(JSON.parse(entries[1].json))
+ assert.deepEqual(items.map(item=>[item.id,item.version]),[['windows-x64','26.930.2377.0']])
+ assert.equal(items[0].licenseUrl.endsWith('/26.930.2377.0/ChatGPT-License.xml'),true)
+ assert.deepEqual(validateManagerIndex(JSON.parse(entries[0].json)),[])
+ assert.deepEqual(validateClaudeIndex(JSON.parse(entries[2].json)),[])
+})
+test('any valid upstream ChatGPT index takes precedence over the verified baseline',async()=>{
+ for(const upstream of [chatgptFixture('26.930.3930.0'),{schemaVersion:1,product:'chatgpt',platforms:{}}]){
+  const entries=await prepareMirror({chatgptBaseline:chatgptFixture(),fetchImpl:async url=>url.endsWith('/chatgpt/latest.json')?json(upstream):new Response(null,{status:404})})
+  const entry=entries[1]
+  assert.equal(entry.verifiedBaseline,false)
+  assert.equal(entry.pending,false)
+  assert.deepEqual(validateChatgptIndex(JSON.parse(entry.json)),validateChatgptIndex(upstream))
+ }
+})
+test('the baseline never masks transport, HTTP or schema failures',async()=>{
+ for(const response of [new Response(null,{status:403}),new Response(null,{status:500}),json({schemaVersion:2})]){
+  await assert.rejects(prepareMirror({chatgptBaseline:chatgptFixture(),fetchImpl:async url=>url.endsWith('/chatgpt/latest.json')?response.clone():new Response(null,{status:404})}))
+ }
+ await assert.rejects(prepareMirror({chatgptBaseline:chatgptFixture(),fetchImpl:async()=>{throw Error('transport-failed')}}))
+})
+test('the baseline can be redeployed but cannot replace a different previously published catalog',async()=>{
+ const baseline=chatgptFixture(),fetchImpl=async()=>new Response(null,{status:404})
+ for(const previous of [baseline,{schemaVersion:1,product:'chatgpt',platforms:{}}]){
+  const entries=await prepareMirror({chatgptBaseline:baseline,previousIndexes:{chatgpt:previous},fetchImpl})
+  assert.equal(entries[1].verifiedBaseline,true)
+ }
+ const cacheDir=await fs.mkdtemp(path.join(os.tmpdir(),'xm-baseline-cache-'))
+ const entries=await prepareMirror({chatgptBaseline:baseline,fetchImpl})
+ await saveMirrorState(entries,{cacheDir})
+ const previousIndexes=await readMirrorState({cacheDir})
+ assert.equal((await prepareMirror({chatgptBaseline:baseline,previousIndexes,fetchImpl}))[1].verifiedBaseline,true)
+ await assert.rejects(prepareMirror({chatgptBaseline:baseline,previousIndexes:{chatgpt:chatgptFixture('26.930.3930.0')},fetchImpl}),/保留现有镜像/)
+ const changed=structuredClone(baseline)
+ changed.platforms['windows-x64'].artifact.sha256='c'.repeat(64)
+ await assert.rejects(prepareMirror({chatgptBaseline:baseline,previousIndexes:{chatgpt:changed},fetchImpl}),/保留现有镜像/)
+})
+test('a malformed or empty baseline fails validation before fetching',async()=>{
+ const missingLicense=chatgptFixture()
+ delete missingLicense.platforms['windows-x64'].license
+ for(const baseline of [missingLicense,fixture(),{schemaVersion:1,product:'chatgpt',platforms:{}}]){
+  let requests=0
+  await assert.rejects(prepareMirror({chatgptBaseline:baseline,fetchImpl:async()=>{requests++;return new Response(null,{status:404})}}))
+  assert.equal(requests,0)
+ }
+})
+test('the checked-in baseline exposes only the seven verified packages and their exact versions',async()=>{
+ const baseline=JSON.parse(await fs.readFile(new URL('./chatgpt-verified-baseline.json',import.meta.url),'utf8'))
+ const entries=await prepareMirror({chatgptBaseline:baseline,fetchImpl:async()=>new Response(null,{status:404})})
+ const items=validateChatgptIndex(JSON.parse(entries[1].json))
+ assert.deepEqual(items.map(item=>item.id),['windows-x64','windows-arm64','macos-arm64','macos-x64','linux-deb-x64','linux-deb-arm64','linux-rpm-x64'])
+ for(const item of items){
+  if(item.platform==='windows')assert.equal(item.version,'26.930.2377.0')
+  if(item.platform==='macos'){
+   assert.equal(item.version,'26.930.21537')
+   assert.equal(baseline.platforms[item.id].buildVersion,'12776')
+  }
+ }
+ assert.equal(items.filter(item=>item.licenseUrl).length,2)
+ assert.equal(entries[1].json.includes('verifiedAt'),false)
 })
 test('transport, non-404 errors and invalid schemas prevent a new mirror',async()=>{
  for(const response of [new Response(null,{status:403}),new Response(null,{status:500}),json({schemaVersion:2}),new Response('{broken',{headers:{'Content-Type':'application/json'}})]){
