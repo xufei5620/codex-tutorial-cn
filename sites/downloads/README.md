@@ -8,7 +8,7 @@
 
 ## 更新来源
 
-两站读取固定 COS 桶的 `xingmang/latest.json`、`chatgpt/latest.json` 和 `claude/latest.json`。索引由管理工具仓库的发布同步和官方包定时同步工作流生成；安装包来自不可变版本目录。用户下载文件直接访问 COS，教程站仅代理小 JSON。
+两站读取固定 COS 桶的 `xingmang/latest.json`、`chatgpt/latest.json` 和 `xingmang/offline/claude/latest.json`。Claude 安装包固定存放于 `xingmang/offline/claude/<platform-id>/sha256-<digest>/<fixed-fileName>`，复用已授权的 `xingmang/*` 存储范围；同源入口仍为 `/cos-download-index/claude.json`。索引由管理工具仓库的发布同步和官方包定时同步工作流生成；安装包来自不可变版本目录。用户下载文件直接访问 COS，教程站提供经过校验和公开投影的静态 JSON。
 
 浏览器读取同源 `/cos-download-index/xingmang.json`、`/cos-download-index/chatgpt.json` 与 `/cos-download-index/claude.json`。现有 Pages CI 使用 Node 有界读取这三份公开 COS 清单，执行相同的 schema 校验和公开字段投影，写入两站静态资源。`_routes.json` 的 include 与 exclude 都是这三条精确路径；exclude 优先，索引直接由静态 ASSETS 服务，不经过当前失败的 Worker 出网链路。`_headers` 对索引强制 JSON、no-store 和 nosniff。没有新源主机、上传密钥或用户请求头转发。
 

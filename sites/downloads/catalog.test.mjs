@@ -34,7 +34,7 @@ export function chatgptFixture() {
 }
 
 export function claudeFixture() {
-  const key = `claude/windows-x64/sha256-${HASH}/Claude-x64.msix`
+  const key = `xingmang/offline/claude/windows-x64/sha256-${HASH}/Claude-x64.msix`
   return { schemaVersion: 1, product: 'claude-desktop', files: [{ fileName: 'Claude-x64.msix', version: '1.0.0.0', platform: 'windows', architecture: 'x64', format: 'msix', kind: 'installer', key, url: `${COS_ROOT}/${key}`, size: 500000000, sha256: HASH, type: 'application/vnd.ms-appx', verification: 'windows-authenticode-msix-identity' }] }
 }
 
@@ -173,7 +173,7 @@ test('Claude official platform formats keep two Windows architectures, universal
     ['linux-deb-x64', 'linux', 'x64', 'deb', 'claude-desktop-amd64.deb', 'application/vnd.debian.binary-package', 'official-https-package-index-sha256', '1.0.0-1'],
     ['linux-deb-arm64', 'linux', 'arm64', 'deb', 'claude-desktop-arm64.deb', 'application/vnd.debian.binary-package', 'official-https-package-index-sha256', '1:1.0.0-1']
   ]) {
-    const key = `claude/${id}/sha256-${HASH}/${fileName}`
+    const key = `xingmang/offline/claude/${id}/sha256-${HASH}/${fileName}`
     files.push({ fileName, version, platform, architecture, format, kind: 'installer', key, url: `${COS_ROOT}/${key}`, size: 10, sha256: HASH, type, verification })
   }
   const value = { schemaVersion: 1, product: 'claude-desktop', files }
@@ -208,6 +208,13 @@ test('Claude rejects bootstrap names, fabricated platforms, unsupported signatur
     mutate(value)
     assert.throws(() => validateClaudeIndex(value))
   }
+})
+
+test('Claude rejects the old root namespace rather than accepting two storage prefixes', () => {
+  const value = claudeFixture()
+  value.files[0].key = value.files[0].key.replace('xingmang/offline/claude/', 'claude/')
+  value.files[0].url = `${COS_ROOT}/${value.files[0].key}`
+  assert.throws(() => validateClaudeIndex(value), /地址或校验/)
 })
 
 test('Claude catalog reads only the fixed same-origin route and retains an empty state on 404', async () => {

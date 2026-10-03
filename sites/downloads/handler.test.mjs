@@ -64,7 +64,7 @@ test('ChatGPT fixed route returns a schema-compatible public manifest', async ()
 
 test('Claude fixed route returns an empty public manifest without guessing installer links', async () => {
   const handler = createHandler({ fetchImpl: async (url, options) => {
-    assert.equal(url, `${COS_ROOT}/claude/latest.json`)
+    assert.equal(url, `${COS_ROOT}/xingmang/offline/claude/latest.json`)
     assert.deepEqual(options.headers, { Accept: 'application/json', 'Cache-Control': 'no-cache' })
     assert.equal(Object.hasOwn(options, 'credentials'), false)
     assert.equal(options.redirect, 'error')
@@ -90,7 +90,7 @@ test('legacy Worker runtimes preserve unpublished indexes as uncached 404 respon
 
 test('unpublished Claude manifests remain 404', async () => {
   const result = await createHandler({ fetchImpl: async url => {
-    assert.equal(url, `${COS_ROOT}/claude/latest.json`)
+    assert.equal(url, `${COS_ROOT}/xingmang/offline/claude/latest.json`)
     return new Response(null, { status: 404 })
   } })(context('claude.json'))
   assert.equal(result.status, 404)
@@ -131,7 +131,7 @@ test('HEAD validates the complete upstream index and returns no body', async () 
 
 test('Claude HEAD validates the upstream manifest and returns no body', async () => {
   const handler = createHandler({ fetchImpl: async (url, options) => {
-    assert.equal(url, `${COS_ROOT}/claude/latest.json`)
+    assert.equal(url, `${COS_ROOT}/xingmang/offline/claude/latest.json`)
     assert.equal(options.method, 'GET')
     return jsonResponse({ schemaVersion: 1, product: 'claude-desktop', files: [] })
   } })
