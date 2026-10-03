@@ -14,7 +14,7 @@ const script=compileScript(descriptor,{id:'download-unit'})
 function setup(fetchCatalog){
  let destroy,mount
  const code=script.content.replace(/^import .*$/gm,'').replace('export default {','globalThis.component = {')
- const context={ref:Vue.ref,AbortController,INDEX_ROUTES,downloadPlatformGroups,fetchCatalog,fetch:()=>{throw Error('Unmocked network is forbidden')},onMounted:callback=>{mount=callback},onBeforeUnmount:callback=>{destroy=callback}}
+ const context={ref:Vue.ref,AbortController,INDEX_ROUTES,downloadPlatformGroups,fetchCatalog,windowsIcon:'/mock/windows.svg',appleIcon:'/mock/apple.svg',linuxIcon:'/mock/linux.png',fetch:()=>{throw Error('Unmocked network is forbidden')},onMounted:callback=>{mount=callback},onBeforeUnmount:callback=>{destroy=callback}}
  vm.runInNewContext(code,context)
  return {state:context.component.setup({}, {expose(){}}),destroy:()=>destroy(),mount:()=>mount()}
 }
@@ -32,12 +32,14 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve))
 test('primary download links compile outside the secondary installer details',()=>{
  const compiled=compileTemplate({source:descriptor.template.content,id:'download-unit',filename:'DownloadLink.vue',ssr:true,ssrCssVars:[],compilerOptions:{bindingMetadata:script.bindings}})
  assert.deepEqual(compiled.errors,[])
- assert.match(descriptor.template.content,/<section id="download-installers"/)
+ assert.match(descriptor.template.content,/<section ref="picker" id="download-installers"/)
  assert.match(descriptor.template.content,/<details class="installer-more"/)
  assert.match(descriptor.template.content,/<summary class="soft-button"/)
  assert.match(descriptor.template.content,/role="status"/)
  assert.equal(source.includes('v-html'),false)
  assert.equal(source.includes('feishu.cn'),false)
+ assert.ok(source.includes('aria-hidden="true" class="installer-os-icon" width="18" height="18"'))
+ assert.ok(source.includes('alt=""'))
 })
 test('mount loads all three catalogs once and installation details do not trigger extra requests',async()=>{
  const calls=[],fixture=setup(async(product,options)=>{calls.push({product,options});return []})
@@ -46,7 +48,7 @@ test('mount loads all three catalogs once and installation details do not trigge
  await flush()
  assert.deepEqual(calls.map(call=>call.product),['manager','chatgpt','claude'])
  fixture.mount()
- assert.equal(descriptor.template.content.includes('@toggle'),false)
+ assert.ok(descriptor.template.content.includes('@toggle="systemToggled"'))
  render(fixture.state)
  assert.deepEqual(calls.map(call=>call.product),['manager','chatgpt','claude'])
  for(const call of calls)assert.equal(call.options.signal.aborted,false)
@@ -133,6 +135,22 @@ test('system and architecture choices stay visible when loading, empty or failed
   assert.equal((claude.match(/data-package="macos-dmg-universal"/g)||[]).length,1)
   assert.equal((claude.match(/data-package="macos-pkg-universal"/g)||[]).length,1)
  }
+ fixture.destroy()
+})
+test('Escape closes only the active system chooser and returns focus to its summary',()=>{
+ const fixture=setup(async()=>[])
+ let focused=0,prevented=0,stopped=0
+ const summary={focus(){focused++}},detail={open:true,querySelector(){return summary}}
+ fixture.state.closeOnEscape({key:'Escape',target:{closest(){return detail}},preventDefault(){prevented++},stopPropagation(){stopped++}})
+ assert.equal(detail.open,false)
+ assert.equal(focused,1)
+ assert.equal(prevented,1)
+ assert.equal(stopped,1)
+ const another={open:true},current={open:true}
+ fixture.state.picker.value={querySelectorAll(){return[another,current]}}
+ fixture.state.systemToggled({target:current})
+ assert.equal(another.open,false)
+ assert.equal(current.open,true)
  fixture.destroy()
 })
 test('an unavailable product keeps a retryable state without hiding the other product',async()=>{
