@@ -16,14 +16,23 @@ function hasInstallers(product,value){
  return product==='chatgpt'?Object.keys(projected.platforms).length>0:projected.files.length>0
 }
 
-export async function prepareMirror({fetchImpl=fetch,signal,previousIndexes={}}={}){
+export async function prepareMirror({fetchImpl=fetch,signal,previousIndexes={},chatgptBaseline=null}={}){
+ const baseline=chatgptBaseline===null?null:projectPublicIndex('chatgpt',chatgptBaseline)
+ if(baseline&&!hasInstallers('chatgpt',baseline))throw Error('已核验备用清单缺少安装包')
  const results=await Promise.all(Object.keys(INDEX_ROUTES).map(async product=>{
   const value=await loadCatalogIndex(product,{fetchImpl,signal,upstream:true})
-  if(value===null&&Object.hasOwn(previousIndexes,product)&&hasInstallers(product,previousIndexes[product]))throw Error('已发布清单暂时缺失，保留现有镜像')
-  const projected=projectPublicIndex(product,value===null?EMPTY_INDEXES[product]:value)
+  const fallback=product==='chatgpt'?baseline:null
+  if(value===null&&Object.hasOwn(previousIndexes,product)&&hasInstallers(product,previousIndexes[product])){
+   // Reusing this exact baseline is safe; a different published catalog may
+   // contain newer or additional packages and must never be replaced by it.
+   const previous=projectPublicIndex(product,previousIndexes[product])
+   if(!fallback||JSON.stringify(previous)!==JSON.stringify(fallback))throw Error('已发布清单暂时缺失，保留现有镜像')
+  }
+  const resolved=value===null?fallback:value
+  const projected=projectPublicIndex(product,resolved===null?EMPTY_INDEXES[product]:resolved)
   const json=JSON.stringify(projected,null,2)+'\n'
   if(Buffer.byteLength(json)>256*1024)throw Error('公开安装包清单过大')
-  return {product,route:INDEX_ROUTES[product],pending:value===null,json}
+  return {product,route:INDEX_ROUTES[product],pending:resolved===null,verifiedBaseline:value===null&&fallback!==null,json}
  }))
  return results
 }
@@ -73,10 +82,11 @@ export async function writeMirror(entries,{root=ROOT}={}){
 
 async function main(){
  const previousIndexes=await readMirrorState()
- const entries=await prepareMirror({previousIndexes})
+ const chatgptBaseline=JSON.parse(await fs.readFile(new URL('./chatgpt-verified-baseline.json',import.meta.url),'utf8'))
+ const entries=await prepareMirror({previousIndexes,chatgptBaseline})
  await writeMirror(entries)
  await saveMirrorState(entries)
- console.log(JSON.stringify({mirrored:entries.map(({product,pending})=>({product,pending}))}))
+ console.log(JSON.stringify({mirrored:entries.map(({product,pending,verifiedBaseline})=>({product,pending,verifiedBaseline}))}))
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  main().catch(error=>{console.error(JSON.stringify({error:'安装包镜像准备失败',...catalogFailureDiagnostics(error)}));process.exitCode=1})
