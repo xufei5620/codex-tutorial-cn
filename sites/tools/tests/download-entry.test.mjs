@@ -14,7 +14,8 @@ const script=compileScript(descriptor,{id:'download-unit'})
 function setup(fetchCatalog){
  let destroy,mount
  const code=script.content.replace(/^import .*$/gm,'').replace('export default {','globalThis.component = {')
- const context={ref:Vue.ref,AbortController,INDEX_ROUTES,downloadPlatformGroups,fetchCatalog,windowsIcon:'/mock/windows.svg',appleIcon:'/mock/apple.svg',fetch:()=>{throw Error('Unmocked network is forbidden')},onMounted:callback=>{mount=callback},onBeforeUnmount:callback=>{destroy=callback}}
+ const BrandIcon=Vue.defineComponent({props:['name'],setup:props=>()=>Vue.h('span',{'data-brand-icon':props.name})})
+ const context={ref:Vue.ref,AbortController,INDEX_ROUTES,downloadPlatformGroups,fetchCatalog,BrandIcon,windowsIcon:'/mock/windows.svg',appleIcon:'/mock/apple.svg',fetch:()=>{throw Error('Unmocked network is forbidden')},onMounted:callback=>{mount=callback},onBeforeUnmount:callback=>{destroy=callback}}
  vm.runInNewContext(code,context)
  return {state:context.component.setup({}, {expose(){}}),destroy:()=>destroy(),mount:()=>mount()}
 }
@@ -23,23 +24,45 @@ function render(state){
  const context={}
  const code=compiled.code.replace(/^import \{ (.*?) \} from "(.*?)"$/gm,(_,bindings,module)=>{for(const binding of bindings.split(', ')){const [name,alias]=binding.split(' as ');context[alias||name]=(module==='vue'?Vue:ServerRenderer)[name]}return ''}).replace('export function ssrRender','globalThis.render = function ssrRender')
  vm.runInNewContext(code,context)
- let html=''
- context.render({},value=>{html+=value},null,{},null,Vue.proxyRefs(state),null,null)
- return html
+ return ServerRenderer.renderToString(Vue.createSSRApp({ssrRender(contextState,push,parent,attrs){context.render(contextState,push,parent,attrs,null,Vue.proxyRefs(state),null,null)}}))
 }
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no});return {promise,resolve,reject}}
 const flush=()=>new Promise(resolve=>setImmediate(resolve))
-test('primary download links compile outside the secondary installer details',()=>{
+function panel(html,product,system){
+ const match=html.match(new RegExp('<section\\b([^>]*\\bid="download-options-'+product+'-'+system+'"[^>]*)>([\\s\\S]*?)</section>'))
+ assert.ok(match,'Missing '+product+' '+system+' download panel')
+ return {attributes:match[1],content:match[2],hidden:/display:\s*none/.test(match[1])}
+}
+function option(html,id){
+ const match=html.match(new RegExp('<li\\b[^>]*\\bdata-package="'+id+'"[^>]*>([\\s\\S]*?)</li>'))
+ assert.ok(match,'Missing '+id+' package option')
+ return match[1]
+}
+function systemButton(html,product,system){
+ const match=html.match(new RegExp('<button\\b[^>]*\\baria-controls="download-options-'+product+'-'+system+'"[^>]*>'))
+ assert.ok(match,'Missing '+product+' '+system+' system button')
+ return match[0]
+}
+test('download groups compile with accessible system buttons and product headings',async()=>{
  const compiled=compileTemplate({source:descriptor.template.content,id:'download-unit',filename:'DownloadLink.vue',ssr:true,ssrCssVars:[],compilerOptions:{bindingMetadata:script.bindings}})
  assert.deepEqual(compiled.errors,[])
- assert.match(descriptor.template.content,/<section ref="picker" id="download-installers"/)
- assert.match(descriptor.template.content,/<details class="installer-more"/)
- assert.match(descriptor.template.content,/<summary class="soft-button"/)
- assert.match(descriptor.template.content,/role="status"/)
+ const fixture=setup(async()=>[]),html=await render(fixture.state)
+ assert.match(html,/id="download-installers"[^>]*aria-label="安装包下载"/)
+ for(const product of ['manager','chatgpt','claude']){
+  assert.ok(html.includes('id="download-title-'+product+'"'))
+  for(const system of ['windows','macos']){
+   assert.match(systemButton(html,product,system),/aria-expanded="false"/)
+   assert.equal(panel(html,product,system).hidden,true)
+  }
+ }
+ assert.ok(html.includes('桌面端离线安装包'))
+ assert.ok(html.includes('正常安装遇到网络问题'))
+ assert.match(html,/role="status"/)
  assert.equal(source.includes('v-html'),false)
  assert.equal(source.includes('feishu.cn'),false)
  assert.ok(source.includes('aria-hidden="true" class="installer-os-icon" width="18" height="18"'))
  assert.ok(source.includes('alt=""'))
+ fixture.destroy()
 })
 test('mount loads all three catalogs once and installation details do not trigger extra requests',async()=>{
  const calls=[],fixture=setup(async(product,options)=>{calls.push({product,options});return []})
@@ -48,8 +71,9 @@ test('mount loads all three catalogs once and installation details do not trigge
  await flush()
  assert.deepEqual(calls.map(call=>call.product),['manager','chatgpt','claude'])
  fixture.mount()
- assert.ok(descriptor.template.content.includes('@toggle="systemToggled"'))
- render(fixture.state)
+ fixture.state.selectSystem('manager','macos')
+ fixture.state.selectSystem('claude','windows')
+ await render(fixture.state)
  assert.deepEqual(calls.map(call=>call.product),['manager','chatgpt','claude'])
  for(const call of calls)assert.equal(call.options.signal.aborted,false)
  assert.equal(fixture.state.catalogs.value.manager.status,'ready')
@@ -57,17 +81,26 @@ test('mount loads all three catalogs once and installation details do not trigge
  assert.equal(calls.length,3)
  fixture.destroy()
 })
-test('provided system buttons link straight to COS without choosing Windows for the reader',async()=>{
+test('the selected Mac option links straight to its published COS file without guessing missing files',async()=>{
  const url=COS_ROOT+'/xingmang/releases/0.2.13/XingMang-AI-Manager-0.2.13-Apple-Silicon-arm64.dmg'
  const item={id:'macos-arm64',label:'macOS Apple Silicon',architecture:'arm64',version:'0.2.13',url,bytes:143258716,format:'dmg',sha256:'a'.repeat(64)}
  const fixture=setup(async product=>product==='manager'?[item]:[])
  fixture.mount()
  await flush()
- const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))
- assert.ok(primary.includes('href="'+url+'"'))
- assert.ok(primary.includes('下载 macOS Apple Silicon'))
- assert.equal(primary.includes('下载 Windows'),false)
- assert.equal(primary.includes('/guide/manager'),false)
+ assert.equal(panel(await render(fixture.state),'manager','macos').hidden,true)
+ fixture.state.selectSystem('manager','macos')
+ const html=await render(fixture.state),mac=panel(html,'manager','macos'),available=option(mac.content,'macos-arm64'),missing=option(mac.content,'macos-x64')
+ assert.equal(mac.hidden,false)
+ assert.ok(available.includes('href="'+url+'"'))
+ assert.ok(available.includes('Apple 芯片'))
+ assert.ok(available.includes('下载 DMG'))
+ assert.ok(available.includes('0.2.13'))
+ assert.ok(available.includes(item.sha256))
+ assert.ok(available.includes('打开 DMG'))
+ assert.equal(missing.includes('href='),false)
+ assert.ok(missing.includes(' disabled'))
+ assert.equal(panel(html,'manager','windows').hidden,true)
+ assert.equal(html.includes('/guide/manager'),false)
  fixture.destroy()
 })
 test('Codex display name keeps the original package and matching license links beside their system label',async()=>{
@@ -75,83 +108,147 @@ test('Codex display name keeps the original package and matching license links b
  const item={id:'windows-arm64',label:'Windows ARM64',architecture:'arm64',version:'26.930.2377.0',fileName:'ChatGPT-arm64.msix',licenseFileName:'ChatGPT-License.xml',url:directory+'ChatGPT-arm64.msix',licenseUrl:directory+'ChatGPT-License.xml',bytes:900000000,format:'msix',sha256:'a'.repeat(64),licenseSha256:'b'.repeat(64)}
  const fixture=setup(async product=>product==='chatgpt'?[item]:[])
  fixture.mount();await flush()
- const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))
- assert.ok(primary.includes('Codex 桌面端离线包（备用）'))
- assert.equal(primary.includes('ChatGPT 桌面端'),false)
- assert.ok(primary.includes('href="'+item.url+'"'))
- assert.ok(primary.includes('href="'+item.licenseUrl+'"'))
- assert.ok(primary.includes('下载 Windows ARM64'))
- assert.ok(primary.includes('Windows ARM64 许可文件'))
- assert.ok(primary.includes('Windows x64'))
- assert.equal((primary.match(new RegExp('href="'+item.licenseUrl.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'"','g'))||[]).length,1)
- assert.ok(html.includes('Add-AppxProvisionedPackage'))
+ fixture.state.selectSystem('chatgpt','windows')
+ const html=await render(fixture.state),windows=panel(html,'chatgpt','windows'),arm=option(windows.content,'windows-arm64'),x64=option(windows.content,'windows-x64')
+ assert.equal(windows.hidden,false)
+ assert.ok(html.includes('Codex 桌面端离线包（备用）'))
+ assert.equal(html.includes('ChatGPT 桌面端'),false)
+ assert.ok(arm.includes('href="'+item.url+'"'))
+ assert.ok(arm.includes('href="'+item.licenseUrl+'"'))
+ assert.ok(arm.includes('ARM 处理器'))
+ assert.ok(arm.includes('Windows ARM64 许可文件'))
+ assert.equal((html.split('href="'+item.licenseUrl+'"').length-1),1)
+ assert.ok(arm.includes('MSIX 与许可文件都要下载，并放在同一文件夹'))
+ assert.ok(arm.includes('相同版本和架构'))
+ assert.ok(arm.includes('管理员 PowerShell'))
+ assert.ok(arm.includes('Add-AppxProvisionedPackage'))
+ assert.ok(arm.includes('ChatGPT-arm64.msix'))
+ assert.ok(arm.includes('-LicensePath'))
+ assert.ok(arm.includes(item.sha256))
+ assert.ok(arm.includes(item.licenseSha256))
+ assert.equal(x64.includes('href='),false)
+ assert.equal(x64.includes(item.sha256),false)
  fixture.destroy()
 })
 test('Claude is a separate fallback group with complete MSIX and SkipLicense instructions',async()=>{
  const item={id:'windows-arm64',label:'Windows ARM64',architecture:'arm64',version:'1.0.0.0',fileName:'Claude-arm64.msix',url:COS_ROOT+'/xingmang/offline/claude/windows-arm64/sha256-'+ 'a'.repeat(64)+'/Claude-arm64.msix',bytes:500000000,format:'msix',sha256:'a'.repeat(64)}
  const fixture=setup(async product=>product==='claude'?[item]:[])
  fixture.mount();await flush()
- const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))
- assert.ok(primary.includes('Claude Desktop 离线包（备用）'))
- assert.ok(primary.includes('href="'+item.url+'"'))
- assert.ok(primary.includes('下载 Windows ARM64'))
- assert.ok(html.includes('-SkipLicense -Regions all'))
- assert.equal(html.includes('-LicensePath'),false)
- assert.equal(primary.includes('href="'+COS_ROOT+'/chatgpt/'),false)
+ fixture.state.selectSystem('claude','windows')
+ const html=await render(fixture.state),arm=option(panel(html,'claude','windows').content,'windows-arm64')
+ assert.ok(html.includes('Claude Desktop 离线包（备用）'))
+ assert.ok(arm.includes('href="'+item.url+'"'))
+ assert.ok(arm.includes('下载 MSIX'))
+ assert.ok(arm.includes('-SkipLicense -Regions all'))
+ assert.ok(arm.includes('无需单独许可文件'))
+ assert.ok(arm.includes('Claude-arm64.msix'))
+ assert.equal(arm.includes('-LicensePath'),false)
+ assert.equal(arm.includes('href="'+COS_ROOT+'/chatgpt/'),false)
  fixture.destroy()
 })
 test('an empty index renders preparation and retry without a guessed download URL',async()=>{
  const fixture=setup(async()=>[])
  fixture.mount()
  await flush()
- const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))
- assert.ok(primary.includes('安装包正在准备'))
- assert.ok(primary.includes('重新读取'))
- assert.equal(primary.includes('<a'),false)
+ const html=await render(fixture.state)
+ assert.ok(html.includes('安装包正在准备'))
+ assert.ok(html.includes('重新读取'))
+ assert.equal(html.includes('<a'),false)
  fixture.destroy()
 })
 test('system and architecture choices stay visible when loading, empty or failed',async()=>{
  const fixture=setup(async()=>[])
  for(const status of ['loading','ready','error']){
   for(const product of ['manager','chatgpt','claude'])fixture.state.catalogs.value[product]={status,items:[]}
-  const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))
-  assert.equal((primary.match(/class="installer-system"/g)||[]).length,6)
-  assert.equal((primary.match(/data-system="windows"/g)||[]).length,3)
-  assert.equal((primary.match(/data-system="macos"/g)||[]).length,3)
-  assert.equal((primary.match(/data-system="linux"/g)||[]).length,0)
-  assert.ok(primary.includes('ARM64'))
-  assert.ok(primary.includes('Apple Silicon'))
-  assert.equal(primary.includes('Fedora'),false)
-  assert.ok(primary.includes('DMG'))
-  assert.ok(primary.includes('PKG'))
-  assert.ok(primary.includes('ZIP'))
-  assert.equal(primary.includes('DEB'),false)
-  assert.equal(primary.includes('RPM'),false)
+  fixture.state.selectSystem('claude','macos')
+  const html=await render(fixture.state)
+  assert.equal((html.match(/data-system="windows"/g)||[]).length,3)
+  assert.equal((html.match(/data-system="macos"/g)||[]).length,3)
+  assert.equal((html.match(/data-system="linux"/g)||[]).length,0)
+  assert.ok(html.includes('ARM64'))
+  assert.ok(html.includes('Apple 芯片'))
+  assert.equal(html.includes('Fedora'),false)
+  assert.ok(html.includes('DMG'))
+  assert.ok(html.includes('PKG'))
+  assert.ok(html.includes('ZIP'))
+  assert.equal(html.includes('DEB'),false)
+  assert.equal(html.includes('RPM'),false)
   assert.equal(html.includes('Linux'),false)
-  assert.ok(primary.includes(' disabled'))
-  assert.equal(primary.includes('href="'+COS_ROOT),false)
-  const claude=primary.slice(primary.indexOf('aria-labelledby="download-title-claude"'))
-  assert.equal(claude.includes('Fedora'),false)
-  assert.equal(claude.includes('RPM'),false)
+  assert.ok(html.includes(' disabled'))
+  assert.equal(html.includes('href="'+COS_ROOT),false)
+  const claude=panel(html,'claude','macos').content
   assert.equal((claude.match(/data-package="macos-dmg-universal"/g)||[]).length,1)
   assert.equal((claude.match(/data-package="macos-pkg-universal"/g)||[]).length,1)
+  if(status==='loading')assert.ok(html.includes('正在读取下载地址'))
+  if(status==='error')assert.ok(html.includes('下载地址暂时无法读取'))
+  if(status!=='loading')assert.ok(html.includes('重新读取'))
+  fixture.state.selectSystem('claude','macos')
  }
  fixture.destroy()
 })
-test('Escape closes only the active system chooser and returns focus to its summary',()=>{
+test('system buttons toggle one panel across products and expose matching expanded states',async()=>{
  const fixture=setup(async()=>[])
- let focused=0,prevented=0,stopped=0
- const summary={focus(){focused++}},detail={open:true,querySelector(){return summary}}
- fixture.state.closeOnEscape({key:'Escape',target:{closest(){return detail}},preventDefault(){prevented++},stopPropagation(){stopped++}})
- assert.equal(detail.open,false)
+ fixture.state.selectSystem('manager','macos')
+ assert.equal(fixture.state.isActive('manager','macos'),true)
+ assert.match(systemButton(await render(fixture.state),'manager','macos'),/aria-expanded="true"/)
+ fixture.state.selectSystem('manager','windows')
+ assert.equal(fixture.state.isActive('manager','macos'),false)
+ assert.equal(fixture.state.isActive('manager','windows'),true)
+ fixture.state.selectSystem('claude','macos')
+ assert.equal(fixture.state.isActive('manager','windows'),false)
+ const html=await render(fixture.state)
+ for(const product of ['manager','chatgpt','claude'])for(const system of ['windows','macos']){
+  const active=product==='claude'&&system==='macos'
+  assert.equal(panel(html,product,system).hidden,!active)
+  assert.ok(systemButton(html,product,system).includes('aria-expanded="'+active+'"'))
+ }
+ fixture.state.selectSystem('unknown','windows')
+ fixture.state.selectSystem('claude','linux')
+ assert.equal(fixture.state.isActive('claude','macos'),true)
+ fixture.state.selectSystem('claude','macos')
+ assert.equal(fixture.state.activeSelection.value,null)
+ fixture.destroy()
+})
+test('Escape closes the selected panel and returns focus to its current system button',async()=>{
+ const fixture=setup(async()=>[])
+ let focused=0,oldFocused=0,prevented=0,stopped=0
+ fixture.state.selectSystem('manager','windows',{currentTarget:{focus(){oldFocused++}}})
+ fixture.state.selectSystem('claude','macos',{currentTarget:{focus(){focused++}}})
+ const event={key:'Escape',preventDefault(){prevented++},stopPropagation(){stopped++}}
+ fixture.state.closeOnEscape({...event,key:'Enter'})
+ assert.equal(fixture.state.isActive('claude','macos'),true)
+ assert.equal(focused,0)
+ fixture.state.closeOnEscape(event)
+ assert.equal(fixture.state.activeSelection.value,null)
  assert.equal(focused,1)
+ assert.equal(oldFocused,0)
  assert.equal(prevented,1)
  assert.equal(stopped,1)
- const another={open:true},current={open:true}
- fixture.state.picker.value={querySelectorAll(){return[another,current]}}
- fixture.state.systemToggled({target:current})
- assert.equal(another.open,false)
- assert.equal(current.open,true)
+ assert.match(systemButton(await render(fixture.state),'claude','macos'),/aria-expanded="false"/)
+ fixture.state.closeOnEscape(event)
+ assert.equal(focused,1)
+ assert.equal(prevented,1)
+ fixture.destroy()
+})
+test('Claude Mac presents DMG and PKG as installation formats that both support Apple and Intel chips',async()=>{
+ const items=['dmg','pkg'].map((format,index)=>({id:'macos-'+format+'-universal',label:'macOS 通用',architecture:'universal',platform:'macos',format,version:'2.19675.0',url:COS_ROOT+'/xingmang/offline/claude/macos-'+format+'-universal/sha256-'+String(index).repeat(64)+'/Claude-universal.'+format,bytes:377037896,sha256:String(index).repeat(64)}))
+ const fixture=setup(async product=>product==='claude'?items:[])
+ fixture.mount();await flush()
+ fixture.state.selectSystem('claude','macos')
+ const mac=panel(await render(fixture.state),'claude','macos')
+ assert.equal(mac.hidden,false)
+ assert.ok(mac.content.includes('选择安装方式'))
+ assert.ok(mac.content.includes('两种格式均为通用版，支持 Apple 芯片与 Intel'))
+ assert.ok(mac.content.includes('日常安装选择 DMG'))
+ assert.equal(mac.content.includes('选择电脑的芯片类型'),false)
+ assert.ok(option(mac.content,items[0].id).includes('DMG · 拖拽安装'))
+ assert.ok(option(mac.content,items[1].id).includes('PKG · 安装向导'))
+ for(const item of items){
+  const choice=option(mac.content,item.id)
+  assert.ok(choice.includes('href="'+item.url+'"'))
+  assert.ok(choice.includes('2.19675.0'))
+  assert.ok(choice.includes(item.sha256))
+ }
  fixture.destroy()
 })
 test('an unavailable product keeps a retryable state without hiding the other product',async()=>{

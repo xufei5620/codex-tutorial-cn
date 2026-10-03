@@ -122,6 +122,23 @@
 .manager-points{margin:16px 0 22px;padding:0;list-style:none;display:grid;gap:8px}
 .manager-points li{padding:10px 14px;border:1px solid #e4eaf1;border-radius:10px;background:#fbfcfe;color:#3c5573;font-size:14px;line-height:1.65}
 .manager-points b{display:inline-block;min-width:4.5em;margin-right:8px;color:#8a6a2f}
+.manager-page .vp-doc{max-width:none}
+.manager-page .manager-lead{color:#52667f;font-size:16px;line-height:1.8;margin:0 0 26px;max-width:680px}
+.manager-page .manager-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:center;gap:32px;margin:42px 0;padding:30px 0;border-top:1px solid #dfe5ed;border-bottom:1px solid #dfe5ed}
+.manager-overview h2{font-size:22px;line-height:1.5;margin:0 0 12px}
+.manager-overview p{font-size:14px;line-height:1.85;color:#52667f;margin:0 0 17px}
+.manager-overview .yichen-figure{margin:0;min-width:0}
+.manager-capabilities{list-style:none!important;margin:0!important;padding:0!important;display:grid;gap:13px}
+.manager-capabilities li{margin:0!important;display:flex;flex-direction:column;gap:3px;font-size:13px;line-height:1.65}
+.manager-capabilities strong{font-size:14px;color:#1b2e46}
+.manager-capabilities span{color:#52667f}
+.manager-page .manager-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 40px;padding-left:24px;margin:20px 0 32px;max-width:none}
+.manager-steps>li{padding-left:4px;min-width:0;margin:0}
+.manager-steps>li::marker{font-weight:700;color:#98773e}
+.manager-steps h3{margin:0 0 7px;font-size:16px;line-height:1.6}
+.manager-steps p{margin:0;font-size:14px;line-height:1.8;color:#52667f}
+.manager-page .vp-doc>p:not(.manager-lead),.manager-page .vp-doc>ul{max-width:760px}
+@media(max-width:760px){.manager-page .manager-overview{grid-template-columns:minmax(0,1fr);gap:22px;margin:30px 0;padding:24px 0}.manager-page .manager-steps{grid-template-columns:minmax(0,1fr);gap:20px}.manager-page .manager-lead{font-size:14px}}
 .page-help .vp-doc table{border-radius:12px;overflow:hidden;box-shadow:0 10px 24px -20px #27456299}
 .page-links{display:flex;flex-wrap:wrap;gap:10px;margin:32px 0 8px}
 .page-links a{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border:1px solid #e4eaf1;border-radius:999px;background:#fff;color:#3c5573;font-size:13px;font-weight:700}
