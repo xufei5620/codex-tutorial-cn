@@ -1,6 +1,7 @@
 <script setup>
 import {computed,ref} from 'vue'
 import {useData} from 'vitepress'
+import BrandIcon from './BrandIcon.vue'
 defineProps({kind:{type:String,default:'home'}})
 const {theme}=useData()
 const d=computed(()=>theme.value.studio)
@@ -114,7 +115,7 @@ function toolBase(id){
   </div>
   <div class="tool-grid">
     <a v-for="t in shown" :key="t[0]" :href="'/clients/'+t[0]" class="tool-card">
-      <span class="tool-monogram" aria-hidden="true">{{t[1].slice(0,2)}}</span>
+      <span class="tool-brand" aria-hidden="true"><BrandIcon :name="t[0]" :size="32" /></span>
       <h2>{{t[1]}}</h2>
       <p>{{t[2]}}</p>
       <code v-if="toolBase(t[0])" class="tool-url">{{toolBase(t[0])}}</code>
@@ -124,3 +125,7 @@ function toolBase(id){
   <p v-if="!shown.length" class="edu-note">没有匹配工具，请尝试其他关键词。</p>
 </div>
 </template>
+
+<style scoped>
+.tool-brand{display:flex;align-items:center;justify-content:flex-start;min-height:40px;margin-bottom:16px}
+</style>

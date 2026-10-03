@@ -4,6 +4,10 @@
 
 下载区域仅提供 Windows 与 macOS，两类系统的图标、架构选项和安装说明对三个产品保持一致。历史源索引与缓存中的 Linux 条目仍按原 schema 校验，但公开清单和页面均过滤掉它们；COS 已有文件不删除，其它 Linux 教程不受影响。
 
+管理工具为主下载区，两个桌面客户端归入备用安装包区域。系统按钮保持一排，点击后在正常文档流中展开选项，不覆盖后续内容；一次只展开一个系统面板，可再次点击收起，Escape 返回触发按钮。桌面端的双选项并排，窄屏纵向排列。
+
+芯片选项使用 Intel / AMD、ARM、Apple 芯片、Intel 芯片等可识别名称。Claude Mac 按 DMG 拖拽安装、PKG 安装向导区分，明确两者均为通用包；版本、大小、配套许可及折叠的安装说明和摘要放在相应文件旁。工具接入与下载标题使用本地品牌素材，来源和许可见 `../studio/theme/assets/brands/README.md`。
+
 - 按量站：`https://docs-new.solov.cc/guide/manager#download-installers`
 - 订阅站：`https://docs-sub.solov.cc/guide/manager#download-installers`
 - 原 `/guide/download` 兼容跳转到本站上述选择区。
@@ -20,7 +24,7 @@
 
 1. 先上传已经核验的安装包，再上传对应索引。核对匿名读取、文件大小、Content-Type 与完整摘要。Codex Windows MSIX 和离线许可必须同版本、同架构；Claude Windows 完整 MSIX 使用 `SkipLicense`，不混用 Codex 许可。
 2. 完成本地 mock 测试、两站实际 VitePress 构建和 Pages Functions 编译。
-3. 提交 PR，等待 Claude 审查后再合并。原生产 `sites` 工作流在 main 合并后部署两站；没有新服务器或 SSH 配置要求。保留既有 Cloudflare Secrets。
+3. 提交 PR，完成检查后按用户授权合并。原生产 `sites` 工作流在 main 合并后部署两站；没有新服务器或 SSH 配置要求。保留既有 Cloudflare Secrets。
 4. 上线后验收两站的选择区、各平台真实下载与旧路由跳转，再发布指向该入口的管理工具版本。
 
 后续只更新 COS 索引即可更新下载选项，教程无需随每次发布修改文件 URL。关闭生产同步不会删除已发布对象。教程源码验证不代表已部署，下载通过也不等于用户安装成功。
