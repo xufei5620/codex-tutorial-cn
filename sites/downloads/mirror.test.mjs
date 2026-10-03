@@ -21,7 +21,7 @@ test('mirror reads only three fixed anonymous COS indexes and strips source inte
   assert.deepEqual(options.headers,{Accept:'application/json','Cache-Control':'no-cache'})
   return url.endsWith('/xingmang/latest.json')?json(fixture()):new Response(null,{status:404})
  }})
- assert.deepEqual(new Set(urls),new Set(['xingmang','chatgpt','claude'].map(product=>COS_ROOT+'/'+product+'/latest.json')))
+ assert.deepEqual(new Set(urls),new Set(['xingmang/latest.json','chatgpt/latest.json','xingmang/offline/claude/latest.json'].map(key=>COS_ROOT+'/'+key)))
  assert.equal(validateManagerIndex(JSON.parse(entries[0].json)).length,1)
  assert.deepEqual(validateChatgptIndex(JSON.parse(entries[1].json)),[])
  assert.deepEqual(validateClaudeIndex(JSON.parse(entries[2].json)),[])

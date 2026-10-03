@@ -85,7 +85,7 @@ test('Codex display name keeps the original package and matching license links b
  fixture.destroy()
 })
 test('Claude is a separate fallback group with complete MSIX and SkipLicense instructions',async()=>{
- const item={id:'windows-arm64',label:'Windows ARM64',architecture:'arm64',version:'1.0.0.0',fileName:'Claude-arm64.msix',url:COS_ROOT+'/claude/windows-arm64/sha256-'+ 'a'.repeat(64)+'/Claude-arm64.msix',bytes:500000000,format:'msix',sha256:'a'.repeat(64)}
+ const item={id:'windows-arm64',label:'Windows ARM64',architecture:'arm64',version:'1.0.0.0',fileName:'Claude-arm64.msix',url:COS_ROOT+'/xingmang/offline/claude/windows-arm64/sha256-'+ 'a'.repeat(64)+'/Claude-arm64.msix',bytes:500000000,format:'msix',sha256:'a'.repeat(64)}
  const fixture=setup(async product=>product==='claude'?[item]:[])
  fixture.mount();await flush()
  const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))

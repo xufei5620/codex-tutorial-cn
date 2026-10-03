@@ -4,7 +4,7 @@ export const INDEX_ROUTES = Object.freeze({
   chatgpt: '/cos-download-index/chatgpt.json',
   claude: '/cos-download-index/claude.json'
 })
-const INDEX_KEYS = Object.freeze({ manager: 'xingmang/latest.json', chatgpt: 'chatgpt/latest.json', claude: 'claude/latest.json' })
+const INDEX_KEYS = Object.freeze({ manager: 'xingmang/latest.json', chatgpt: 'chatgpt/latest.json', claude: 'xingmang/offline/claude/latest.json' })
 const MAX_INDEX_BYTES = 256 * 1024
 const TIMEOUT_MS = 10000
 const FAILURE_DETAILS = new WeakMap()
@@ -202,7 +202,7 @@ export function validateClaudeIndex(value) {
     if (!platform || items.has(platform.id) || entry.fileName !== platform.fileName
       || entry.verification !== platform.verification || !claudeVersion(entry.version, platform.platform)
       || entry.license !== undefined || entry.licenseUrl !== undefined) throw new Error('Claude Desktop 安装包系统或校验记录无效')
-    validateArtifact({ ...entry, bytes: entry.size, contentType: entry.type }, `claude/${platform.id}/sha256-${entry.sha256}/${platform.fileName}`, platform.contentType, 2 * 1024 * 1024 * 1024)
+    validateArtifact({ ...entry, bytes: entry.size, contentType: entry.type }, `xingmang/offline/claude/${platform.id}/sha256-${entry.sha256}/${platform.fileName}`, platform.contentType, 2 * 1024 * 1024 * 1024)
     items.set(platform.id, { ...platform, version: entry.version, key: entry.key, url: entry.url, bytes: entry.size, sha256: entry.sha256 })
   }
   return CLAUDE_PLATFORMS.flatMap(platform => items.has(platform.id) ? [items.get(platform.id)] : [])
