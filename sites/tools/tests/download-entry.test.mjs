@@ -14,7 +14,7 @@ const script=compileScript(descriptor,{id:'download-unit'})
 function setup(fetchCatalog){
  let destroy,mount
  const code=script.content.replace(/^import .*$/gm,'').replace('export default {','globalThis.component = {')
- const context={ref:Vue.ref,AbortController,INDEX_ROUTES,downloadPlatformGroups,fetchCatalog,windowsIcon:'/mock/windows.svg',appleIcon:'/mock/apple.svg',linuxIcon:'/mock/linux.png',fetch:()=>{throw Error('Unmocked network is forbidden')},onMounted:callback=>{mount=callback},onBeforeUnmount:callback=>{destroy=callback}}
+ const context={ref:Vue.ref,AbortController,INDEX_ROUTES,downloadPlatformGroups,fetchCatalog,windowsIcon:'/mock/windows.svg',appleIcon:'/mock/apple.svg',fetch:()=>{throw Error('Unmocked network is forbidden')},onMounted:callback=>{mount=callback},onBeforeUnmount:callback=>{destroy=callback}}
  vm.runInNewContext(code,context)
  return {state:context.component.setup({}, {expose(){}}),destroy:()=>destroy(),mount:()=>mount()}
 }
@@ -115,18 +115,19 @@ test('system and architecture choices stay visible when loading, empty or failed
  for(const status of ['loading','ready','error']){
   for(const product of ['manager','chatgpt','claude'])fixture.state.catalogs.value[product]={status,items:[]}
   const html=render(fixture.state),primary=html.slice(0,html.indexOf('<details class="installer-more"'))
-  assert.equal((primary.match(/class="installer-system"/g)||[]).length,9)
+  assert.equal((primary.match(/class="installer-system"/g)||[]).length,6)
   assert.equal((primary.match(/data-system="windows"/g)||[]).length,3)
   assert.equal((primary.match(/data-system="macos"/g)||[]).length,3)
-  assert.equal((primary.match(/data-system="linux"/g)||[]).length,3)
+  assert.equal((primary.match(/data-system="linux"/g)||[]).length,0)
   assert.ok(primary.includes('ARM64'))
   assert.ok(primary.includes('Apple Silicon'))
-  assert.ok(primary.includes('Fedora'))
+  assert.equal(primary.includes('Fedora'),false)
   assert.ok(primary.includes('DMG'))
   assert.ok(primary.includes('PKG'))
   assert.ok(primary.includes('ZIP'))
-  assert.ok(primary.includes('DEB'))
-  assert.ok(primary.includes('RPM'))
+  assert.equal(primary.includes('DEB'),false)
+  assert.equal(primary.includes('RPM'),false)
+  assert.equal(html.includes('Linux'),false)
   assert.ok(primary.includes(' disabled'))
   assert.equal(primary.includes('href="'+COS_ROOT),false)
   const claude=primary.slice(primary.indexOf('aria-labelledby="download-title-claude"'))

@@ -3,8 +3,7 @@ import {ref,onMounted,onBeforeUnmount} from 'vue'
 import {fetchCatalog,INDEX_ROUTES,downloadPlatformGroups} from '../../downloads/catalog.mjs'
 import windowsIcon from '../assets/os/windows.svg'
 import appleIcon from '../assets/os/apple.svg'
-import linuxIcon from '../assets/os/linux.png'
-const systemIcons={windows:windowsIcon,macos:appleIcon,linux:linuxIcon}
+const systemIcons={windows:windowsIcon,macos:appleIcon}
 const products=[{id:'manager',title:'星芒 AI 管理工具',description:'先下载管理工具，按工具内的正常流程安装与配置所需工具。'},{id:'chatgpt',title:'Codex 桌面端离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择；Windows 需一并下载许可文件。'},{id:'claude',title:'Claude Desktop 离线包（备用）',description:'正常安装失败或网络异常时使用。按系统与芯片选择官方安装包。'}]
 const picker=ref(),catalogs=ref(Object.fromEntries(products.map(product=>[product.id,{status:'idle',items:[]}]))),controllers=new Map()
 let disposed=false
@@ -88,8 +87,6 @@ onBeforeUnmount(()=>{disposed=true;for(const controller of controllers.values())
      <p v-else-if="product.id==='claude'&&item.format==='dmg'">macOS：打开 DMG，将 Claude 拖入“应用程序”。Universal 包同时适用于 Apple 芯片与 Intel。</p>
      <p v-else-if="product.id==='claude'&&item.format==='pkg'">macOS：打开 PKG，按系统安装器提示安装。Universal 包同时适用于 Apple 芯片与 Intel。</p>
      <p v-else-if="product.id==='chatgpt'&&item.format==='zip'">macOS：解压 ZIP 后将应用放入“应用程序”，再打开。</p>
-     <p v-else-if="product.id==='chatgpt'&&['deb','rpm'].includes(item.format)">Linux：使用系统的软件安装器打开对应的 {{item.format.toUpperCase()}} 包。</p>
-     <p v-else-if="product.id==='claude'&&item.format==='deb'">Linux 测试版：适用于 Ubuntu 22.04+ 或 Debian 12+。使用系统的软件安装器打开对应架构的 DEB 包，缺失依赖时仍需通过 APT 安装。</p>
      <details class="installer-checksum"><summary>核对 SHA-256</summary><code>{{item.sha256}}</code><template v-if="item.licenseSha256"><p>许可文件：</p><code>{{item.licenseSha256}}</code></template></details>
     </li>
    </ul>

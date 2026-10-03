@@ -7,11 +7,10 @@ const HASH = 'a'.repeat(64)
 test('display metadata shares exact supported platforms without synthesizing download URLs', () => {
   const codex = downloadPlatformGroups('chatgpt')
   const claude = downloadPlatformGroups('claude')
-  assert.deepEqual(codex.map(group => group.title), ['Windows', 'macOS', 'Linux'])
-  assert.deepEqual(codex.map(group => group.packages.length), [2, 2, 4])
-  assert.deepEqual(claude.map(group => group.packages.length), [2, 2, 2])
+  for (const product of ['manager', 'chatgpt', 'claude']) assert.deepEqual(downloadPlatformGroups(product).map(group => group.title), ['Windows', 'macOS'])
+  assert.deepEqual(codex.map(group => group.packages.length), [2, 2])
+  assert.deepEqual(claude.map(group => group.packages.length), [2, 2])
   assert.deepEqual(claude[1].packages.map(item => [item.architecture, item.format]), [['universal', 'dmg'], ['universal', 'pkg']])
-  assert.equal(claude[2].packages.some(item => item.format === 'rpm'), false)
   assert.equal(codex.flatMap(group => group.packages).filter(item => item.requiresLicense).length, 2)
   assert.equal(JSON.stringify([codex, claude]).includes('https:'), false)
   assert.throws(() => downloadPlatformGroups('constructor'))
@@ -77,6 +76,17 @@ test('manager preserves older platform versions and never substitutes a missing 
   const key = `xingmang/releases/${version}/${fileName}`
   value.files = [{ fileName, version, platform: 'macos', architecture: 'arm64', kind: 'installer', key, url: `${COS_ROOT}/${key}`, size: 10, sha256: HASH, type: 'application/x-apple-diskimage' }]
   assert.deepEqual(validateManagerIndex(value).map(item => [item.id, item.version, item.format]), [['macos-arm64', version, 'dmg']])
+})
+
+test('manager historical Linux packages remain valid but are excluded from public and browser catalogs', async () => {
+  const value = managerFixture(), version = value.version
+  const fileName = `xingmang-ai-manager_${version}_amd64.deb`, key = `xingmang/releases/${version}/${fileName}`
+  value.files.push({fileName,version,platform:'linux',architecture:'x64',kind:'installer',key,url:`${COS_ROOT}/${key}`,size:10,sha256:HASH,type:'application/vnd.debian.binary-package'})
+  assert.equal(validateManagerIndex(value).length, 2)
+  assert.deepEqual(validateManagerIndex(projectPublicIndex('manager', value)).map(item => item.id), ['windows-x64'])
+  assert.deepEqual((await fetchCatalog('manager', {fetchImpl:async () => jsonResponse(value)})).map(item => item.id), ['windows-x64'])
+  value.files[1].sha256 = 'invalid'
+  assert.throws(() => projectPublicIndex('manager', value))
 })
 
 test('manager rejects duplicated platforms, wrong schema, missing digest and fake installer names', () => {
@@ -145,7 +155,7 @@ test('official packages reject mismatched license, signatures, version, content 
   }
 })
 
-test('macOS ZIP and Linux deb use hash directories without Windows fallback or invented versions', () => {
+test('historical macOS and Linux packages validate while public catalogs include only macOS', async () => {
   const platforms = {}
   for (const [id, platform, architecture, format, fileName, contentType] of [
     ['macos-arm64', 'macos', 'arm64', 'zip', 'ChatGPT-darwin-arm64-26.930.1.zip', 'application/zip'],
@@ -156,9 +166,12 @@ test('macOS ZIP and Linux deb use hash directories without Windows fallback or i
       ...(platform === 'macos' ? { appVersion: '26.930.1', buildVersion: '1000' } : {}),
       artifact: { key, url: `${COS_ROOT}/${key}`, bytes: 10, sha256: HASH, contentType, verification: 'official-https-sha256' } }
   }
-  const items = validateChatgptIndex({ schemaVersion: 1, product: 'chatgpt', platforms })
+  const value = { schemaVersion: 1, product: 'chatgpt', platforms }
+  const items = validateChatgptIndex(value)
   assert.deepEqual(items.map(item => [item.id, item.format, item.version]), [['macos-arm64', 'zip', '26.930.1'], ['linux-deb-x64', 'deb', null]])
   assert.equal(items.some(item => item.licenseUrl), false)
+  assert.deepEqual(validateChatgptIndex(projectPublicIndex('chatgpt', value)).map(item => item.id), ['macos-arm64'])
+  assert.deepEqual((await fetchCatalog('chatgpt', {fetchImpl:async () => jsonResponse(value)})).map(item => item.id), ['macos-arm64'])
   platforms['macos-arm64'].artifact.key = platforms['macos-arm64'].artifact.key.replace(`sha256-${HASH}`, '26.930.1')
   assert.throws(() => validateChatgptIndex({ schemaVersion: 1, product: 'chatgpt', platforms }))
 })
@@ -176,7 +189,7 @@ test('Claude full Windows MSIX exposes no license and public projection removes 
   assert.deepEqual(validateClaudeIndex({ schemaVersion: 1, product: 'claude-desktop', files: [] }), [])
 })
 
-test('Claude official platform formats keep two Windows architectures, universal Mac packages and Linux DEB', () => {
+test('Claude historical formats validate while public catalogs keep only Windows and universal Mac packages', async () => {
   const files = []
   for (const [id, platform, architecture, format, fileName, type, verification, version] of [
     ['windows-x64', 'windows', 'x64', 'msix', 'Claude-x64.msix', 'application/vnd.ms-appx', 'windows-authenticode-msix-identity', '1.0.0.0'],
@@ -194,7 +207,9 @@ test('Claude official platform formats keep two Windows architectures, universal
   assert.deepEqual(items.map(item => item.id), ['windows-x64', 'windows-arm64', 'macos-dmg-universal', 'macos-pkg-universal', 'linux-deb-x64', 'linux-deb-arm64'])
   assert.equal(items.filter(item => item.platform === 'macos').every(item => item.architecture === 'universal'), true)
   assert.equal(items.some(item => item.licenseUrl), false)
-  assert.deepEqual(validateClaudeIndex(projectPublicIndex('claude', value)), items)
+  const published = items.filter(item => item.platform !== 'linux')
+  assert.deepEqual(validateClaudeIndex(projectPublicIndex('claude', value)), published)
+  assert.deepEqual(await fetchCatalog('claude', {fetchImpl:async () => jsonResponse(value)}), published)
 })
 
 test('Claude rejects bootstrap names, fabricated platforms, unsupported signatures and mismatched immutable keys', () => {
