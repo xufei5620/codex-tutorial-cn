@@ -34,7 +34,7 @@ STATUS_ZH = {
     "retired": "已退役",
 }
 # sites/ is the separately deployed VitePress project; it is not part of the offline course.
-EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__", "sites"}
+EXCLUDED_PUBLIC_PARTS = {".claude", ".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__", "sites"}
 URL_ATTRIBUTES = {
     "archive",
     "background",
@@ -85,6 +85,7 @@ PUBLIC_TEXT_SUFFIXES = {".cfg", ".conf", ".css", ".htm", ".html", ".ini", ".json
 PUBLIC_TEXT_NAMES = {"Caddyfile", "Dockerfile"}
 PUBLIC_BINARY_SUFFIXES = {".avif", ".gif", ".ico", ".jpeg", ".jpg", ".png", ".webp"}
 DEVELOPER_ROOT_ENTRIES = {
+    ".claude",
     ".dockerignore",
     ".git",
     ".gitattributes",

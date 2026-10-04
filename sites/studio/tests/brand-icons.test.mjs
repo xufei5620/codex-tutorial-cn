@@ -64,6 +64,6 @@ test('vendored brand images stay passive and keep local-only SVG references',()=
   }
   assert.doesNotMatch(source,/v-html|https?:\/\//)
   const hub=fs.readFileSync(new URL('../theme/StudioHub.vue',import.meta.url),'utf8')
-  assert.match(hub,/<BrandIcon :name="t\[0\]"/)
+  assert.match(hub,/<BrandIcon :name="t.id"/)
   assert.doesNotMatch(hub,/t\[1\]\.slice\(0,2\)/)
 })

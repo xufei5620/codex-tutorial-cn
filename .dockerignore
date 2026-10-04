@@ -8,3 +8,4 @@ tests
 .gitattributes
 requirements-dev.txt
 sites
+.claude
