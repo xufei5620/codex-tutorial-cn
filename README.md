@@ -51,7 +51,10 @@
 | 通用 Codex 零基础教程 | 根目录 `index.html`、`ch01`–`ch11`、`src/` 等 | 上面介绍的离线 HTML 教程，`python3 src/build.py` 生成 | Docker / Nginx，见 `deploy/` |
 | 星芒AI 站点教程（多站点） | `sites/` | VitePress 静态站：`sites/sub2api/` → docs-sub.solov.cc（api.solov.cc 订阅站），`sites/newapi/` → docs-new.solov.cc（xm.solov.cc 按量站）。`sites/shared/` 是两站共用的教程模板与图片，各站 `site.json` 里是自己的名称、接口地址和客服（企微链接、二维码、工作时间） | push 到 main 后由 `.github/workflows/sites.yml` 自动构建并发布到 Cloudflare Pages |
 
+**维护重心（2026-10-04 起）：** 以 `sites/` 站点教程为主继续完善；离线教程冻结在当前版本，只修正错误，不再扩写。两站客服由 `sites/tools/tests/contact-guard.test.mjs` 与构建后的 `sites/tools/check-contacts.mjs` 守护，改客服时两处要一起改。
+
 `sites/` 的编辑方式：
 
 - 网页后台：`https://docs-sub.solov.cc/admin/`（Sveltia CMS，用 GitHub 账号登录，保存即提交、自动发布）。
 - 本地：`cd sites && npm ci && npm run dev:sub`（或 `dev:new`）。共用页面在 `sites/shared/pages/`，里面的 `%%BASE_URL%%`、`%%MODELS_URL%%`、`%%KEYS_URL%%`、`%%KEY_WORD%%` 等占位符会在构建时按各站 `site.json` 替换；某站需要不同版本时，把同路径文件放到该站 `overrides/` 下即可覆盖。
+- 截图：共用页面里每个编号步骤会自动生成截图位。`npm run build` 后运行 `npm run local:sub`（或 `local:new`），在本机打开页面加 `?edit=1` 上传真实截图，详见 `sites/studio/README-v5.6.md`。
