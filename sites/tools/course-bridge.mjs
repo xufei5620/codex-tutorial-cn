@@ -4,26 +4,42 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { COURSE_END } from './course-html.mjs'
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
-export function rewriteCourseLinks(html,ids) {
+export function rewriteCourseLinks(html,ids,media={}) {
  const valid=new Set([...ids,'home','index'])
- return html.replace(/\{\{?link:([^}]+)\}\}?/g,(_,ref)=>{
+ return html.replace(/\{\{media:([^}]+)\}\}/g,(_,id)=>{
+  const file=media[id];if(!file)throw Error('课程图片 ID 未登记：'+id)
+  return '/img/course/'+file
+ }).replace(/\{\{?link:([^}]+)\}\}?/g,(_,ref)=>{
   const [id,hash='']=ref.split('#');if(!valid.has(id))throw Error('课程跨页引用未知：'+ref)
   return '/learn/codex/'+(['index','home'].includes(id)?'':id)+(hash?'#'+hash:'')
  }).replace(/(href|src)=(['"])(?:\.\/)?(?:\.\.\/)?assets\/([^'"]+)\2/g,(_,attr,q,v)=>`${attr}=${q}/img/course/${v}${q}`)
  .replace(/href=(['"])(ch\d{2}|prompts|index)\.html(#[^'"]*)?\1/g,(_,q,id,hash='')=>`href=${q}/learn/codex/${id==='index'?'':id}${hash}${q}`)
+}
+// src/media-v1.json maps {{media:ID}} to files under assets/media/, which prebuild copies to /img/course/.
+export function loadCourseMedia(repositoryRoot) {
+ const catalog=path.join(repositoryRoot,'src','media-v1.json')
+ if(!fs.existsSync(catalog))return {}
+ const media={}
+ for(const asset of JSON.parse(fs.readFileSync(catalog,'utf8')).assets||[]){
+  const p=String(asset.path||'')
+  if(!p.startsWith('assets/media/')||p.split('/').includes('..'))throw Error('课程图片路径无效：'+asset.id)
+  if(asset.rights==='pending')throw Error('课程图片权利未确认：'+asset.id)
+  media[asset.id]=p.slice('assets/'.length)
+ }
+ return media
 }
 export function stageCourse(repositoryRoot) {
  const manifest=path.join(repositoryRoot,'src','chapters.json')
  if(!fs.existsSync(manifest))throw Error('缺少原课程 src/chapters.json；必须在原仓库构建，不发布空课程。')
  const m=JSON.parse(fs.readFileSync(manifest,'utf8')),ids=m.parts?.flatMap(p=>p.chapters)||Object.keys(m.chapters||{})
  if(!ids.length||new Set(ids).size!==ids.length)throw Error('原课程章节清单为空或含重复 ID')
- const sourceList=[...ids,...(m.extras?.prompts?['prompts']:[])],pages=[],sources=[],sidebar=[]
+ const media=loadCourseMedia(repositoryRoot),sourceList=[...ids,...(m.extras?.prompts?['prompts']:[])],pages=[],sources=[],sidebar=[]
  for(const id of sourceList){
   if(!/^(ch\d{2}|prompts)$/.test(id))throw Error('课程 ID 无效：'+id)
   const p=path.join(repositoryRoot,'src','content',id+'.html');if(!fs.existsSync(p))throw Error('缺少原课程正文：'+p)
   const raw=fs.readFileSync(p,'utf8'),meta=m.chapters[id]||m.extras[id]
   if(!meta?.title)throw Error('缺少课程标题：'+id)
-  const body=rewriteCourseLinks(raw,sourceList)
+  const body=rewriteCourseLinks(raw,sourceList,media)
   if(/<script\b|<iframe\b|\son\w+\s*=/i.test(body))throw Error(id+' 含执行脚本或嵌入内容，需人工审阅')
   if(body.includes('<!-- xm-course-end -->'))throw Error(id+' 使用了保留的课程边界标记')
   pages.push(['learn/codex/'+id+'.md',`---\ntitle: ${JSON.stringify(meta.title)}\noutline: false\n---\n\n<div class="xm-course-body" v-pre>\n${body}\n${COURSE_END}\n\n[课程目录](/learn/codex/) · [本站接入方法](/clients/codex) · [实践练习](/learn/first-task)\n`])

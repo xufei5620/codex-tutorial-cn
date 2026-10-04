@@ -33,6 +33,8 @@ test('frontmatter remains first, including CRLF',()=>assert.match(markGenerated(
 test('invalid frontmatter is rejected',()=>assert.throws(()=>markGenerated('---\ntitle: broken')))
 test('HTTPS and credential validation',()=>{assert.equal(https('https://example.invalid/x','URL'),'https://example.invalid/x');assert.throws(()=>https('http://example.invalid','URL'));assert.throws(()=>https('https://user:pass@example.invalid','URL'))})
 test('course links and assets are rewritten',()=>assert.equal(rewriteCourseLinks('<a href="{{link:ch01#s1}}">x</a><img src="assets/a.svg">',['ch01']),'<a href="/learn/codex/ch01#s1">x</a><img src="/img/course/a.svg">'))
+test('course media IDs resolve to copied course images',()=>assert.equal(rewriteCourseLinks('<img src="{{media:IMG-C01-0001}}">',['ch01'],{'IMG-C01-0001':'media/course/ch01/a.svg'}),'<img src="/img/course/media/course/ch01/a.svg">'))
+test('unregistered course media IDs are rejected',()=>assert.throws(()=>rewriteCourseLinks('{{media:IMG-C01-0009}}',['ch01'],{})))
 test('unknown course links are rejected',()=>assert.throws(()=>rewriteCourseLinks('{{link:missing}}',['ch01'])))
 test('missing course source is a hard error',()=>{const x=fs.mkdtempSync(path.join(os.tmpdir(),'xm-empty-'));assert.throws(()=>stageCourse(x))})
 test('11 fixture chapters preserve source, status and hash',()=>{const f=fixture(),before=fs.readFileSync(path.join(f.root,'src/content/ch01.html'),'utf8'),out=stageCourse(f.root);assert.equal(out.sources.length,12);assert.equal(out.pages.length,13);assert.equal(out.sources[0].status,'draft');assert.equal(out.sources[0].sha256,hash(before));assert.equal(out.version,'fixture-only');assert.equal(fs.readFileSync(path.join(f.root,'src/content/ch01.html'),'utf8'),before)})
