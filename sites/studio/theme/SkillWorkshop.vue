@@ -1,88 +1,185 @@
 <script setup>
-import {ref,computed,onMounted} from 'vue'
-import {download} from './shot-store.js'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { download } from './shot-store.js'
 import ScreenshotSlot from './ScreenshotSlot.vue'
-const tab=ref('build')
-const templates={
- writing:{label:'教程口吻',text:'---\nname: tutorial-writing\ndescription: 写中文图文教程时按口语、短段、先结论后步骤。\n---\n\n# 教程写作\n\n用中文。先说读者现在卡在哪，再给能照着做的步骤。\n一段只讲一件事。专有名词第一次出现时用一句话解释。\n不要写购买、套餐、中转、代充或线下引流。\n写完后自检：读者能不能只靠这一页做出结果。\n'},
- office:{label:'办公交付',text:'---\nname: office-files\ndescription: 做 Word、PPT 或网页时，先确认一份能打开的文件再继续改。\n---\n\n# 办公文件\n\n先问清楚交付物是 Word、PPT 还是网页。\n先做一份能打开的草稿，再按反馈改，不要一次做完整套设计。\n文件名用中文说明用途。做完后告诉我文件在哪、怎么打开。\n不要编造没生成的文件。\n'},
- interface:{label:'认界面',text:'---\nname: explain-codex-ui\ndescription: 解释 Codex App 左边、中间、右边和设置时，只讲当前屏幕上能看到的东西。\n---\n\n# 认界面\n\n先对应当前屏幕：左边入口、中间对话、右边结果、设置页。\n一次只讲一个区域。用大白话，不展开没出现的高级功能。\n不确定的按钮就说不确定，让我对着界面确认。\n'}
-}
-const source=ref(templates.writing.text)
-const chosen=ref('writing')
-const checks=computed(()=>[['有 YAML 前置信息',/^---\r?\n[\s\S]*?\r?\n---/.test(source.value)],['名称明确',/^name:\s*\S+/m.test(source.value)],['描述不为空',/^description:\s*\S+/m.test(source.value)],['有操作正文',source.value.replace(/^---[\s\S]*?---/,'').trim().length>30]])
-function useTemplate(id){chosen.value=id;source.value=templates[id].text}
-onMounted(()=>{const value=new URLSearchParams(location.search).get('tab');if(['build','install','test'].includes(value))tab.value=value})
-</script>
-<template>
-<article class="studio-lesson">
-  <a href="/learn/codex/" class="crumb">← Codex 零基础</a>
-  <p class="eyebrow">Skill 工坊</p>
-  <h1>把做顺的任务，<br>留成可复用的方法</h1>
-  <p class="lead">Skill 就是一份说明书：下次同类任务直接调用，不必从头讲一遍。这里只帮你写文件、检查格式；不运行代码、不安装技能、不调用模型。</p>
-  <div class="filter-bar">
-    <button v-for="[id,label] in [['build','制作技能'],['install','安装与调用'],['test','测试与改进']]" :key="id" :class="{active:tab===id}" @click="tab=id">{{label}}</button>
-  </div>
+import {
+  skillTemplates, MAX_SOURCE_LENGTH, templateSource, validateSkillSource, skillInstallPath,
+  skillPrompt, createWorkshopDrafts, selectWorkshopTemplate, updateWorkshopSource,
+  loadWorkshopDrafts, saveWorkshopDrafts
+} from './skill-workshop.mjs'
 
-  <section v-show="tab==='build'">
-    <h2>先选一个底稿，再改成自己的</h2>
-    <p>底稿对应 Codex 零基础里最常见的三类事。改名称、改口吻、改禁止项，保存成 <code>SKILL.md</code> 即可。</p>
+const tabs = [{ id: 'build', label: '1. 制作文件' }, { id: 'install', label: '2. 安装与调用' }, { id: 'test', label: '3. 检查结果' }]
+const tab = ref('build')
+const state = ref(createWorkshopDrafts())
+const storageStatus = ref('正在读取本机草稿…')
+const ready = ref(false)
+const message = ref('')
+const downloaded = ref({ source: '', templateId: '' })
+const platform = ref('windows')
+const scope = ref('project')
+const resetPending = ref(false)
+const selected = computed(() => skillTemplates.find(item => item.id === state.value.chosen))
+const source = computed({
+  get: () => state.value.drafts[state.value.chosen],
+  set: value => { state.value = updateWorkshopSource(state.value, value); resetPending.value = false; persist() }
+})
+const validation = computed(() => validateSkillSource(source.value))
+const installPath = computed(() => validation.value.valid ? skillInstallPath(validation.value.name, platform.value, scope.value) : '')
+const currentDownload = computed(() => downloaded.value.source === source.value && downloaded.value.templateId === selected.value.id)
+const invocation = computed(() => validation.value.valid ? skillPrompt(validation.value.name, selected.value.cases[0].prompt) : '')
+
+function persist() {
+  if (!ready.value) return
+  storageStatus.value = saveWorkshopDrafts(() => window.localStorage, state.value)
+    ? '草稿已保存在此浏览器。'
+    : '浏览器未能保存草稿（可能禁用存储或空间不足）。当前文字仍可编辑，请及时复制或下载。'
+}
+function chooseTemplate(id) {
+  state.value = selectWorkshopTemplate(state.value, id)
+  resetPending.value = false
+  message.value = ''
+  persist()
+}
+function resetTemplate() {
+  source.value = templateSource(selected.value)
+  resetPending.value = false
+  message.value = '已恢复当前模板；其他模板的草稿仍保留。'
+}
+function openStep(id) {
+  tab.value = id
+  nextTick(() => document.getElementById('skill-tab-' + id)?.focus())
+}
+function saveSkill() {
+  if (!validation.value.valid) { message.value = '请先修正格式检查列出的问题。'; return }
+  try {
+    download('SKILL.md', source.value, 'text/markdown;charset=utf-8')
+    downloaded.value = { source: source.value, templateId: selected.value.id }
+    openStep('install')
+    message.value = '已请求浏览器下载 SKILL.md。请在下载记录中确认文件，再按下方路径放置。'
+  } catch { message.value = '浏览器未能开始下载。请复制内容，在本机手动保存为 SKILL.md。' }
+}
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); message.value = '已复制。' }
+  catch { message.value = '当前浏览器不能自动复制。请手动选中下面的文本复制，或返回制作文件下载。' }
+}
+function moveTab(event) {
+  const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
+  if (!keys.includes(event.key)) return
+  event.preventDefault()
+  const current = tabs.findIndex(item => item.id === tab.value)
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length
+  tab.value = tabs[next].id
+  event.currentTarget.parentElement.querySelector('#skill-tab-' + tab.value)?.focus()
+}
+onMounted(() => {
+  const loaded = loadWorkshopDrafts(() => window.localStorage)
+  state.value = loaded.state
+  storageStatus.value = loaded.available ? '草稿保存在此浏览器；每个模板分别保留。' : '无法读取本机草稿。当前可以继续编辑；离开前请复制或下载。'
+  ready.value = true
+  const value = new URLSearchParams(location.search).get('tab')
+  if (tabs.some(item => item.id === value)) tab.value = value
+})
+</script>
+
+<template>
+<article class="studio-lesson skill-workshop">
+  <a href="/learn/codex/" class="crumb">← Codex 零基础</a>
+  <p class="eyebrow">Skill 工坊 · Codex 本地技能</p>
+  <h1>把做顺的任务，<br>留成可复用的方法</h1>
+  <p class="lead">从三份纯指令模板开始，写清什么时候使用、按什么步骤做、怎样检查结果。技能本身不会增加文件生成、屏幕访问或外部账号权限。</p>
+  <p class="skill-boundary">这里制作的是 <code>SKILL.md</code> 文件。页面不会替你安装技能、运行命令或调用模型；示例由本站编写，适用于支持本地技能的 Codex 入口。</p>
+
+  <fieldset class="skill-template-picker">
+    <legend>选择模板</legend>
     <div class="skill-templates">
-      <button v-for="(item,id) in templates" :key="id" type="button" :class="{active:chosen===id}" @click="useTemplate(id)">{{item.label}}</button>
+      <button v-for="item in skillTemplates" :key="item.id" type="button" :class="{ active: selected.id === item.id }" :aria-pressed="selected.id === item.id" @click="chooseTemplate(item.id)">{{ item.label }}</button>
     </div>
+    <p>{{ selected.summary }} <span class="skill-chip">纯指令 · 无附带脚本</span></p>
+  </fieldset>
+  <p class="skill-storage" role="status">{{ storageStatus }} 草稿仅在本机当前浏览器保存，不上传服务器；清理浏览器数据会删除草稿，请勿写入密钥或私人资料。</p>
+
+  <div class="filter-bar skill-tabs" role="tablist" aria-label="制作、安装和验证步骤">
+    <button v-for="item in tabs" :id="'skill-tab-' + item.id" :key="item.id" type="button" role="tab" :aria-selected="tab === item.id" :aria-controls="'skill-panel-' + item.id" :tabindex="tab === item.id ? 0 : -1" :class="{ active: tab === item.id }" @click="tab = item.id" @keydown="moveTab">{{ item.label }}</button>
+  </div>
+  <p v-if="message" class="skill-message" role="status">{{ message }}</p>
+
+  <section v-show="tab === 'build'" id="skill-panel-build" role="tabpanel" aria-labelledby="skill-tab-build" tabindex="0">
+    <h2>改成自己的方法</h2>
+    <p>更换模板会保留各自草稿。先改触发范围、操作步骤和验收要求，再检查并下载。</p>
     <div class="workshop-grid">
-      <div>
-        <label for="skill-source">SKILL.md</label>
-        <textarea id="skill-source" class="skill-source" v-model="source" spellcheck="false"></textarea>
-        <button class="gold-button" @click="download('SKILL.md',source,'text/markdown;charset=utf-8')">保存 SKILL.md ↓</button>
+      <div class="skill-editor">
+        <label for="skill-source">SKILL.md 正文</label>
+        <textarea id="skill-source" v-model="source" class="skill-source" :maxlength="MAX_SOURCE_LENGTH" spellcheck="false" aria-describedby="skill-format-scope" :aria-invalid="!validation.valid"></textarea>
+        <div class="skill-actions">
+          <button type="button" class="gold-button" :disabled="!validation.valid" @click="saveSkill">下载 SKILL.md ↓</button>
+          <button type="button" @click="copyText(source)">复制当前内容</button>
+          <button type="button" @click="resetPending = !resetPending">恢复模板</button>
+        </div>
+        <div v-if="resetPending" class="skill-reset" role="group" aria-label="确认恢复当前模板">
+          <p>恢复将覆盖“{{ selected.label }}”的当前草稿。</p>
+          <button type="button" @click="resetTemplate">确认恢复</button>
+          <button type="button" @click="resetPending = false">保留草稿</button>
+        </div>
       </div>
-      <aside class="workshop-checks">
-        <h3>基础格式检查</h3>
-        <p v-for="[label,ok] in checks" :key="label">{{ok?'✓':'○'}} {{label}}</p>
-        <p>这里只检查字段和基本结构，不是完整 YAML 校验，也不证明技能能实际完成任务。</p>
-        <pre>.agents/skills/
-└── 技能目录/
-    └── SKILL.md</pre>
+      <aside class="workshop-checks" aria-label="当前文件检查结果">
+        <h3>{{ validation.valid ? '文件检查通过' : '先修正这些问题' }}</h3>
+        <p v-if="validation.valid" class="skill-valid">✓ 前置信息、名称、描述和正文符合工坊格式。</p>
+        <ul v-else class="skill-errors"><li v-for="error in validation.errors" :key="error">{{ error }}</li></ul>
+        <p id="skill-format-scope">工坊仅支持 <code>name</code> 与 <code>description</code> 两个单行文本字段。为便于跨平台放置文件，名称限定小写字母、数字和连字符，最长 64 位；描述最长 1024 字符。高级 YAML 或额外字段需在专门编辑器中检查。</p>
+        <p>检查通过只代表符合这里的格式范围；内容是否可信、方法是否有效，仍要阅读文件并实际试用。</p>
       </aside>
     </div>
     <ScreenshotSlot slot-id="skills-editor" />
   </section>
 
-  <section v-show="tab==='install'">
-    <h2>保存文件，不等于已经安装</h2>
-    <ol class="numbered-guide">
-      <li>检查技能来源、内容和依赖。这三份底稿不需要脚本或外部账号。</li>
-      <li>在 Codex 里确认技能目录。常见写法是当前项目下的 <code>.agents/skills/技能名/SKILL.md</code>；以你当前版本的设置页为准。</li>
-      <li>文件名必须是 <code>SKILL.md</code>，不要存成 <code>SKILL.md.txt</code>，也不要多套一层空文件夹。</li>
-      <li>保存后新开一轮对话，或按当前产品要求刷新技能列表，确认它被发现。</li>
-      <li>用技能名称显式调用，例如「按 tutorial-writing 写这一节」。出现在列表里，不等于已经按它执行。</li>
-    </ol>
-    <p class="edu-note">浏览器里点「保存 SKILL.md」只会下载到你的电脑，不会写入 Codex 的技能目录。放到目录里之后，再回 <a href="/learn/codex/ch01">认清界面</a> 里看插件、技能这些词怎么对应。</p>
+  <section v-show="tab === 'install'" id="skill-panel-install" role="tabpanel" aria-labelledby="skill-tab-install" tabindex="0">
+    <h2>把文件放对，再确认被发现</h2>
+    <p>下载文件只完成第一步。接下来在你实际运行 Codex 的环境中放置文件；本机、WSL 和远程工作区要分别核对。</p>
+    <p v-if="!validation.valid" class="skill-message">当前草稿未通过检查。请回到“制作文件”修正，路径和调用示例会根据有效的 name 显示。</p>
+    <template v-else>
+      <p class="skill-download-state">{{ currentDownload ? '已为当前这份内容发起下载，请核对浏览器下载记录。' : '当前内容尚未在本轮下载，或下载后又有修改。安装前请下载最新文件。' }}</p>
+      <div class="skill-install-options">
+        <label>运行环境<select v-model="platform"><option value="windows">Windows 本机</option><option value="macos">macOS / Linux</option></select></label>
+        <label>使用范围<select v-model="scope"><option value="project">当前项目</option><option value="personal">当前用户的多个项目</option></select></label>
+      </div>
+      <div class="skill-copy-block">
+        <p><strong>{{ validation.name }}</strong> 的目标文件路径</p>
+        <pre>{{ installPath }}</pre>
+        <button type="button" @click="copyText(installPath)">复制路径</button>
+      </div>
+      <ol class="numbered-guide">
+        <li>先阅读下载文件。若你加入了脚本、外链或依赖，请另行核对来源、用途与权限。</li>
+        <li v-if="scope === 'project'">把“你的项目目录”换成在 Codex 中打开的项目文件夹，逐层新建 <code>.agents/skills/{{ validation.name }}</code>。已有同名目录时先备份，不要直接覆盖。</li>
+        <li v-else>个人路径从用户主目录开始。Windows 默认用 <code>%USERPROFILE%</code>，macOS / Linux 用 <code>~</code>；自定义了 HOME 时以 Codex 实际主目录为准。缺少的文件夹需先创建，已有同名技能先备份。</li>
+        <li v-if="platform === 'windows'">在资源管理器中打开项目文件夹；安装个人技能时，可按 Win + R 输入 <code>%USERPROFILE%</code> 打开用户主目录。开启“查看 → 显示 → 文件扩展名”，再检查文件名。</li>
+        <li v-else>macOS 可在 Finder 按 Shift + Command + G 输入项目路径或 <code>~</code>，再按 Shift + Command + . 显示隐藏的 <code>.agents</code> 文件夹；Linux 用文件管理器打开对应目录。</li>
+        <li>将下载文件放入目标目录，最终名称应是 <code>SKILL.md</code>。注意浏览器可能下载成 <code>SKILL (1).md</code>，Windows 也可能隐藏 <code>.txt</code> 后缀。</li>
+        <li>打开对应项目并确认技能被发现。CLI / IDE 扩展可用 <code>/skills</code> 或输入 <code>$</code> 查找；桌面入口按当前版本的技能界面检查，未出现时重启后再查。</li>
+        <li>在新对话里复制下面的调用请求。检查实际回复是否使用了该方法，再进入“检查结果”做三个小测试。</li>
+      </ol>
+      <div class="skill-copy-block"><h3>第一次调用</h3><pre>{{ invocation }}</pre><button type="button" @click="copyText(invocation)">复制调用请求</button></div>
+      <div class="skill-actions"><button type="button" @click="saveSkill">下载当前文件</button><button type="button" class="gold-button" @click="openStep('test')">继续检查结果 →</button></div>
+    </template>
     <ScreenshotSlot slot-id="skills-install" />
   </section>
 
-  <section v-show="tab==='test'">
-    <h2>不要只测试一次</h2>
-    <p>用刚才那份技能跑三个小例子。过了再留着，跑偏了就改说明书，不要先加更多技能。</p>
-    <div class="path-grid">
-      <article class="path-card">
-        <h3>正常</h3>
-        <p>「按这个技能写一小节：第一次打开 Codex，先看左边。」</p>
-        <strong>应先结论，再给短步骤；不要写成购买或配置长文。</strong>
-      </article>
-      <article class="path-card">
-        <h3>缺失</h3>
-        <p>「帮我做一份 PPT。」但没说主题、页数和给谁看。</p>
-        <strong>先问清楚，不要编题目，也不要假装已经生成文件。</strong>
-      </article>
-      <article class="path-card">
-        <h3>跑偏</h3>
-        <p>用户只要一份能打开的 Word，技能却去改代码或装插件。</p>
-        <strong>停下来对齐交付物；办公技能不该变成工程任务。</strong>
+  <section v-show="tab === 'test'" id="skill-panel-test" role="tabpanel" aria-labelledby="skill-tab-test" tabindex="0">
+    <h2>用“{{ selected.label }}”跑三个小例子</h2>
+    <p>下面的请求和验收标准跟随所选模板。修改了方法后，也要调整测试材料；分别新开对话更容易发现是否依赖上一轮内容。</p>
+    <p v-if="!validation.valid" class="skill-message">先修正文件格式，才可以生成带当前技能名称的调用请求。</p>
+    <div class="skill-test-grid">
+      <article v-for="example in selected.cases" :key="example.label" class="path-card">
+        <h3>{{ example.label }}</h3>
+        <pre>{{ validation.valid ? skillPrompt(validation.name, example.prompt) : example.prompt }}</pre>
+        <button v-if="validation.valid" type="button" @click="copyText(skillPrompt(validation.name, example.prompt))">复制{{ example.label }}请求</button>
+        <p><strong>检查什么</strong>{{ example.expected }}</p>
       </article>
     </div>
+    <div class="skill-review"><h3>记下真实结果</h3><p>记录 Codex 入口与版本、输入材料、实际输出、通过或失败的原因。文件已下载、技能出现在列表、输出符合方法，是三件需要分别检查的事。页面不会替你执行这些测试，也不会自动标记通过。</p><p>没被发现时检查目录、文件名和前置信息；发现了却没按方法执行时，收窄描述中的触发范围，补充步骤，再用新材料重试。</p></div>
     <ScreenshotSlot slot-id="skills-test" />
-    <p>这些是验收标准，不是一次实际模型调用。把实际结果和 Codex 版本记在自己的笔记里。</p>
   </section>
+  <p class="skill-source-note">目录与调用方式依据 <a href="https://learn.chatgpt.com/docs/build-skills" target="_blank" rel="noopener noreferrer">OpenAI 官方 Build skills 文档</a>（2026-10-04 核对）。Windows 路径按默认用户主目录展开；具体入口以当前版本为准。</p>
 </article>
 </template>
+
+<style src="./skill-workshop.css"></style>
