@@ -6,6 +6,11 @@ import {build,ROOT,markGenerated} from '../tools/prebuild.mjs'
 const HERE=path.dirname(fileURLToPath(import.meta.url))
 export const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
 export const plain=value=>String(value??'').replace(/<[^>]*>/g,' ').replace(/&[^;]+;/g,' ').replace(/\s+/g,' ').trim()
+export function searchableMarkdown(value){
+ // Search is reader-facing content. Raw SFC blocks also break inline site-data scripts.
+ return String(value??'').replace(/<script\b[^>]*>[\s\S]*?(?:<\/script\s*>|$)/gi,'')
+  .replace(/<style\b[^>]*>[\s\S]*?(?:<\/style\s*>|$)/gi,'').replace(/<\/script/gi,'&lt;/script')
+}
 const CAPTURE_POLICY={
  ch01:['none','none','none','required','optional'],
  ch02:['none','required','none','none','optional','required','none','none','required','none'],
@@ -128,6 +133,7 @@ export function prepare(id){build(id);const dir=path.join(ROOT,id),site=json(pat
   }
  }
  write('learn/codex/index.md',markGenerated('---\ntitle: Codex 零基础\noutline: false\n---\n<StudioHub kind="course" />\n'));
+ write('learn/claude/index.md',markGenerated('---\ntitle: Claude 教程\noutline: false\n---\n<StudioHub kind="claude" />\n'));
  applyStudioNav(dir,catalog)
  // Preserve the existing site-specific account text separately from the new dashboard.
  write('guide/account.md',markGenerated(fs.readFileSync(path.join(dir,'guide/start.md'),'utf8')));
@@ -143,7 +149,7 @@ export function prepare(id){build(id);const dir=path.join(ROOT,id),site=json(pat
  for(const [id,title]of [['skills-editor','保存 SKILL.md'],['skills-install','确认技能目录与发现'],['skills-test','按技能检查一次结果']])manifest.push({id,route:'/skills',group:'Skill 动手工坊',section:title,title,target:'按当前产品记录'+title+'的实际界面',optional:true,capturePolicy:'optional',siteOnly:false});
  // Supplement all legacy operation pages, without changing their Markdown or business answers.
  const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.name.startsWith('.')||['public','overrides'].includes(e.name)?[]:e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)]);
- const docs=[];for(const f of walk(dir).filter(f=>f.endsWith('.md'))){const rel=path.relative(dir,f).replaceAll('\\','/'),route='/'+rel.replace(/index\.md$/,'').replace(/\.md$/,'');if(rel.startsWith('learn/codex/')||rel.startsWith('industry/')||['skills.md','screenshots.md','tools.md'].includes(rel))continue;const text=fs.readFileSync(f,'utf8'),title=text.match(/^#\s+(.+)$/m)?.[1]||rel;docs.push({route,title,text:plain(text).slice(0,22000)});if(['errors.md','faq.md','contact.md'].includes(rel))continue;addDocumentShots(text,{rel,route,title},manifest)}
+ const docs=[];for(const f of walk(dir).filter(f=>f.endsWith('.md'))){const rel=path.relative(dir,f).replaceAll('\\','/'),route='/'+rel.replace(/index\.md$/,'').replace(/\.md$/,'');if(rel.startsWith('learn/codex/')||rel.startsWith('industry/')||['skills.md','screenshots.md','tools.md'].includes(rel))continue;const text=fs.readFileSync(f,'utf8'),title=text.match(/^#\s+(.+)$/m)?.[1]||rel,markdown=searchableMarkdown(text);docs.push({route,title,text:plain(markdown).slice(0,22000),markdown});if(['errors.md','faq.md','contact.md'].includes(rel))continue;addDocumentShots(text,{rel,route,title},manifest)}
  const images=path.join(HERE,'screenshots',id+'.json');const shots=fs.existsSync(images)?json(images):{schema:'xingmang-screenshots/1',version:'5.6',siteId:id,records:{}};if(shots.siteId!==id)throw Error('Screenshot site mismatch');
  const data={version:'5.6',site:{...publicSite,console_url:site.console_url,keys_url:site.keys_url,models_url:site.models_url},catalog,chapters,industries:[],sources,manifest,docs,shots,scope:{adaptedUnits:units.length,totalChapters:chapters.length,totalSections:chapters.reduce((n,c)=>n+c.sections.length,0),totalFigures:chapters.reduce((n,c)=>n+(c.imageCount||0),0),note:'课程目录与配图按逸尘图文教程组织；购买、套餐、中转和线下引流正文未收录。'}};
  if(new Set(manifest.map(s=>s.id)).size!==manifest.length)throw Error('Duplicate screenshot ID');
