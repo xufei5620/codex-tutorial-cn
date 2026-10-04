@@ -19,7 +19,8 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
 STATUS_ZH = {"draft": "草稿", "outline": "大纲", "reviewed": "已复核"}
-EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__"}
+# sites/ is the separately deployed VitePress project; it is not part of the offline course.
+EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__", "sites"}
 URL_ATTRIBUTES = {
     "archive",
     "background",
@@ -75,6 +76,7 @@ DEVELOPER_ROOT_ENTRIES = {
     ".venv",
     "__pycache__",
     "requirements-dev.txt",
+    "sites",
     "src",
     "tests",
 }
