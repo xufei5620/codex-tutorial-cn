@@ -33,7 +33,8 @@ STATUS_ZH = {
     "stable": "稳定",
     "retired": "已退役",
 }
-EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__"}
+# sites/ is the separately deployed VitePress project; it is not part of the offline course.
+EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__", "sites"}
 URL_ATTRIBUTES = {
     "archive",
     "background",
@@ -92,6 +93,7 @@ DEVELOPER_ROOT_ENTRIES = {
     ".venv",
     "__pycache__",
     "requirements-dev.txt",
+    "sites",
     "src",
     "tests",
 }
@@ -961,7 +963,10 @@ def check_repository_tree(root: Path, chapter_config: dict) -> list[str]:
         }
     )
     allowed.add(".github/workflows/quality.yml")
+    # The separately deployed VitePress sites project and its workflows live beside the course.
+    allowed.update({".github/workflows/sites.yml", ".github/workflows/sites-preview.yml", ".github/workflows/studio-preview.yml"})
     source_patterns = [
+        r"sites/.+",
         r"src/(?:build\.py|chapters\.json|check\.py|modules-v1\.json|preview\.html)",
         r"src/content/(?:ch(?:0[1-9]|1[01])\.html|prompts\.html|style\.css)",
         r"src/deploy/(?:Caddyfile|DEPLOY\.md|Dockerfile|docker-compose\.yml|nginx(?:\.docker)?\.conf)",

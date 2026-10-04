@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "product": "chatgpt",
+  "verifiedAt": "2026-10-03T16:21:29.430Z",
+  "windows": {
+    "schemaVersion": 1,
+    "buildVersion": "26.930.2377.0",
+    "packageIdentity": "OpenAI.Codex",
+    "storeProductId": "9PLM9XGG6VKS"
+  },
+  "platforms": {
+    "windows-x64": {
+      "platform": "windows",
+      "architecture": "x64",
+      "format": "msix",
+      "packageVersion": "26.930.2377.0",
+      "artifact": {
+        "key": "chatgpt/windows-x64/26.930.2377.0/ChatGPT-x64.msix",
+        "url": "https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com/chatgpt/windows-x64/26.930.2377.0/ChatGPT-x64.msix",
+        "bytes": 910607781,
+        "sha256": "4c70df5417fcee1f004a1356f6d48f6b084abdcf1da349e154a7f593f2360b19",
+        "contentType": "application/vnd.ms-appx",
+        "verification": "windows-authenticode"
+      },
+      "license": {
+        "key": "chatgpt/windows-x64/26.930.2377.0/ChatGPT-License.xml",
+        "url": "https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com/chatgpt/windows-x64/26.930.2377.0/ChatGPT-License.xml",
+        "bytes": 2621,
+        "sha256": "c26569dbc30c1f630d49a9bd305b6496b1a467319f495b21d1fc7919d3c0481a",
+        "contentType": "application/xml",
+        "verification": "official-https-sha256-and-product-identity"
+      }
+    },
+    "windows-arm64": {
+      "platform": "windows",
+      "architecture": "arm64",
+      "format": "msix",
+      "packageVersion": "26.930.2377.0",
+      "artifact": {
+        "key": "chatgpt/windows-arm64/26.930.2377.0/ChatGPT-arm64.msix",
+        "url": "https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com/chatgpt/windows-arm64/26.930.2377.0/ChatGPT-arm64.msix",
+        "bytes": 907761599,
+        "sha256": "c0a4c4bde0bb9a29bd11bab845001b72876307ebaa6eb092baf748a6a1d5bdca",
+        "contentType": "application/vnd.ms-appx",
+        "verification": "windows-authenticode"
+      },
+      "license": {
+        "key": "chatgpt/windows-arm64/26.930.2377.0/ChatGPT-License.xml",
+        "url": "https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com/chatgpt/windows-arm64/26.930.2377.0/ChatGPT-License.xml",
+        "bytes": 2621,
+        "sha256": "c26569dbc30c1f630d49a9bd305b6496b1a467319f495b21d1fc7919d3c0481a",
+        "contentType": "application/xml",
+        "verification": "official-https-sha256-and-product-identity"
+      }
+    },
+    "macos-arm64": {
+      "platform": "macos",
+      "architecture": "arm64",
+      "format": "zip",
+      "appVersion": "26.930.21537",
+      "buildVersion": "12776",
+      "artifact": {
+        "key": "chatgpt/macos-arm64/sha256-4f5fad68a461aa83b6421839aadbaefe17daa36d4593923cdfb65d36dc563166/ChatGPT-darwin-arm64-26.930.21537.zip",
+        "url": "https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com/chatgpt/macos-arm64/sha256-4f5fad68a461aa83b6421839aadbaefe17daa36d4593923cdfb65d36dc563166/ChatGPT-darwin-arm64-26.930.21537.zip",
+        "bytes": 688295353,
+        "sha256": "4f5fad68a461aa83b6421839aadbaefe17daa36d4593923cdfb65d36dc563166",
+        "contentType": "application/zip",
+        "verification": "official-https-sha256"
+      }
+    },
+    "macos-x64": {
+      "platform": "macos",
+      "architecture": "x64",
+      "format": "zip",
+      "appVersion": "26.930.21537",
+      "buildVersion": "12776",
+      "artifact": {
+        "key": "chatgpt/macos-x64/sha256-363ddf441d88d69c22c91fba5684814ca5cd294f79d6114feed22eb53a0e39cd/ChatGPT-darwin-x64-26.930.21537.zip",
+        "url": "https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com/chatgpt/macos-x64/sha256-363ddf441d88d69c22c91fba5684814ca5cd294f79d6114feed22eb53a0e39cd/ChatGPT-darwin-x64-26.930.21537.zip",
+        "bytes": 675266945,
+        "sha256": "363ddf441d88d69c22c91fba5684814ca5cd294f79d6114feed22eb53a0e39cd",
+        "contentType": "application/zip",
+        "verification": "official-https-sha256"
+      }
+    },
+    "linux-deb-x64": {
+      "platform": "linux",
+      "architecture": "x64",
+      "format": "deb",
+      "artifact": {
+        "key": "chatgpt/linux-deb-x64/sha256-60fdb6d895d776f8831ff35a783de04cdbfa280f0f3d972584315f98e57aa256/chatgpt_amd64.deb",
+        "url": "https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com/chatgpt/linux-deb-x64/sha256-60fdb6d895d776f8831ff35a783de04cdbfa280f0f3d972584315f98e57aa256/chatgpt_amd64.deb",
+        "bytes": 475227490,
+        "sha256": "60fdb6d895d776f8831ff35a783de04cdbfa280f0f3d972584315f98e57aa256",
+        "contentType": "application/vnd.debian.binary-package",
+        "verification": "official-https-sha256"
+      }
+    },
+    "linux-deb-arm64": {
+      "platform": "linux",
+      "architecture": "arm64",
+      "format": "deb",
+      "artifact": {
+        "key": "chatgpt/linux-deb-arm64/sha256-f646c01eebd37a49317ef62aede877c229daeee4f1cab9ef3eb61a1cf6429564/chatgpt_arm64.deb",
+        "url": "https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com/chatgpt/linux-deb-arm64/sha256-f646c01eebd37a49317ef62aede877c229daeee4f1cab9ef3eb61a1cf6429564/chatgpt_arm64.deb",
+        "bytes": 454132918,
+        "sha256": "f646c01eebd37a49317ef62aede877c229daeee4f1cab9ef3eb61a1cf6429564",
+        "contentType": "application/vnd.debian.binary-package",
+        "verification": "official-https-sha256"
+      }
+    },
+    "linux-rpm-x64": {
+      "platform": "linux",
+      "architecture": "x64",
+      "format": "rpm",
+      "artifact": {
+        "key": "chatgpt/linux-rpm-x64/sha256-1d00a0cc55e68673c93f405e4bef51f88badfc9c73229e7fbbf55ca9df13e36d/chatgpt.x86_64.rpm",
+        "url": "https://xingmang-downloads-1342302199.cos.ap-shanghai.myqcloud.com/chatgpt/linux-rpm-x64/sha256-1d00a0cc55e68673c93f405e4bef51f88badfc9c73229e7fbbf55ca9df13e36d/chatgpt.x86_64.rpm",
+        "bytes": 531699101,
+        "sha256": "1d00a0cc55e68673c93f405e4bef51f88badfc9c73229e7fbbf55ca9df13e36d",
+        "contentType": "application/x-rpm",
+        "verification": "official-https-sha256"
+      }
+    }
+  }
+}
