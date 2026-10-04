@@ -20,7 +20,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parent.parent
 STATUS_ZH = {"draft": "草稿", "outline": "大纲", "reviewed": "已复核"}
 # sites/ is the separately deployed VitePress project; it is not part of the offline course.
-EXCLUDED_PUBLIC_PARTS = {".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__", "sites"}
+EXCLUDED_PUBLIC_PARTS = {".claude", ".git", ".github", ".venv", "src", "tests", "downloads", "__pycache__", "sites"}
 URL_ATTRIBUTES = {
     "archive",
     "background",
@@ -68,6 +68,7 @@ MANAGED_ROOT_FILES = {
 MANAGED_ROOT_DIRECTORIES = {"assets", "deploy", "registry", "schemas", "specs", "templates"}
 MANAGED_METADATA = {"manifest.json", "SHA256SUMS.txt"}
 DEVELOPER_ROOT_ENTRIES = {
+    ".claude",
     ".dockerignore",
     ".git",
     ".gitattributes",
