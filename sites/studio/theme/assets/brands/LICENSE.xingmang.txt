@@ -1,0 +1,44 @@
+星芒AI管理工具
+Copyright © 2026 绍兴星芒文化传媒有限责任公司。保留所有权利。
+
+本仓库中的源代码、界面设计、图标、文案及其他材料（以下统称「本软件」）是专有软件，
+不是开源软件。本仓库公开可见，只是为了方便查看；公开本身不代表授予任何许可。
+
+未经版权人事先书面许可，不得复制、修改、合并、发布、分发、再许可、出售本软件或其任何
+部分，也不得基于本软件制作衍生作品。版权人向付费客户提供的安装包，按其随附的使用条款
+使用。
+
+本软件包含或调用的第三方组件（包括但不限于 npm 依赖、加速组件随附的 LICENSE-mihomo.txt
+与 THIRD-PARTY-NOTICES.txt 所列内容、docs/CANVAS-THIRD-PARTY.md 登记的画布依赖），各自
+遵循其原有许可，不受本许可约束。
+
+本软件按「现状」提供，不附带任何明示或默示的担保。在法律允许的最大范围内，版权人不对因
+使用或无法使用本软件而产生的任何损失承担责任。
+
+授权事宜请联系版权人。
+
+---
+
+XingMang AI Manager
+Copyright © 2026 绍兴星芒文化传媒有限责任公司. All rights reserved.
+
+This repository and everything in it ("the Software") is proprietary and is not open
+source. The repository is publicly visible for convenience only; its visibility grants
+no license of any kind.
+
+No part of the Software may be copied, modified, merged, published, distributed,
+sublicensed, sold, or used to create derivative works without the prior written
+permission of the copyright holder. Installers the copyright holder provides to paying
+customers are used under the terms that accompany them.
+
+Third-party components included in or used by the Software (including, without
+limitation, npm dependencies, the items listed in LICENSE-mihomo.txt and
+THIRD-PARTY-NOTICES.txt shipped with the acceleration component, and the canvas
+dependencies recorded in docs/CANVAS-THIRD-PARTY.md) remain under their own licenses
+and are not covered by this notice.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. TO
+THE MAXIMUM EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY
+DAMAGES ARISING FROM THE USE OF, OR INABILITY TO USE, THE SOFTWARE.
+
+For licensing enquiries, contact the copyright holder.
