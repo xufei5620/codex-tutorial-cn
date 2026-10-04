@@ -1,0 +1,36 @@
+{
+  "id": "ch02",
+  "n": 2,
+  "sourceN": 5,
+  "title": "实战：办公四件套和本地交付",
+  "shortTitle": "办公四件套",
+  "part": "再做交付",
+  "partLabel": "再做交付",
+  "partId": "part-2",
+  "blurb": "照着做一次能打开的结果：文档、演示稿、网页。",
+  "lead": "地基已经搭建好了，就要开始用 Codex App 干一些真正能提效降本的事情，把它全方位地赋能到业务里面。",
+  "cover": "/img/shared/yichen/1782646136969_media_HIAmjXXbcAAjgqS.jpg",
+  "imageCount": 15,
+  "sections": [
+    {
+      "title": "",
+      "body": "<p>上一篇我讲了 Codex App 从 0 到 1 入门，重点是带大家认识 Codex 界面以及进行一些基础配置。</p>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646031650_media_HIAlj-KaIAAvGu2.jpg\" alt=\"这一章要做的事：交得出去的文件和网页\" loading=\"lazy\"><figcaption>这一章要做的事：交得出去的文件和网页</figcaption></figure>\n<p>地基已经搭建好了，就要开始用 Codex App 干一些真正能提效降本的事情，把它全方位地赋能到业务里面。</p>"
+    },
+    {
+      "title": "办公四件套：Word、PDF、PPT、Sheets",
+      "body": "<div class=\"yichen-gallery\"><figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646136969_media_HIAmjXXbcAAjgqS.jpg\" alt=\"Word 预览\" loading=\"lazy\"><figcaption>Word 预览</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646129762_media_HIAmgWaaYAALLRx.jpg\" alt=\"PDF 预览\" loading=\"lazy\"><figcaption>PDF 预览</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646125963_media_HIAmdVtbUAAdvp5.jpg\" alt=\"PPT 预览\" loading=\"lazy\"><figcaption>PPT 预览</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646117680_media_HIAmaWIacAAI8JG.jpg\" alt=\"表格预览\" loading=\"lazy\"><figcaption>表格预览</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646108752_media_HIAmXW1bIAAIr4D.jpg\" alt=\"图片型 PPT 单页\" loading=\"lazy\"><figcaption>图片型 PPT 单页</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646107522_media_HIAmUTlaYAAaEpT.jpg\" alt=\"三页拼在一起看\" loading=\"lazy\"><figcaption>三页拼在一起看</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646100947_media_HIAmRSGbAAAxjM3.jpg\" alt=\"放到 PowerPoint 里\" loading=\"lazy\"><figcaption>放到 PowerPoint 里</figcaption></figure></div><p>以前如果你要做一套活动方案、项目汇报、课程交付、咨询报告、员工培训材料，可能要先花几个月熟练使用这些工具。</p>\n<p>但是现在在Codex里面只需要一句提示词，就能生成排版精美、数据准确的Word、PDF、PPT、Sheets。</p>\n<p>我为了展示Codex生成四件套的能力，做了一个demo：</p>\n<blockquote class=\"yichen-prompt\"><p>请在当前对话里做一个办公四件套演示任务，主题是《Codex App 内容生产工作流》。要求：</p><ol><li>生成 Word 文档、PDF 文件、PPTX 演示稿、XLSX 表格四类真实文件；</li><li>每个文件都要有实际内容，不要空文件；</li><li>生成后告诉我每个文件的真实路径；</li><li>尽量生成一个预览或文件清单，方便我截图放进教程；</li><li>最后给出验收清单，确认四个文件都存在、能打开、不是占位内容。</li></ol></blockquote>\n<p>验收结果：</p>\n<ol><li>Word 文档验收截图：</li><li>PDF 文件验收截图：</li><li>PPT 演示稿验收截图：</li><li>Sheets 表格验收截图：</li></ol>\n<p>当然，在我没有给出skill或者优化后的提示词的情况下，能做出这样的效果，已经非常优秀了！</p>\n<p>众所周知，现在X最火的PPT制作方法，绝对是打破传统的HTML绘制PPT，现在相关爆火的Skill也是数不胜数，其次直接生成图片PPT也是一个另辟蹊径的办法。</p>\n<p>下面我将用“进阶版”PPT的操作路径给大家带来一些启发：</p>\n<p>路线一：图片型 PPT</p>\n<p>图片型 PPT 的意思是：先让 Codex 生成一张张 16:9 的视觉图片，再把这些图片铺到 PPT 里。</p>\n<p>每一页 PPT 本质上就是一张完整图片。</p>\n<p>效果还是蛮不错的，因为底层是GPT2-imge。</p>\n<p>路线二：HTML 型 PPT</p>\n<p>HTML 型 PPT 是最近非常火的一条路线。</p>\n<p>说白了，就是不用传统 PPT 软件，而是用 HTML、CSS、JS 直接写幻灯片。</p>\n<p>它的好处是：</p>\n<p>可以在浏览器里直接预览；</p>\n<p>可以做动画；</p>\n<p>可以做交互；</p>\n<p>可以用代码控制布局；</p>\n<p>可以方便截图、导出、录屏；</p>\n<p>很适合和 Codex 这种代码执行型工具配合。</p>\n<p>X上面有很多开源火爆的Skill，大家用Grok搜索一下就能让Codex安装一下使用了。</p>"
+    },
+    {
+      "title": "3D 视频：国产动画十大电影",
+      "body": "<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646089029_media_HIAmOONaQAA3uS7.jpg\" alt=\"国产动画成片画面\" loading=\"lazy\"><figcaption>国产动画成片画面</figcaption></figure>\n<p>前面是打工人刚需，下面开始玩一点酷的，主打一个劳逸结合。</p>\n<p>我之前让 Codex + HyperFrames / Remotion (three.js) 做了一个《国产动画十大电影》的 3D 视频：</p>\n<p>核心思路：</p>\n<p>Codex 负责写项目、改代码、跑渲染、排查错误</p>\n<p>three.js 负责 3D 画面</p>\n<p>Minimax负责旁白配音</p>\n<p>yt-dlp下载部分视频</p>\n<p>Remotion / HyperFrames 负责把网页动画变成视频</p>\n<p>本地工具统一音量</p>\n<p>最后输出 MP4 成片</p>\n<p>详细步骤就是：</p>\n<ol><li>先把目标视频的需求给Codex说清楚——“我需要一个做《国产动画十大电影》的视频，16:9....（更多描述参考下面的模板），你自己去网上找素材下载。”</li><li>和Codex对齐需求——”如果有任何不清楚的地方，或者需要我继续判断的地方，请一定要停下来问我问题，进行信息对齐。“</li><li>开启“超高”和“完全访问权限”，让Codex@browser和@computer use自己去操作，当然@chrome也可以（但是我一直超时没成功过）。</li><li>得到成片，然后就是把不满意的地方和Codex说，让它修改。</li></ol>\n<p>当初我想要做这么一个视频的思路，很简单，我就是想验证Codex“自动写脚本——搜索素材——自动下载——自动识别高光片段——自动配音——自动剪辑”这条链路跑通。</p>"
+    },
+    {
+      "title": "做网站：早睡早起并部署到 Vercel",
+      "body": "<div class=\"yichen-gallery\"><figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646077655_media_HIAmIPoaMAA7lCp.jpg\" alt=\"本地预览网站\" loading=\"lazy\"><figcaption>本地预览网站</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646073022_media_HIAmFQha8AAOWt1.jpg\" alt=\"早睡早起成页\" loading=\"lazy\"><figcaption>早睡早起成页</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646068823_media_HIAmCMOaYAAQIxT.jpg\" alt=\"昼夜节律页\" loading=\"lazy\"><figcaption>昼夜节律页</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646083155_media_HIAmLRabwAAxDTZ.jpg\" alt=\"连接 Vercel\" loading=\"lazy\"><figcaption>连接 Vercel</figcaption></figure></div><p>现在玩 AI 的人，很多都有一个共同问题：作息乱。</p>\n<p>原因可能就是。。。AI太好玩了——本来只是想改一个提示词，然后顺手又刷了一堆X、莫名其妙调用Codex跑一个任务，最后这个任务又停不下来了。。。这就是曾经的我。。。</p>\n<p>我知道用AI很爽，但身体遭不住，健康才是革命的本钱。所以我趁这次写“Codex代码教程“的机会，让 Codex 做了一个网站，主题是“早睡早起身体好”</p>\n<p>让Codex写代码，跑出一个小网站或者小App真的很简单：</p>\n<blockquote class=\"yichen-prompt\"><p>请重新帮我生成一个网站，主题是早睡早起。</p><ol><li>页面要排版精美；</li><li>可以有 3D 动画效果；</li><li>分析早睡早起的好处；</li><li>给出普通人能执行的步骤；</li><li>做成真实可运行的网站；</li><li>最后启动本地预览，并部署到 Vercel。</li></ol></blockquote>\n<p>涉及到上线部署（别人通过链接能访问你的这个网站）这里可能需要你配置一下Vercel插件（“插件”里面搜Vercel就行）：</p>\n<p>Codex 最后做出来的不只是一个静态页面（已经部署到：https://codex-1-html-css-js-2.vercel.app/，大家可以自由访问），他还做了：</p>\n<p>一个 3D 昼夜节律视觉场景；</p>\n<p>早睡早起好处说明；</p>\n<p>晚间关机流程；</p>\n<p>早晨启动流程；</p>\n<p>7 天调整计划；</p>\n<p>自测打分；</p>\n<p>常见误区；</p>\n<p>参考资料和免责声明。</p>"
+    },
+    {
+      "title": "做一篇图文教程",
+      "body": "<div class=\"yichen-gallery\"><figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646019187_media_HIAl8MvaEAAmSLO-mosaic.jpg\" alt=\"用写作 Skill 起草（已打码）\" loading=\"lazy\"><figcaption>用写作 Skill 起草（已打码）</figcaption></figure>\n<figure class=\"yichen-figure\"><img src=\"/img/shared/yichen/1782646016086_media_HIAl5MyaIAADs7e.jpg\" alt=\"图文教程成稿\" loading=\"lazy\"><figcaption>图文教程成稿</figcaption></figure></div><p>这一节是我自己非常常用的一个场景，我相信会对很多写长文章恐惧症的朋友也会有所帮助。</p>\n<p>自媒体人最痛苦的是什么？不是不会写，而是“搜索素材——找选题——搭结构——写文章——配图片/视频”这套流程花费时间太多了，往往写一篇文章几个小时就过去了。。。</p>\n<p>所以，我直接干脆让Codex来写!</p>\n<p>包括文章、截图、打码、配封面图，我做的就是20%的纠正和补充工作。</p>\n<p>但是，为什么很多人用AI写出的就是一坨。。。而我能用Codex写出那么高阅读的文章？这就涉及到“提示词的准确度”和“风格迁移学习”。</p>\n<p>写作，不是给AI一个方向，让它琢磨，而是你要把“自己写这篇文章的思路”告诉它，让它帮你加速这个过程，这篇文章的核心和内容基本和你脑海想的别无二致，只是AI把这个琐碎的过程给自动化了。</p>\n<p>所以，有一篇AI写的好文之前，是这个写作的人脑海里面有画面、有思路。</p>\n<p>我拿我之前的这篇文章举个例子：我知道要介绍Codex的主界面以及Codex的设置，那么我给Codex的指令就是：</p>\n<p>“你来操作Codex APP本身，你挨个分析Codex主界面每个按钮的功能，然后再打开Codex的设置，按照左边导航栏的顺序，一页一页仔细地介绍。注意把隐私的地方打码。@computer use”</p>"
+    }
+  ]
+}
