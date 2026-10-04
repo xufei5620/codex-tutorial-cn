@@ -55,10 +55,11 @@ async function html(role){try{await exportCourseHTML(api,role);api.say('已导�
   <label class="shared-opt"><input type="checkbox" v-model="api.state.hideMissing" :disabled="loading||api.state.saveStatus==='conflict'"> 阅读时隐藏未补图的位置，不删除配置</label>
   <input ref="input" type="file" accept=".json,application/json" hidden @change="load">
  </div>
- <button v-else-if="canEdit" class="mobile-support-link" @click="shown=true;api.state.editing=true">进入本机截图编辑（不发布）</button>
+ <div v-else-if="canEdit" class="screenshot-author-entry"><span>教程配图</span><button @click="shown=true;api.state.editing=true;api.state.showOptional=true">显示截图位并上传真实图片</button><small>图片与说明自动保存到本机；正式发布另行确认。</small></div>
 </template>
 
 <style scoped>
+.screenshot-author-entry{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 38px 0;padding:10px 14px;background:#fffdf7;border:1px dashed #cbb786;border-radius:8px;font-size:12px;color:#715a32}.screenshot-author-entry button{font-size:12px;min-height:36px}.screenshot-author-entry small{font-size:11px;color:#65758a}@media(max-width:760px){.screenshot-author-entry{margin:12px 18px 0;gap:8px}.screenshot-author-entry small{flex-basis:100%}}
 .save-row{display:flex;flex-basis:100%;align-items:center;flex-wrap:wrap;gap:6px 12px;min-width:0;color:#405c48;font-size:12px;line-height:1.6}
 .save-message{overflow-wrap:anywhere}
 .save-message time{margin-left:7px;color:#677386;font-variant-numeric:tabular-nums}
