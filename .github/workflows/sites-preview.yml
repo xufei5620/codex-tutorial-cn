@@ -41,6 +41,9 @@ jobs:
       - name: Build both documentation sites
         working-directory: sites
         run: npm run build
+      - name: Check each site keeps its own customer-service contact
+        working-directory: sites
+        run: node tools/check-contacts.mjs
       - name: Compile download index Functions without deploying
         working-directory: sites
         env:

@@ -51,6 +51,8 @@ jobs:
           key: ${{ runner.os }}-cos-index-mirror-v1-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Build both sites
         run: npm run build
+      - name: Check each site keeps its own customer-service contact
+        run: node tools/check-contacts.mjs
       - name: Compile download index Functions without deploying
         env:
           WRANGLER_SEND_METRICS: 'false'
