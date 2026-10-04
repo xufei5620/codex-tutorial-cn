@@ -9,7 +9,7 @@ export function siteConfig(directory:URL) {
  const nav=JSON.parse(readFileSync(new URL('nav.generated.json',directory),'utf8'))
  function cjkTokenize(text:string):string[]{const out:string[]=[];for(const m of text.matchAll(/[一-鿿㐀-䶿]+|[a-zA-Z0-9_./\-]+/g)){const s=m[0];if(/[一-鿿㐀-䶿]/.test(s)){for(let i=0;i<s.length;i++){out.push(s[i]);if(i+1<s.length)out.push(s.slice(i,i+2))}}else out.push(s.toLowerCase())}return out}
  return defineConfig({
-  lang:'zh-CN',title:site.title,description:site.description,cleanUrls:true,lastUpdated:false,
+  lang:'zh-CN',title:site.title,description:site.description,cleanUrls:true,lastUpdated:false,appearance:false,
   markdown:{config:(md)=>{md.use(courseHtmlPlugin);md.use(sharedImagesPlugin,directory)}},
   head:[['link',{rel:'icon',type:'image/png',href:'/logo.png'}],['meta',{name:'theme-color',content:'#0B1F3B'}],['meta',{name:'robots',content:'noindex'}],['meta',{name:'referrer',content:'no-referrer'}]],
   themeConfig:{logo:'/logo.png',siteTitle:site.name,site,contact:site.contact,nav:nav.nav,sidebar:nav.sidebar,
