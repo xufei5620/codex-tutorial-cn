@@ -944,7 +944,7 @@ def check_repository_tree(root: Path, chapter_config: dict) -> list[str]:
     allowed.update({"tests/test_build.py", "tests/test_check.py", "tests/test_module_registry.py"})
     allowed.add(".github/workflows/quality.yml")
     # The separately deployed VitePress sites project and its workflows live beside the course.
-    allowed.update({".github/workflows/sites.yml", ".github/workflows/sites-preview.yml", ".github/workflows/studio-preview.yml"})
+    allowed.update({".claude/settings.json", ".github/workflows/sites.yml", ".github/workflows/sites-preview.yml", ".github/workflows/studio-preview.yml"})
     source_patterns = [
         r"sites/.+",
         r"src/(?:build\.py|chapters\.json|check\.py|modules-v1\.json|preview\.html)",
