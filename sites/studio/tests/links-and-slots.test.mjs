@@ -67,3 +67,13 @@ test('exported course chapter and section links resolve inside the downloaded HT
   assert.ok(!article.includes('href="https://'+site.domain+'/learn/codex/'))
  }
 })
+
+test('screenshot slot labels show plain text instead of Markdown source',()=>{
+ const [shot]=documentShots('## 安装\n\n1. 打开 [Node.js 下载页](https://nodejs.org/zh-cn/download)，选择 **LTS** 版本并运行 `node -v`。\n','clients/example.md')
+ assert.equal(shot.title,'打开 Node.js 下载页，选择 LTS 版本并运行 node -v。')
+})
+
+test('a step already followed by a real image gets no extra empty slot',()=>{
+ const shots=documentShots('## 安装\n\n1. 下载安装包。\n\n![下载截图](../../img/a.png)\n\n2. 打开终端。\n\n### 下一节\n\n![说明图](../../img/b.png)\n','clients/example.md')
+ assert.deepEqual(shots.map(s=>[s.id,s.capturePolicy]),[['doc-clients-example-s01-step01','none'],['doc-clients-example-s01-step02','required']])
+})

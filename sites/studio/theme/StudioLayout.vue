@@ -339,7 +339,7 @@ onBeforeUnmount(()=>{
      <summary>本页目录 <span>{{articleSections.length}} 节</span></summary>
      <nav aria-label="本页章节"><a v-for="section in articleSections" :key="section.id" :href="'#'+encodeURIComponent(section.id)">{{section.title}}</a></nav>
     </details>
-    <Content :key="routeKey" class="vp-doc" />
+    <Content :key="route.path" class="vp-doc" />
     <LearningPath v-if="learningPath" position="bottom" :path="learningPath" :completed="completedSteps" :storage-message="completionStorageMessage" @complete="completeLearningStep" />
     <nav v-if="pageLinks.length" class="page-links" aria-label="相关页面"><a v-for="[label,href] in pageLinks" :key="href" :href="href" :target="href.startsWith('https:')?'_blank':undefined" :rel="href.startsWith('https:')?'noopener noreferrer':undefined">{{label}} →</a></nav>
    </template>
