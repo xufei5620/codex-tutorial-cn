@@ -6,7 +6,7 @@
 
 管理工具为主下载区，两个桌面客户端归入备用安装包区域。系统按钮保持一排，点击后在正常文档流中展开选项，不覆盖后续内容；一次只展开一个系统面板，可再次点击收起，Escape 返回触发按钮。桌面端的双选项并排，窄屏纵向排列。
 
-芯片选项使用 Intel / AMD、ARM、Apple 芯片、Intel 芯片等可识别名称。Claude Mac 按 DMG 拖拽安装、PKG 安装向导区分，明确两者均为通用包；版本、大小、配套许可及折叠的安装说明和摘要放在相应文件旁。工具接入与下载标题使用本地品牌素材，来源和许可见 `../studio/theme/assets/brands/README.md`。
+芯片选项使用 Intel / AMD、ARM、Apple 芯片、Intel 芯片等可识别名称。Claude Mac 按 DMG 拖拽安装、PKG 安装向导区分，明确两者均为通用包；版本、大小、配套许可及折叠的安装说明和摘要放在相应文件旁。工具接入与下载标题使用本地品牌素材，来源和许可见 `../theme/assets/brands/README.md`。
 
 - 按量站：`https://docs-new.solov.cc/guide/manager#download-installers`
 - 订阅站：`https://docs-sub.solov.cc/guide/manager#download-installers`

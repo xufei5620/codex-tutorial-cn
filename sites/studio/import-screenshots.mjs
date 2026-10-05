@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
-import { parseSnapshot } from './theme/shot-schema.mjs'
+import { parseSnapshot } from '../theme/shot-schema.mjs'
 const HERE = path.dirname(fileURLToPath(import.meta.url)),
   ROOT = path.dirname(HERE)
 function arg(name) {

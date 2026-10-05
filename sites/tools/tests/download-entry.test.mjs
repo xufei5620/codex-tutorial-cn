@@ -8,7 +8,7 @@ import * as Vue from 'vue'
 import * as ServerRenderer from 'vue/server-renderer'
 import { COS_ROOT, INDEX_ROUTES, downloadPlatformGroups } from '../../downloads/catalog.mjs'
 import { validateDownloadConfiguration } from '../../build/site.mjs'
-const source = fs.readFileSync(new URL('../../studio/theme/DownloadLink.vue', import.meta.url), 'utf8')
+const source = fs.readFileSync(new URL('../../theme/DownloadLink.vue', import.meta.url), 'utf8')
 const { descriptor } = parse(source)
 const script = compileScript(descriptor, { id: 'download-unit' })
 function setup(fetchCatalog) {
@@ -468,7 +468,7 @@ test('both current sites use the same selector without old Feishu downloads or p
     assert.deepEqual(site.download_indexes, INDEX_ROUTES)
     assert.equal(JSON.stringify(site).includes('feishu.cn'), false)
   }
-  const layout = fs.readFileSync(new URL('../../studio/theme/StudioLayout.vue', import.meta.url), 'utf8')
+  const layout = fs.readFileSync(new URL('../../theme/StudioLayout.vue', import.meta.url), 'utf8')
   const manager = fs.readFileSync(new URL('../../shared/pages/guide/manager.md', import.meta.url), 'utf8')
   assert.equal(layout.includes('packageHref'), false)
   assert.ok(layout.includes('data.value.site.download_page_url'))

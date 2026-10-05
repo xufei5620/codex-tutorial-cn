@@ -5,7 +5,7 @@ import { createServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { createSSRApp, h, provide } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { safeRecord } from '../theme/shot-schema.mjs'
+import { safeRecord } from '../../theme/shot-schema.mjs'
 
 let server, ScreenshotSlot, SHOTS
 before(async () => {
@@ -16,8 +16,8 @@ before(async () => {
     server: { middlewareMode: true },
     logLevel: 'error'
   })
-  ScreenshotSlot = (await server.ssrLoadModule('/studio/theme/ScreenshotSlot.vue')).default
-  SHOTS = (await server.ssrLoadModule('/studio/theme/shot-store.js')).SHOTS
+  ScreenshotSlot = (await server.ssrLoadModule('/theme/ScreenshotSlot.vue')).default
+  SHOTS = (await server.ssrLoadModule('/theme/shot-store.js')).SHOTS
 })
 after(async () => {
   await server?.close()

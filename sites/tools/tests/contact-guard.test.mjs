@@ -20,15 +20,7 @@ test('each site keeps its own WeCom customer-service link', () => {
 })
 test('shared sources never hardcode a customer-service link', () => {
   const banned = /work\.weixin\.qq\.com\/kfid|kfc[0-9a-f]{12,}|t\.me\//
-  const dirs = [
-    'build',
-    'shared/pages',
-    'shared/theme',
-    'studio/theme',
-    'studio/content',
-    'sub2api/.vitepress/theme',
-    'newapi/.vitepress/theme'
-  ]
+  const dirs = ['build', 'shared/pages', 'theme', 'studio/content', 'sub2api/.vitepress/theme', 'newapi/.vitepress/theme']
   const walk = (d) =>
     fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]))
   for (const dir of dirs)

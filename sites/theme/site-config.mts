@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress'
 import { readFileSync } from 'node:fs'
-import { courseHtmlPlugin } from '../../build/course-html.mjs'
-import { courseSearchSections } from '../../build/course-search.mjs'
-import { sharedImagesPlugin } from '../../build/shared-images.mjs'
+import { courseHtmlPlugin } from '../build/course-html.mjs'
+import { courseSearchSections } from '../build/course-search.mjs'
+import { sharedImagesPlugin } from '../build/shared-images.mjs'
 export function siteConfig(directory: URL) {
   // npm build/dev lifecycle always runs build/index.mjs first. Missing output is a build error, not a silent fallback.
   const site = JSON.parse(readFileSync(new URL('.src/site.generated.json', directory), 'utf8'))

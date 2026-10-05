@@ -6,7 +6,7 @@ import { parse, compileScript, compileTemplate } from '@vue/compiler-sfc'
 import * as Vue from 'vue'
 import * as ServerRenderer from 'vue/server-renderer'
 
-const componentUrl = new URL('../theme/BrandIcon.vue', import.meta.url)
+const componentUrl = new URL('../../theme/BrandIcon.vue', import.meta.url)
 const source = fs.readFileSync(componentUrl, 'utf8')
 const { descriptor } = parse(source)
 const script = compileScript(descriptor, { id: 'brand-icon-test' })
@@ -101,7 +101,7 @@ test('vendored brand images stay passive and keep local-only SVG references', ()
     assert.doesNotMatch(svg, /\b(?:href|src)\s*=|@import|url\(\s*['"]?(?!#)/i, file.pathname)
   }
   assert.doesNotMatch(source, /v-html|https?:\/\//)
-  const hub = fs.readFileSync(new URL('../theme/StudioHub.vue', import.meta.url), 'utf8')
+  const hub = fs.readFileSync(new URL('../../theme/StudioHub.vue', import.meta.url), 'utf8')
   assert.match(hub, /<BrandIcon :name="t.id"/)
   assert.doesNotMatch(hub, /t\[1\]\.slice\(0,2\)/)
 })

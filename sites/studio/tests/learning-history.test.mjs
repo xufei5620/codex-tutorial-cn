@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { appendLearningVisit, parseLearningVisits } from '../theme/learning-history.mjs'
+import { appendLearningVisit, parseLearningVisits } from '../../theme/learning-history.mjs'
 
 test('stored visits retain only canonical allowlisted locations', () => {
   const visits = parseLearningVisits(

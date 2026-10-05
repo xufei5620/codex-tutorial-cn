@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { fetchCatalog, INDEX_ROUTES, downloadPlatformGroups } from '../../downloads/catalog.mjs';
+import { fetchCatalog, INDEX_ROUTES, downloadPlatformGroups } from '../downloads/catalog.mjs';
 import BrandIcon from './BrandIcon.vue';
-import windowsIcon from '../assets/os/windows.svg';
-import appleIcon from '../assets/os/apple.svg';
+import windowsIcon from '../studio/assets/os/windows.svg';
+import appleIcon from '../studio/assets/os/apple.svg';
 const systemIcons = { windows: windowsIcon, macos: appleIcon };
 const products = [
   {

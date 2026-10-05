@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
-import { SCHEMA, parseSnapshot } from './theme/shot-schema.mjs'
+import { SCHEMA, parseSnapshot } from '../theme/shot-schema.mjs'
 
 const ENDPOINT = '/__studio/screenshots'
 const IMAGE_LIMIT = 12 * 1024 * 1024
