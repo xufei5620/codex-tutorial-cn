@@ -1,15 +1,15 @@
 import { defineConfig } from 'vitepress'
 import { readFileSync } from 'node:fs'
-import { courseHtmlPlugin } from '../../tools/course-html.mjs'
-import { courseSearchSections } from '../../tools/course-search.mjs'
-import { sharedImagesPlugin } from '../../tools/shared-images.mjs'
+import { courseHtmlPlugin } from '../../build/course-html.mjs'
+import { courseSearchSections } from '../../build/course-search.mjs'
+import { sharedImagesPlugin } from '../../build/shared-images.mjs'
 export function siteConfig(directory:URL) {
- // npm build/dev lifecycle always runs prebuild. Missing output is a build error, not a silent fallback.
- const site=JSON.parse(readFileSync(new URL('site.generated.json',directory),'utf8'))
- const nav=JSON.parse(readFileSync(new URL('nav.generated.json',directory),'utf8'))
+ // npm build/dev lifecycle always runs build/index.mjs first. Missing output is a build error, not a silent fallback.
+ const site=JSON.parse(readFileSync(new URL('.src/site.generated.json',directory),'utf8'))
+ const nav=JSON.parse(readFileSync(new URL('.src/nav.generated.json',directory),'utf8'))
  function cjkTokenize(text:string):string[]{const out:string[]=[];for(const m of text.matchAll(/[一-鿿㐀-䶿]+|[a-zA-Z0-9_./\-]+/g)){const s=m[0];if(/[一-鿿㐀-䶿]/.test(s)){for(let i=0;i<s.length;i++){out.push(s[i]);if(i+1<s.length)out.push(s.slice(i,i+2))}}else out.push(s.toLowerCase())}return out}
  return defineConfig({
-  lang:'zh-CN',title:site.title,description:site.description,cleanUrls:true,lastUpdated:false,appearance:false,
+  lang:'zh-CN',srcDir:'.src',title:site.title,description:site.description,cleanUrls:true,lastUpdated:false,appearance:false,
   markdown:{config:(md)=>{md.use(courseHtmlPlugin);md.use(sharedImagesPlugin,directory)}},
   head:[['link',{rel:'icon',type:'image/png',href:'/logo.png'}],['meta',{name:'theme-color',content:'#0B1F3B'}],['meta',{name:'robots',content:'noindex'}],['meta',{name:'referrer',content:'no-referrer'}]],
   themeConfig:{logo:'/logo.png',siteTitle:site.name,site,contact:site.contact,nav:nav.nav,sidebar:nav.sidebar,

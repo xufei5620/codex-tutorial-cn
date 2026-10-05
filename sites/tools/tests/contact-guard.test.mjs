@@ -20,7 +20,7 @@ test('each site keeps its own WeCom customer-service link',()=>{
 })
 test('shared sources never hardcode a customer-service link',()=>{
  const banned=/work\.weixin\.qq\.com\/kfid|kfc[0-9a-f]{12,}|t\.me\//
- const dirs=['shared/pages','shared/theme','studio/theme','studio/content','sub2api/.vitepress','newapi/.vitepress']
+ const dirs=['build','shared/pages','shared/theme','studio/theme','studio/content','sub2api/.vitepress/theme','newapi/.vitepress/theme']
  const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)])
  for(const dir of dirs)for(const f of walk(path.join(ROOT,dir)).filter(f=>/\.(md|vue|ts|mts|mjs|js|json)$/.test(f)))
   assert.equal(banned.test(fs.readFileSync(f,'utf8')),false,path.relative(ROOT,f))

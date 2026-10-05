@@ -1,8 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import {render} from '../../tools/prebuild.mjs'
-import {addDocumentShots} from '../prepare.mjs'
+import {render} from '../../build/util.mjs'
+import {addDocumentShots} from '../../build/docs.mjs'
 
 const pages=new URL('../../shared/pages/',import.meta.url)
 const codex=fs.readFileSync(new URL('clients/codex.md',pages),'utf8').replace(/\r\n/g,'\n')

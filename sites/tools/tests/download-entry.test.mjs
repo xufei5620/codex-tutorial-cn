@@ -7,7 +7,7 @@ import {parse,compileScript,compileTemplate} from '@vue/compiler-sfc'
 import * as Vue from 'vue'
 import * as ServerRenderer from 'vue/server-renderer'
 import {COS_ROOT,INDEX_ROUTES,downloadPlatformGroups} from '../../downloads/catalog.mjs'
-import {validateDownloadConfiguration} from '../prebuild.mjs'
+import {validateDownloadConfiguration} from '../../build/site.mjs'
 const source=fs.readFileSync(new URL('../../studio/theme/DownloadLink.vue',import.meta.url),'utf8')
 const {descriptor}=parse(source)
 const script=compileScript(descriptor,{id:'download-unit'})

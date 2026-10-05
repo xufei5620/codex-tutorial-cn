@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import vm from 'node:vm'
-import {addDocumentShots} from '../prepare.mjs'
+import {addDocumentShots} from '../../build/docs.mjs'
 
 function documentShots(text,rel){
  const manifest=[]
