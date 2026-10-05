@@ -2,7 +2,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { stageCourse } from './course-bridge.mjs'
+import { stagePrompts } from './course-bridge.mjs'
 import { INDEX_ROUTES } from '../downloads/catalog.mjs'
 import { createRequire } from 'node:module'
 const require=createRequire(import.meta.url)
@@ -62,7 +62,7 @@ export function build(id,root=ROOT){
   if(item.notes_url)https(item.notes_url,'Release notes URL')
   if(item.checksum&&!/^[a-f0-9]{64}$/i.test(item.checksum))throw Error('Invalid SHA-256')
  }
- const course=stageCourse(path.dirname(root))
+ const prompts=stagePrompts(path.dirname(root))
  const origin=new URL(site.base_url).origin
  const vars={SITE_NAME:site.name,SITE_URL:site.site_url,BASE_URL:site.base_url,CODEX_BASE_URL:site.codex_base_url||site.base_url,OPENCLAW_BASE_URL:site.openclaw_base_url||origin+'/v1',KEYS_URL:site.keys_url,MODELS_URL:site.models_url,CONSOLE_URL:site.console_url,DOCS_URL:'https://'+site.domain,KEY_WORD:site.key_word||'API 密钥',HOURS:site.contact?.hours||'',DOWNLOAD_URL:site.download_page_url}
  https(vars.CODEX_BASE_URL,'Codex base URL')
@@ -74,7 +74,7 @@ export function build(id,root=ROOT){
   const custom=path.join(overrideRoot,name),source=fs.existsSync(custom)?custom:path.join(pageRoot,name)
   outputs.push([name,markGenerated(render(fs.readFileSync(source,'utf8'),vars))])
  }
- outputs.push(...course.pages.map(([name,body])=>[name,markGenerated(body)]))
+ outputs.push(...prompts.pages.map(([name,body])=>[name,markGenerated(body)]))
  const contact={...site.contact}
  if(contact.wecom_url&&contact.qr_mode!=='upload'){
   contact.wecom_qr='/img/contact/wecom-auto.svg'
@@ -82,10 +82,10 @@ export function build(id,root=ROOT){
  }
  outputs.push(['contact.md',markGenerated('---\ntitle: 联系客服\noutline: false\n---\n# 联系客服\n\n<SupportCard />\n\n## 求助前准备\n\n提供工具与系统版本、模型 ID、大致时间、脱敏错误文案和请求 ID。账户或订单问题仅在确认的客服会话中提供必要资料。\n\n不要发送 API Key、Authorization、Cookie、密码、验证码、未使用兑换码或整包原始配置。\n\n[排错顺序](/guide/troubleshooting) · [常见问题](/faq) · [错误码](/errors)\n')])
  const sourceNav=JSON.parse(fs.readFileSync(path.join(directory,'nav.json'),'utf8'))
- const courseNav={text:'Codex 零基础课程',items:[{text:'完整课程目录',link:'/learn/codex/'},...course.sidebar,{text:'第一次任务练习',link:'/learn/first-task'},{text:'文件夹练习',link:'/learn/working-with-files'},{text:'检查结果与修改',link:'/learn/review-and-revise'}]}
+ const courseNav={text:'Codex 零基础课程',items:[{text:'完整课程目录',link:'/learn/codex/'},...prompts.sidebar,{text:'第一次任务练习',link:'/learn/first-task'},{text:'文件夹练习',link:'/learn/working-with-files'},{text:'检查结果与修改',link:'/learn/review-and-revise'}]}
  const nav={nav:sourceNav.nav,sidebar:[sourceNav.sidebar[0],courseNav,...sourceNav.sidebar.slice(1)]}
  const publicSite={id:site.id,name:site.name,title:site.title,description:site.description,domain:site.domain,site_url:site.site_url,base_url:site.base_url,codex_base_url:vars.CODEX_BASE_URL,openclaw_base_url:vars.OPENCLAW_BASE_URL,contact,downloads:site.downloads||{},download_page_url:site.download_page_url,download_indexes:site.download_indexes}
- outputs.push(['site.generated.json',JSON.stringify(publicSite,null,2)],['nav.generated.json',JSON.stringify(nav,null,2)],['course-provenance.generated.json',JSON.stringify({version:course.version,sources:course.sources},null,2)])
+ outputs.push(['site.generated.json',JSON.stringify(publicSite,null,2)],['nav.generated.json',JSON.stringify(nav,null,2)])
  const parent=new URL(site.site_url).origin
  outputs.push(['public/_headers',`/*\n  Content-Security-Policy: frame-ancestors 'self' ${parent}\n  Referrer-Policy: no-referrer\n  X-Content-Type-Options: nosniff\n\n`+Object.values(INDEX_ROUTES).map(route=>route+'\n  Content-Type: application/json; charset=utf-8\n  Cache-Control: no-store\n').join('\n')])
  outputs.push(['public/_routes.json',JSON.stringify({version:1,include:Object.values(INDEX_ROUTES),exclude:Object.values(INDEX_ROUTES)},null,2)+'\n'])
@@ -103,8 +103,7 @@ export function build(id,root=ROOT){
   const config=path.join(directory,'public/admin/config.yml')
   if(fs.existsSync(config))fs.writeFileSync(config,fs.readFileSync(config,'utf8').replace(/^  branch:.*$/m,'  branch: '+cmsBranch))
  }
- copy(path.join(path.dirname(root),'assets'),path.join(directory,'public/img/course'),name=>/\.(png|jpe?g|webp|svg|css)$/i.test(name))
- console.log(JSON.stringify({site:id,generated:outputPaths.length,courseChapters:course.sources.filter(x=>x.id.startsWith('ch')).length,sourceVersion:course.version}))
+ console.log(JSON.stringify({site:id,generated:outputPaths.length}))
  return outputPaths
 }
 if(process.argv[1]&&fs.realpathSync(path.resolve(process.argv[1]))===fs.realpathSync(fileURLToPath(import.meta.url))){
