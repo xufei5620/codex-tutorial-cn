@@ -20,8 +20,8 @@ export function createHandler({ fetchImpl = fetch } = {}) {
     if (request.method !== 'GET' && !head) return response({ error: '仅支持读取安装包清单' }, 405, false, { Allow: 'GET, HEAD' })
     const name = params?.product
     const url = new URL(request.url)
-    if (typeof name !== 'string' || !Object.hasOwn(PRODUCTS, name)
-      || url.pathname !== `/cos-download-index/${name}` || url.search) return response({ error: '安装包清单地址无效' }, 404, head)
+    if (typeof name !== 'string' || !Object.hasOwn(PRODUCTS, name) || url.pathname !== `/cos-download-index/${name}` || url.search)
+      return response({ error: '安装包清单地址无效' }, 404, head)
     let fallback = { stage: 'init', code: 'request-signal' }
     try {
       const product = PRODUCTS[name]

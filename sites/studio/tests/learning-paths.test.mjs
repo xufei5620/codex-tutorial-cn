@@ -5,26 +5,46 @@ import { createMarkdownRenderer, disposeMdItInstance } from 'vitepress'
 import { completionKey, normalizeCompleted, resolveLearningPath, safeLearningHref } from '../theme/learning-paths.mjs'
 
 test('Codex has a complete ordered route and permits direct entry at any step', () => {
-  const hrefs = ['/clients/codex', '/guide/verify?track=codex', '/learn/first-task', '/learn/codex/ch01', '/learn/codex/ch02', '/learn/working-with-files', '/learn/review-and-revise', '/skills']
+  const hrefs = [
+    '/clients/codex',
+    '/guide/verify?track=codex',
+    '/learn/first-task',
+    '/learn/codex/ch01',
+    '/learn/codex/ch02',
+    '/learn/working-with-files',
+    '/learn/review-and-revise',
+    '/skills'
+  ]
   for (const [index, href] of hrefs.entries()) {
     const path = resolveLearningPath(href)
     assert.equal(path.id, 'codex')
-    assert.deepEqual(path.steps.map(step => step.href), hrefs)
+    assert.deepEqual(
+      path.steps.map((step) => step.href),
+      hrefs
+    )
     assert.equal(path.index, index)
     assert.equal(path.currentStep.href, href)
     assert.equal(path.previous?.href || null, hrefs[index - 1] || null)
     assert.equal(path.next?.href || null, hrefs[index + 1] || null)
-    assert.ok(path.steps.every(step => step.id && step.title && step.goal))
+    assert.ok(path.steps.every((step) => step.id && step.title && step.goal))
     assert.equal(path.categoryHref, '/learn/codex/')
   }
 })
 
 test('Claude Code retains its track through verification, first task and review', () => {
-  const hrefs = ['/clients/claude-code', '/guide/verify?track=claude-code', '/learn/claude/first-task?track=claude-code', '/learn/review-and-revise?track=claude-code']
+  const hrefs = [
+    '/clients/claude-code',
+    '/guide/verify?track=claude-code',
+    '/learn/claude/first-task?track=claude-code',
+    '/learn/review-and-revise?track=claude-code'
+  ]
   for (const [index, href] of hrefs.entries()) {
     const path = resolveLearningPath(href)
     assert.equal(path.id, 'claude-code')
-    assert.deepEqual(path.steps.map(step => step.href), hrefs)
+    assert.deepEqual(
+      path.steps.map((step) => step.href),
+      hrefs
+    )
     assert.equal(path.index, index)
     assert.equal(path.previous?.href || null, hrefs[index - 1] || null)
     assert.equal(path.next?.href || null, hrefs[index + 1] || null)
@@ -56,7 +76,14 @@ test('shared pages use explicit tracks and known defaults without allowing route
 })
 
 test('unknown and ambiguous query values are ignored and never become destinations', () => {
-  for (const query of ['?track=unknown', '?track=__proto__', '?track=https://evil.example/', '?track=claude-code&track=claude-desktop', '?track=%E0%A4%A', '?next=//evil.example&redirect=javascript:alert(1)']) {
+  for (const query of [
+    '?track=unknown',
+    '?track=__proto__',
+    '?track=https://evil.example/',
+    '?track=claude-code&track=claude-desktop',
+    '?track=%E0%A4%A',
+    '?next=//evil.example&redirect=javascript:alert(1)'
+  ]) {
     const path = resolveLearningPath('/guide/verify', query)
     assert.equal(path, null, query)
     assert.equal(resolveLearningPath('/learn/review-and-revise', query).id, 'codex')
@@ -71,10 +98,22 @@ test('manager steps match actual rendered Markdown headings and the download com
   try {
     const html = markdown.render(source)
     const path = resolveLearningPath('/guide/manager')
-    const anchors = ['manager-install', 'manager-account', 'manager-environment', 'manager-tool', 'manager-config', 'manager-verify', 'manager-next']
-    assert.deepEqual(path.steps.map(step => step.href), anchors.map(anchor => '/guide/manager#' + anchor))
+    const anchors = [
+      'manager-install',
+      'manager-account',
+      'manager-environment',
+      'manager-tool',
+      'manager-config',
+      'manager-verify',
+      'manager-next'
+    ]
+    assert.deepEqual(
+      path.steps.map((step) => step.href),
+      anchors.map((anchor) => '/guide/manager#' + anchor)
+    )
     assert.ok(download.includes('id="download-installers"'))
-    for (const anchor of [...anchors, '安装后-按这四步开始', '离线包怎么选', 'offline-packages']) assert.ok(html.includes('id="' + anchor + '"'), anchor)
+    for (const anchor of [...anchors, '安装后-按这四步开始', '离线包怎么选', 'offline-packages'])
+      assert.ok(html.includes('id="' + anchor + '"'), anchor)
     assert.equal(path.categoryHref, '/guide/start')
     for (const [index, anchor] of anchors.entries()) {
       for (const hash of ['#' + anchor, '#' + encodeURIComponent(anchor)]) {
@@ -94,14 +133,23 @@ test('manager defaults to the first step for missing, arbitrary and malformed ha
 })
 
 test('manager legacy and offline reference anchors select a position without adding completed steps', () => {
-  for (const [anchor, index] of [['download-installers', 0], ['安装后-按这四步开始', 0], ['offline-packages', 6], ['离线包怎么选', 6], ['manager-help',6]]) {
+  for (const [anchor, index] of [
+    ['download-installers', 0],
+    ['安装后-按这四步开始', 0],
+    ['offline-packages', 6],
+    ['离线包怎么选', 6],
+    ['manager-help', 6]
+  ]) {
     const href = '/guide/manager#' + anchor
     const path = resolveLearningPath(href)
     assert.equal(path.index, index)
     assert.equal(path.steps.length, 7)
     assert.equal(safeLearningHref(href), href)
     assert.equal(safeLearningHref('/guide/manager#' + encodeURIComponent(anchor)), href)
-    assert.equal(path.steps.some(step => Object.hasOwn(step, 'completed')), false)
+    assert.equal(
+      path.steps.some((step) => Object.hasOwn(step, 'completed')),
+      false
+    )
   }
   assert.deepEqual(normalizeCompleted(['manager:install', 'manager:offline']), ['manager:install'])
   assert.equal(completionKey('manager', 'offline'), null)
@@ -114,7 +162,10 @@ test('history canonicalizes fixed routes and meaningful queries and hashes', () 
   assert.equal(safeLearningHref('/guide/start#top'), '/guide/start')
   assert.equal(safeLearningHref('/guide/verify'), null)
   assert.equal(safeLearningHref('/guide/verify?track=claude-code&redirect=https://evil.example#test'), '/guide/verify?track=claude-code')
-  assert.equal(safeLearningHref('/learn/claude/first-task?track=claude-desktop#ordinary-heading'), '/learn/claude/first-task?track=claude-desktop')
+  assert.equal(
+    safeLearningHref('/learn/claude/first-task?track=claude-desktop#ordinary-heading'),
+    '/learn/claude/first-task?track=claude-desktop'
+  )
   assert.equal(safeLearningHref('/skills?tab=build'), '/skills')
   assert.equal(safeLearningHref('/guide/manager#' + encodeURIComponent('安装后-按这四步开始')), '/guide/manager#安装后-按这四步开始')
   assert.equal(safeLearningHref('/guide/manager#unknown'), '/guide/manager')
@@ -122,7 +173,28 @@ test('history canonicalizes fixed routes and meaningful queries and hashes', () 
 })
 
 test('history rejects external URLs, browser schemes, path repairs and unlisted routes', () => {
-  for (const value of [null, undefined, 12, {}, [], '', 'https://example.com/clients/codex', '//evil.example/clients/codex', 'javascript:alert(1)', 'data:text/html,test', 'file:///clients/codex', '/\\evil.example/clients/codex', '/clients/codex\n', ' /clients/codex', '/clients/../clients/codex', '/%63lients/codex', '/guide/unknown', '/clients/codex-evil', '/learn/codex/ch03', '/']) {
+  for (const value of [
+    null,
+    undefined,
+    12,
+    {},
+    [],
+    '',
+    'https://example.com/clients/codex',
+    '//evil.example/clients/codex',
+    'javascript:alert(1)',
+    'data:text/html,test',
+    'file:///clients/codex',
+    '/\\evil.example/clients/codex',
+    '/clients/codex\n',
+    ' /clients/codex',
+    '/clients/../clients/codex',
+    '/%63lients/codex',
+    '/guide/unknown',
+    '/clients/codex-evil',
+    '/learn/codex/ch03',
+    '/'
+  ]) {
     assert.equal(safeLearningHref(value), null, String(value))
     assert.equal(resolveLearningPath(value), null, String(value))
   }
@@ -137,7 +209,19 @@ test('completion keys are distinct per track and only known input keys survive',
   assert.equal(completionKey('manager', 'account'), 'manager:account')
   assert.equal(completionKey('unknown', 'install'), null)
   assert.equal(completionKey({}, 'install'), null)
-  assert.deepEqual(normalizeCompleted(['codex:verify', 'claude-code:verify', 'codex:verify', 'claude-desktop:verify', 'manager:account', 'unknown:install', {}, null]), ['codex:verify', 'claude-code:verify', 'manager:account'])
+  assert.deepEqual(
+    normalizeCompleted([
+      'codex:verify',
+      'claude-code:verify',
+      'codex:verify',
+      'claude-desktop:verify',
+      'manager:account',
+      'unknown:install',
+      {},
+      null
+    ]),
+    ['codex:verify', 'claude-code:verify', 'manager:account']
+  )
   for (const value of [null, undefined, '', '[]', '{}', {}, 0, false]) assert.deepEqual(normalizeCompleted(value), [])
 })
 

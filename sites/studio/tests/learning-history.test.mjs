@@ -3,17 +3,28 @@ import assert from 'node:assert/strict'
 import { appendLearningVisit, parseLearningVisits } from '../theme/learning-history.mjs'
 
 test('stored visits retain only canonical allowlisted locations', () => {
-  const visits = parseLearningVisits(JSON.stringify([
-    '/clients/codex.html?next=https://evil.example',
-    '/guide/verify?track=claude-code&unused=1',
-    '/guide/manager#manager-config',
-    '/guide/manager#' + encodeURIComponent('离线包怎么选'),
-    'https://evil.example/clients/codex', '//evil.example', 'javascript:alert(1)',
-    '/unknown', '/guide/verify', null, 12, {}, []
-  ]))
+  const visits = parseLearningVisits(
+    JSON.stringify([
+      '/clients/codex.html?next=https://evil.example',
+      '/guide/verify?track=claude-code&unused=1',
+      '/guide/manager#manager-config',
+      '/guide/manager#' + encodeURIComponent('离线包怎么选'),
+      'https://evil.example/clients/codex',
+      '//evil.example',
+      'javascript:alert(1)',
+      '/unknown',
+      '/guide/verify',
+      null,
+      12,
+      {},
+      []
+    ])
+  )
   assert.deepEqual(visits, [
-    '/clients/codex', '/guide/verify?track=claude-code',
-    '/guide/manager#manager-config', '/guide/manager#离线包怎么选'
+    '/clients/codex',
+    '/guide/verify?track=claude-code',
+    '/guide/manager#manager-config',
+    '/guide/manager#离线包怎么选'
   ])
 })
 
@@ -38,7 +49,9 @@ test('only consecutive canonical duplicate locations are collapsed', () => {
   assert.deepEqual(state.visits, visits)
   assert.equal(state.previousHref, '/guide/verify?track=codex')
   assert.deepEqual(parseLearningVisits(JSON.stringify(['/clients/codex', '/clients/codex.html', '/learn/first-task', '/clients/codex'])), [
-    '/clients/codex', '/learn/first-task', '/clients/codex'
+    '/clients/codex',
+    '/learn/first-task',
+    '/clients/codex'
   ])
 })
 
@@ -54,7 +67,15 @@ test('manager step hashes and explicit tool tracks remain distinct browsing loca
 })
 
 test('unknown current locations clear stale learning return links', () => {
-  for (const href of ['/unknown', '/guide/verify', 'https://evil.example/clients/codex', '//evil.example', 'javascript:alert(1)', null, {}]) {
+  for (const href of [
+    '/unknown',
+    '/guide/verify',
+    'https://evil.example/clients/codex',
+    '//evil.example',
+    'javascript:alert(1)',
+    null,
+    {}
+  ]) {
     assert.deepEqual(appendLearningVisit(['/clients/codex'], href), { visits: [], previousHref: null })
   }
 })
@@ -69,7 +90,7 @@ test('every incoming visit is sanitized without mutating the source array', () =
 })
 
 test('both loading and appending retain at most thirty recent locations', () => {
-  const visits = Array.from({ length: 35 }, (_, index) => index % 2 ? '/learn/first-task' : '/clients/codex')
+  const visits = Array.from({ length: 35 }, (_, index) => (index % 2 ? '/learn/first-task' : '/clients/codex'))
   assert.deepEqual(parseLearningVisits(JSON.stringify(visits)), visits.slice(-30))
   const state = appendLearningVisit(visits, '/guide/manager#manager-account')
   assert.equal(state.visits.length, 30)

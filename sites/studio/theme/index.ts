@@ -1,4 +1,4 @@
-import type {Theme} from 'vitepress'
+import type { Theme } from 'vitepress'
 import StudioLayout from './StudioLayout.vue'
 import StudioChapter from './StudioChapter.vue'
 import StudioHub from './StudioHub.vue'
@@ -12,4 +12,21 @@ import DownloadLink from './DownloadLink.vue'
 import ManagerAccountNotice from './ManagerAccountNotice.vue'
 import './studio.css'
 import './clarity.css'
-export default {Layout:StudioLayout,enhanceApp({app}){for(const [name,component]of Object.entries({StudioChapter,StudioHub,SkillWorkshop,ScreenshotCatalog,ScreenshotSlot,LearningDiagram,SupportCard:SupportPanel,DownloadCards,DownloadLink,ManagerAccountNotice}))app.component(name,component)}} satisfies Theme
+export default {
+  Layout: StudioLayout,
+  enhanceApp({ app }) {
+    for (const [name, component] of Object.entries({
+      StudioChapter,
+      StudioHub,
+      SkillWorkshop,
+      ScreenshotCatalog,
+      ScreenshotSlot,
+      LearningDiagram,
+      SupportCard: SupportPanel,
+      DownloadCards,
+      DownloadLink,
+      ManagerAccountNotice
+    }))
+      app.component(name, component)
+  }
+} satisfies Theme
