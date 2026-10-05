@@ -25,6 +25,24 @@ export function validateDownloadConfiguration(site) {
     throw Error('Download indexes must use the three fixed same-site routes')
 }
 
+// Every site must keep a reachable customer-service contact of its own.
+function validateContact(contact, siteDirectory) {
+  if (!contact || typeof contact !== 'object') throw Error('site.json 缺少 contact')
+  https(contact.wecom_url, 'contact.wecom_url')
+  if (!['auto', 'upload'].includes(contact.qr_mode)) throw Error('contact.qr_mode 只能是 auto 或 upload')
+  if (contact.telegram_url) https(contact.telegram_url, 'contact.telegram_url')
+  for (const key of ['wecom_qr', 'telegram_qr']) {
+    const image = contact[key]
+    if (key === 'wecom_qr' && contact.qr_mode !== 'upload') continue
+    if (!image) {
+      if (key === 'wecom_qr') throw Error('qr_mode 为 upload 时必须提供 contact.wecom_qr')
+      continue
+    }
+    if (!/^\/img\/[\w./-]+$/.test(image) || image.includes('..') || !fs.existsSync(path.join(siteDirectory, 'public', image)))
+      throw Error(`contact.${key} 必须是本站 public/img 下存在的图片：${image}`)
+  }
+}
+
 export function loadSite(id, siteDirectory) {
   if (!SITES.includes(id)) throw Error('Choose sub2api or newapi')
   const site = JSON.parse(fs.readFileSync(path.join(siteDirectory, 'site.json'), 'utf8'))
@@ -34,6 +52,8 @@ export function loadSite(id, siteDirectory) {
   for (const key of ['site_url', 'base_url', 'codex_base_url', 'openclaw_base_url', 'keys_url', 'models_url', 'console_url'])
     if (site[key] && new URL(site[key]).hostname === FOREIGN[id].host) throw Error('Cross-site URL: ' + key)
   if (site.domain === FOREIGN[id].docs) throw Error('Cross-site docs hostname')
+  for (const key of ['name', 'title', 'description']) if (typeof site[key] !== 'string' || !site[key].trim()) throw Error('site.json 缺少 ' + key)
+  validateContact(site.contact, siteDirectory)
   validateDownloadConfiguration(site)
   for (const item of Object.values(site.downloads || {})) {
     if (item.url) https(item.url, 'Download URL')
