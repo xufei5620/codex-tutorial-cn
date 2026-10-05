@@ -34,7 +34,7 @@ jobs:
         run: npm ci
       - name: Unit and route checks
         run: |
-          node --test tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs
+          npm test
           node studio/prepare.mjs sub2api
           node studio/prepare.mjs newapi
           node tools/check-routes.mjs

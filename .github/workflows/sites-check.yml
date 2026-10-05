@@ -1,22 +1,24 @@
-# Build the real VitePress output on a work branch. No deployment or repository writes.
-name: sites-preview
+# Pull request checks for both documentation sites. Builds the real VitePress output and
+# compares it with the target branch. No deployment, credentials or repository writes.
+name: sites-check
 on:
-  push:
-    branches: [docs/dual-site-build-v4-4-1-20260908]
   pull_request:
-    paths: ['sites/**', 'src/**', 'homepage/**', '.github/workflows/sites-preview.yml']
+    paths: ['sites/**', 'src/content/prompts.html', 'src/chapters.json', '.github/workflows/sites-check.yml']
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: sites-preview-${{ github.ref }}
+  group: sites-check-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  build-preview:
+  check:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
       DOCS_CMS_BRANCH: ${{ github.head_ref || github.ref_name }}
+    defaults:
+      run:
+        working-directory: sites
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,23 +29,22 @@ jobs:
           cache: npm
           cache-dependency-path: sites/package-lock.json
       - name: Install locked dependencies
-        working-directory: sites
         run: npm ci
-      - name: Unit checks (synthetic fixtures)
-        working-directory: sites
-        run: node --test tools/tests/*.test.mjs downloads/*.test.mjs
-      - name: Stage actual original courses and check article targets
-        working-directory: sites
+      - name: Unit tests
+        run: npm test
+      - name: Generate both sites and check article targets
         run: |
           node studio/prepare.mjs sub2api
           node studio/prepare.mjs newapi
           node tools/check-routes.mjs
       - name: Build both documentation sites
-        working-directory: sites
         run: npm run build
       - name: Check each site keeps its own customer-service contact
-        working-directory: sites
         run: node tools/check-contacts.mjs
+      - name: Compile download index Functions without deploying
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: npx wrangler pages functions build --outdir "${{ runner.temp }}/cos-download-functions"
       # Readers should only see a change when the PR means to make one. Build the base branch
       # the same way and list every page or public file whose content differs.
       - name: Check out base branch for comparison
@@ -61,27 +62,17 @@ jobs:
       - name: Compare build output with base branch
         if: github.event_name == 'pull_request'
         continue-on-error: true
-        working-directory: sites
         run: |
           echo '## 与目标分支的构建产物对比' >> "$GITHUB_STEP_SUMMARY"
           node tools/compare-dist.mjs ../base/sites/sub2api/.vitepress/dist sub2api/.vitepress/dist --label 'docs-sub.solov.cc'
           node tools/compare-dist.mjs ../base/sites/newapi/.vitepress/dist newapi/.vitepress/dist --label 'docs-new.solov.cc'
-      - name: Compile download index Functions without deploying
-        working-directory: sites
-        env:
-          WRANGLER_SEND_METRICS: 'false'
-        run: npx wrangler pages functions build --outdir "${{ runner.temp }}/cos-download-functions"
       - name: Upload exact static builds
         uses: actions/upload-artifact@v4
         with:
-          name: xingmang-dual-site-preview-${{ github.sha }}
+          name: xingmang-sites-${{ github.sha }}
           path: |
             sites/sub2api/.vitepress/dist
             sites/newapi/.vitepress/dist
           include-hidden-files: true
+          if-no-files-found: error
           retention-days: 7
-      - name: Preview status
-        run: |
-          echo '## Documentation build completed' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Artifacts are actual VitePress output. No deployment was performed.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Source commit: `${{ github.sha }}`' >> "$GITHUB_STEP_SUMMARY"
