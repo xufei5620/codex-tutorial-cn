@@ -38,8 +38,9 @@ export function addShots(html,prefix,context,manifest){let stack=[],offsets=[],i
  let out=html;for(let i=offsets.length-1;i>=0;i--){const id=prefix+'-step'+String(i+1).padStart(2,'0');out=out.slice(0,offsets[i].at)+slot(id,offsets[i].title,false)+out.slice(offsets[i].at)}return out
 }
 function routeRewrites(html){return html.replace(/href="#\/skills"/g,'href="/skills"').replace(/href="#\/atlas\/[^"\s]+"/g,'href="/learn/codex/ch07#s2"').replace(/href="#\/chapter\/(ch\d+)\?s=(\d+)"/g,(_,c,s)=>'href="/learn/codex/'+c+'#s'+(Number(s)+1)+'"')}
+const markdownPlain=value=>plain(String(value??'').replace(/!\[[^\]]*\]\([^)]*\)/g,' ').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/(\*\*|__|`)/g,''))
 export function addDocumentShots(text,{rel,route,title},manifest){
- let section=0,step=0,fence=null
+ let section=0,step=0,fence=null,last=null
  for(const line of text.split(/\r?\n/)){
   let codeLine=!!fence
   if(fence){
@@ -51,11 +52,14 @@ export function addDocumentShots(text,{rel,route,title},manifest){
   }
   // Keep legacy counters, including code examples, so existing real-step backup IDs do not shift.
   if(/^##\s/.test(line)){section++;step=0}
+  if(/^#{2,6}\s/.test(line))last=null
+  // A step already followed by a real image in the page needs no extra empty slot.
+  if(!codeLine&&last&&/!\[[^\]]*\]\(|<img\b/i.test(line)){last.capturePolicy='none';last.optional=true}
   if(/^\d+[.)]\s+/.test(line)){
    step++
    if(codeLine)continue
-   const label=plain(line.replace(/^\d+[.)]\s+/,''))
-   manifest.push({id:'doc-'+rel.replace(/\.md$/,'').replaceAll('/','-')+'-s'+String(section||1).padStart(2,'0')+'-step'+String(step).padStart(2,'0'),route,group:title,section:label,title:label.slice(0,90),target:label,highlight:'只拍本页真实操作。',optional:false,capturePolicy:'required',siteOnly:true})
+   const label=markdownPlain(line.replace(/^\d+[.)]\s+/,''))
+   manifest.push(last={id:'doc-'+rel.replace(/\.md$/,'').replaceAll('/','-')+'-s'+String(section||1).padStart(2,'0')+'-step'+String(step).padStart(2,'0'),route,group:title,section:label,title:label.slice(0,90),target:label,highlight:'只拍本页真实操作。',optional:false,capturePolicy:'required',siteOnly:true})
   }
  }
 }

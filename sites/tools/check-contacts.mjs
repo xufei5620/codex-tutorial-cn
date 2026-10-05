@@ -21,6 +21,9 @@ export function checkBuilt(sites=SITES,root=ROOT){
    for(const m of foreign)if(text.includes(m))errors.push(id+': '+path.relative(dist,f)+' contains another site\'s contact '+m)
   }
   if(!own)errors.push(id+': own WeCom link not found in build output')
+  // A configured Telegram channel must be a visible link on the contact page, not only inside page data.
+  const contact=path.join(dist,'contact.html'),telegram=cfg[id].contact?.telegram_url
+  if(telegram&&!(fs.existsSync(contact)&&fs.readFileSync(contact,'utf8').includes('href="'+telegram+'"')))errors.push(id+': contact.html does not show its Telegram link')
  }
  return errors
 }
