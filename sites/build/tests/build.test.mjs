@@ -19,13 +19,13 @@ function fixture(){
  put('src/content/prompts.html','<h1>prompts UNIT TEST FIXTURE</h1><a href="{{link:prompts#s1}}">card</a><section id="s1">Example</section>')
  put('sites/shared/pages/guide/choose-tool.md','---\ntitle: Shared\n---\n# %%SITE_NAME%%\n%%BASE_URL%% %%KEY_WORD%%')
  put('sites/shared/pages/guide/download.md','---\ntitle: Download\n---\n<script setup>\nimport { onMounted } from \'vue\'\nonMounted(()=>{location.replace(\'%%DOWNLOAD_URL%%\')})\n</script>\n')
+ put('sites/shared/nav.json',JSON.stringify({nav:[{text:'首页',link:'/guide/start'}],sidebar:[{text:'开始',items:[]}]}))
  put('sites/shared/admin/config.yml','backend:\n  name: github\n  branch: main\n')
  fs.cpSync(new URL('../../studio/content',import.meta.url),path.join(sites,'studio/content'),{recursive:true})
  for(const id of ['sub2api','newapi']){
   const origin=id==='sub2api'?'https://api.solov.cc':'https://xm.solov.cc'
   const site={id,name:'星芒AI',title:'Unit test',description:'Synthetic',domain:id==='sub2api'?'docs-sub.solov.cc':'docs-new.solov.cc',site_url:origin,base_url:origin,codex_base_url:origin+'/v1',keys_url:origin+'/keys',models_url:origin+'/models',console_url:origin+'/dashboard',key_word:id==='sub2api'?'API 密钥':'令牌',contact:{wecom_url:`https://example.invalid/support/${id}`,qr_mode:'auto'},download_page_url:'/guide/manager#download-installers',download_indexes:{manager:'/cos-download-index/xingmang.json',chatgpt:'/cos-download-index/chatgpt.json',claude:'/cos-download-index/claude.json'},downloads:{windows:{label:'Windows',enabled:true,url:''}}}
   put(`sites/${id}/site.json`,JSON.stringify(site))
-  put(`sites/${id}/nav.json`,JSON.stringify({nav:[{text:'首页',link:'/guide/start'}],sidebar:[{text:'开始',items:[]}]}))
   put(`sites/${id}/pages/guide/start.md`,'---\ntitle: Start\n---\n# '+id+' start\n')
  }
  return {root,sites,put}
@@ -108,4 +108,35 @@ test('output is rebuilt from scratch and old outputs beside the sources are remo
  assert.equal(fs.existsSync(path.join(f.sites,'sub2api/.src/public/img/shared/old.png')),false)
  assert.equal(fs.readFileSync(path.join(f.sites,'sub2api/.src/public/screenshots/local.png'),'utf8'),'kept')
  assert.equal(fs.readFileSync(path.join(f.sites,'sub2api/pages/guide/start.md'),'utf8'),'---\ntitle: Start\n---\n# sub2api start\n')
+})
+test('site settings must keep a valid customer-service contact',()=>{
+ const f=fixture(),file=path.join(f.sites,'sub2api/site.json'),original=JSON.parse(fs.readFileSync(file))
+ const attempt=(change,pattern)=>{const s=structuredClone(original);change(s);fs.writeFileSync(file,JSON.stringify(s));assert.throws(()=>generate('sub2api',f.sites),pattern)}
+ attempt(s=>{delete s.contact},/contact/)
+ attempt(s=>{s.contact.wecom_url='http://example.invalid/kf'},/HTTPS/)
+ attempt(s=>{s.contact.qr_mode='maybe'},/qr_mode/)
+ attempt(s=>{s.contact.qr_mode='upload'},/wecom_qr/)
+ attempt(s=>{s.contact.qr_mode='upload';s.contact.wecom_qr='/img/contact/missing.png'},/public\/img/)
+ attempt(s=>{s.contact.telegram_url='https://example.invalid/channel';s.contact.telegram_qr='../secret.png'},/public\/img/)
+ attempt(s=>{s.title=''},/title/)
+ f.put('sites/sub2api/public/img/contact/wecom.png','png');const ok=structuredClone(original);ok.contact.qr_mode='upload';ok.contact.wecom_qr='/img/contact/wecom.png';fs.writeFileSync(file,JSON.stringify(ok))
+ assert.doesNotThrow(()=>generate('sub2api',f.sites))
+})
+test('shared navigation is filtered per site and labelled from page titles',()=>{
+ const f=fixture()
+ f.put('sites/shared/nav.json',JSON.stringify({_comment:'x',nav:[{text:'控制台',link:'%%CONSOLE_URL%%'}],sidebar:[{text:'开始',items:[{link:'/guide/start'},{text:'仅订阅站',link:'/faq',sites:['sub2api']}]},{text:'生图',sites:['sub2api'],items:[{text:'A',link:'/faq'}]}]}))
+ generate('sub2api',f.sites);generate('newapi',f.sites)
+ const sub=JSON.parse(fs.readFileSync(path.join(f.sites,'sub2api/.src/nav.generated.json'))),neu=JSON.parse(fs.readFileSync(path.join(f.sites,'newapi/.src/nav.generated.json')))
+ assert.equal(sub.nav[0].link,'https://api.solov.cc/dashboard');assert.equal(neu.nav[0].link,'https://xm.solov.cc/dashboard')
+ assert.deepEqual(sub.sidebar[0].items,[{text:'Start',link:'/guide/start'},{text:'仅订阅站',link:'/faq'}])
+ assert.deepEqual(neu.sidebar[0].items,[{text:'Start',link:'/guide/start'}])
+ assert.ok(sub.sidebar.some(g=>g.text==='生图'));assert.ok(!neu.sidebar.some(g=>g.text==='生图'))
+ assert.ok(!JSON.stringify(sub).includes('sites'))
+ f.put('sites/shared/nav.json',JSON.stringify({nav:[],sidebar:[{text:'开始',items:[{link:'/missing'}]}]}));assert.throws(()=>generate('sub2api',f.sites),/页面标题/)
+})
+test('online editor only points at source files that exist',()=>{
+ const repo=new URL('../../../',import.meta.url),config=fs.readFileSync(new URL('sites/shared/admin/config.yml',repo),'utf8')
+ const paths=[...config.matchAll(/^\s*(?:-\s*\{.*?)?\b(?:file|folder):\s*([^\s,}]+)/gm)].map(m=>m[1])
+ assert.ok(paths.length>10)
+ for(const p of paths)assert.ok(fs.existsSync(new URL(p,repo))||p.endsWith('/overrides'),p)
 })

@@ -7,6 +7,7 @@
 //   <site>/overrides/ optional per-site replacement for a shared page (same placeholders)
 //   <site>/pages/    pages that exist only on this site, copied as they are
 //   <site>/public/   this site's static files (logo, contact images, local screenshots)
+//   shared/nav.json  navigation for both sites
 //   shared/img, shared/admin, studio/content, studio/screenshots, src/content/prompts.html
 import fs from 'node:fs'
 import path from 'node:path'
@@ -16,7 +17,7 @@ import { WECOM_QR, loadSite, pagesHeaders, pagesRoutes, publicContact, publicSit
 import { stagePrompts } from './prompts.mjs'
 import { attachCourseFigures, loadCourse } from './course.mjs'
 import { collectDocs } from './docs.mjs'
-import { buildNav } from './nav.mjs'
+import { buildNav, siteNav } from './nav.mjs'
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 export const OUTPUT = '.src'
@@ -129,7 +130,8 @@ export function generate(id, root = ROOT) {
     }
   }
   write('site.generated.json', JSON.stringify(pub, null, 2))
-  write('nav.generated.json', JSON.stringify(buildNav(readJson(path.join(siteDirectory, 'nav.json')), catalog, prompts.sidebar), null, 2) + '\n')
+  const { _comment, ...sharedNav } = JSON.parse(render(fs.readFileSync(path.join(shared, 'nav.json'), 'utf8'), vars))
+  write('nav.generated.json', JSON.stringify(buildNav(siteNav(sharedNav, id, pages), catalog, prompts.sidebar), null, 2) + '\n')
   write('studio.generated.json', JSON.stringify(studio))
 
   // Static files: the site's own first, then everything the build provides.
