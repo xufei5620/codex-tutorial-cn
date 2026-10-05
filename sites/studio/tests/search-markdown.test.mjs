@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {searchableMarkdown} from '../prepare.mjs'
+import {searchableMarkdown} from '../../build/docs.mjs'
 
 test('search metadata excludes executable SFC content and style blocks',()=>{
  const markdown=searchableMarkdown('# 下载\n<script setup>location.replace("/guide/manager")</script>\n## 安装\n步骤\n<style>.hidden{display:none}</style>')

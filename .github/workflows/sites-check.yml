@@ -34,8 +34,7 @@ jobs:
         run: npm test
       - name: Generate both sites and check article targets
         run: |
-          node studio/prepare.mjs sub2api
-          node studio/prepare.mjs newapi
+          node build/index.mjs sub2api newapi
           node tools/check-routes.mjs
       - name: Build both documentation sites
         run: npm run build

@@ -20,6 +20,8 @@ export function normalizeText(text) {
   return text
     .replace(new RegExp('(/assets/[^"\'\\s()]*?)\\.' + HASH + '((?:\\.lean)?\\.[a-z0-9]+)', 'gi'), '$1.#$2')
     .replace(new RegExp('((?:^|[/"\'])[\\w.-]+?)\\.' + HASH + '((?:\\.lean)?\\.(?:js|css))', 'g'), '$1.#$2')
+    // Vue scoped-style IDs hash the component path; they change when the project root moves.
+    .replace(/data-v-[0-9a-f]{8}/g, 'data-v-#')
     .replace(/__VP_HASH_MAP__=JSON\.parse\("((?:[^"\\]|\\.)*)"\)/, (_, map) => {
       const keys = Object.keys(JSON.parse(JSON.parse('"' + map + '"'))).sort()
       return '__VP_HASH_MAP__=' + JSON.stringify(keys)

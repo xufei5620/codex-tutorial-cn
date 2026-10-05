@@ -1,14 +1,14 @@
 {
  "name":"xingmang-docs-sites","private":true,"type":"module",
  "scripts":{
-  "prebuild:sub":"node studio/prepare.mjs sub2api","prebuild:new":"node studio/prepare.mjs newapi",
-  "predev:sub":"node studio/prepare.mjs sub2api","predev:new":"node studio/prepare.mjs newapi",
+  "prebuild:sub":"node build/index.mjs sub2api","prebuild:new":"node build/index.mjs newapi",
+  "predev:sub":"node build/index.mjs sub2api","predev:new":"node build/index.mjs newapi",
   "dev:sub":"vitepress dev sub2api","dev:new":"vitepress dev newapi",
   "local:sub":"node studio/local-preview.mjs sub2api 4183",
   "local:new":"node studio/local-preview.mjs newapi 4184",
   "build:sub":"vitepress build sub2api","build:new":"vitepress build newapi",
   "build":"npm run build:sub && npm run build:new",
-  "test":"node --test tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs",
+  "test":"node --test build/tests/*.test.mjs tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs",
   "compare":"node tools/compare-dist.mjs",
   "test:studio":"node --test studio/tests/*.test.mjs",
   "test:downloads":"node --test downloads/*.test.mjs tools/tests/download-entry.test.mjs",

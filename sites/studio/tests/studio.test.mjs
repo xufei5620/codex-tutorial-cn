@@ -1,14 +1,14 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import {attachCourseFigures} from '../prepare.mjs'
+import {attachCourseFigures} from '../../build/course.mjs'
 import {safeRecord,parseSnapshot} from '../theme/shot-schema.mjs'
 const catalog=JSON.parse(fs.readFileSync(new URL('../content/yichen/catalog.json',import.meta.url)))
 const chapters=catalog.chapters.map(meta=>JSON.parse(fs.readFileSync(new URL('../content/yichen/chapters/'+meta.id+'.json',import.meta.url))))
 test('tools hub lists clients and keeps manager as the auto-config path',()=>{
   const hub=fs.readFileSync(new URL('../theme/StudioHub.vue',import.meta.url),'utf8')
   const layout=fs.readFileSync(new URL('../theme/StudioLayout.vue',import.meta.url),'utf8')
-  const prepare=fs.readFileSync(new URL('../prepare.mjs',import.meta.url),'utf8')
+  const prepare=fs.readFileSync(new URL('../../build/index.mjs',import.meta.url),'utf8')
   assert.ok(hub.includes("kind==='tools'"))
   assert.ok(hub.includes('href="/tools"'))
   assert.ok(layout.includes('LearningSidebar'))
@@ -40,9 +40,9 @@ test('reader copy does not mention a second site',()=>{
     new URL('../../shared/pages/clients/openclaw.md',import.meta.url),
     new URL('../../shared/pages/clients/claude-code.md',import.meta.url),
     new URL('../../shared/pages/clients/gemini-cli.md',import.meta.url),
-    new URL('../../newapi/faq.md',import.meta.url),
-    new URL('../../sub2api/faq.md',import.meta.url),
-    new URL('../../sub2api/errors.md',import.meta.url)
+    new URL('../../newapi/pages/faq.md',import.meta.url),
+    new URL('../../sub2api/pages/faq.md',import.meta.url),
+    new URL('../../sub2api/pages/errors.md',import.meta.url)
   ]
   for(const file of files){
     const text=fs.readFileSync(file,'utf8')
