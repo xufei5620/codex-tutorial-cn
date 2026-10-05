@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { filterTutorialTools, tutorialToolBase, tutorialTools } from '../theme/tools-registry.mjs'
+import { filterTutorialTools, tutorialToolBase, tutorialTools } from '../../theme/tools-registry.mjs'
 
 test('tool search supports aliases, case, full-width input and spaced queries', () => {
   for (const query of ['ChatGPT', '  ＣＯＤＥＸ  ', 'openai cli']) assert.ok(filterTutorialTools(query).some((tool) => tool.id === 'codex'))

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { slotVisibility, catalogHref, chapterRecommendation } from '../theme/shot-presentation.mjs'
+import { slotVisibility, catalogHref, chapterRecommendation } from '../../theme/shot-presentation.mjs'
 
 test('reading hides hidden images and optionally hides missing slots', () => {
   assert.equal(slotVisibility({ hidden: true, imageCount: 1, hideMissing: false }), false)

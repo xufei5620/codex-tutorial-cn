@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createMarkdownRenderer, disposeMdItInstance } from 'vitepress'
-import { completionKey, normalizeCompleted, resolveLearningPath, safeLearningHref } from '../theme/learning-paths.mjs'
+import { completionKey, normalizeCompleted, resolveLearningPath, safeLearningHref } from '../../theme/learning-paths.mjs'
 
 test('Codex has a complete ordered route and permits direct entry at any step', () => {
   const hrefs = [
@@ -93,7 +93,7 @@ test('unknown and ambiguous query values are ignored and never become destinatio
 
 test('manager steps match actual rendered Markdown headings and the download component anchor', async () => {
   const source = readFileSync(new URL('../../shared/pages/guide/manager.md', import.meta.url), 'utf8')
-  const download = readFileSync(new URL('../theme/DownloadLink.vue', import.meta.url), 'utf8')
+  const download = readFileSync(new URL('../../theme/DownloadLink.vue', import.meta.url), 'utf8')
   const markdown = await createMarkdownRenderer(process.cwd())
   try {
     const html = markdown.render(source)

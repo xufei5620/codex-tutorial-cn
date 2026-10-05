@@ -11,7 +11,7 @@ import {
   normalizeSearch,
   searchEntries,
   searchMatches
-} from '../theme/studio-search.mjs'
+} from '../../theme/studio-search.mjs'
 
 test('search normalizes pasted entities, escaped errors, fullwidth text and spaces without throwing', () => {
   assert.equal(normalizeSearch('  ＣＯＤＥＸ\n  429  '), 'codex 429')

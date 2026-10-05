@@ -1,1 +1,1 @@
-export { default } from '../../../studio/theme/index'
+export { default } from '../../../theme/index'

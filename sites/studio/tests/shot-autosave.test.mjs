@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createAutosave, reconcileDraft } from '../theme/shot-autosave.mjs'
+import { createAutosave, reconcileDraft } from '../../theme/shot-autosave.mjs'
 
 const copy = (value) => JSON.parse(JSON.stringify(value))
 const image = { data: 'data:image/png;base64,AAAA', name: '第一步.png', width: 1, height: 1 }

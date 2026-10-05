@@ -16,7 +16,7 @@ import {
   updateWorkshopSource,
   loadWorkshopDrafts,
   saveWorkshopDrafts
-} from '../theme/skill-workshop.mjs'
+} from '../../theme/skill-workshop.mjs'
 
 function skill(frontmatter, body = '# Workflow\n\nRead the material, apply the steps, then check the result.') {
   return '---\n' + frontmatter + '\n---\n\n' + body
@@ -188,7 +188,7 @@ test('disabled storage, corrupt data and quota errors never throw or mutate the 
 })
 
 test('the workshop component compiles with its template bindings', () => {
-  const filename = new URL('../theme/SkillWorkshop.vue', import.meta.url)
+  const filename = new URL('../../theme/SkillWorkshop.vue', import.meta.url)
   const { descriptor, errors } = parse(fs.readFileSync(filename, 'utf8'), { filename: filename.pathname })
   assert.deepEqual(errors, [])
   const script = compileScript(descriptor, { id: 'skill-workshop' })

@@ -64,7 +64,7 @@ test('an unclosed code fence cannot register the remaining example lines as step
 test('exported course chapter and section links resolve inside the downloaded HTML', async () => {
   // Run the actual exporter; Node only needs substitutes for Vite raw CSS and browser download.
   const source = fs
-    .readFileSync(new URL('../theme/offline-export.js', import.meta.url), 'utf8')
+    .readFileSync(new URL('../../theme/offline-export.js', import.meta.url), 'utf8')
     .replace(/^import .*$/gm, '')
     .replace('export async function exportCourseHTML', 'async function exportCourseHTML')
   let output

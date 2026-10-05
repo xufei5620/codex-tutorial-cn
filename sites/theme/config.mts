@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
-import { siteConfig } from '../../shared/theme/site-config.mts'
-import { createLocalScreenshotPlugin } from '../local-screenshots.mjs'
+import { siteConfig } from './site-config.mts'
+import { createLocalScreenshotPlugin } from '../studio/local-screenshots.mjs'
 export function studioConfig(directory: URL) {
   const config = siteConfig(directory)
   const studio = JSON.parse(readFileSync(new URL('.src/studio.generated.json', directory), 'utf8'))

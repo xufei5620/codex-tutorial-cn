@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { attachCourseFigures } from '../../build/course.mjs'
-import { safeRecord, parseSnapshot } from '../theme/shot-schema.mjs'
+import { safeRecord, parseSnapshot } from '../../theme/shot-schema.mjs'
 const catalog = JSON.parse(fs.readFileSync(new URL('../content/yichen/catalog.json', import.meta.url)))
 const chapters = catalog.chapters.map((meta) =>
   JSON.parse(fs.readFileSync(new URL('../content/yichen/chapters/' + meta.id + '.json', import.meta.url)))
@@ -10,20 +10,20 @@ const chapters = catalog.chapters.map((meta) =>
 test('tools hub lists clients and keeps manager as the auto-config path', () => {
   // Code is compared without whitespace so formatting changes do not break these checks.
   const code = (file) => fs.readFileSync(new URL(file, import.meta.url), 'utf8').replace(/\s+/g, '')
-  const hub = code('../theme/StudioHub.vue')
-  const layout = fs.readFileSync(new URL('../theme/StudioLayout.vue', import.meta.url), 'utf8')
+  const hub = code('../../theme/StudioHub.vue')
+  const layout = fs.readFileSync(new URL('../../theme/StudioLayout.vue', import.meta.url), 'utf8')
   const prepare = fs.readFileSync(new URL('../../build/index.mjs', import.meta.url), 'utf8')
   assert.ok(hub.includes("kind==='tools'"))
   assert.ok(hub.includes('href="/tools"'))
   assert.ok(layout.includes('LearningSidebar'))
-  const sidebar = code('../theme/LearningSidebar.vue')
+  const sidebar = code('../../theme/LearningSidebar.vue')
   assert.ok(sidebar.includes("href:'/learn/codex/'"))
   assert.ok(sidebar.includes("href:'/learn/claude/'"))
   assert.ok(sidebar.includes("href:'/guide/manager'"))
   assert.ok(layout.includes('/guide/manager'))
   assert.ok(prepare.includes('StudioHub kind="tools"'))
   assert.ok(hub.includes('toolBase'))
-  const tools = code('../theme/tools-registry.mjs')
+  const tools = code('../../theme/tools-registry.mjs')
   assert.ok(tools.includes("id==='openclaw'"))
   assert.equal(hub.includes('两站'), false)
   const manager = fs.readFileSync(new URL('../../shared/pages/guide/manager.md', import.meta.url), 'utf8')
@@ -37,7 +37,7 @@ test('tools hub lists clients and keeps manager as the auto-config path', () => 
 test('reader copy does not mention a second site', () => {
   const banned = /两站|另一站|订阅站|按量站|另一套站点|同一套站点|哪一站|只填这一站/
   const files = [
-    new URL('../theme/StudioHub.vue', import.meta.url),
+    new URL('../../theme/StudioHub.vue', import.meta.url),
     new URL('../../shared/pages/guide/connection-basics.md', import.meta.url),
     new URL('../../shared/pages/guide/manager.md', import.meta.url),
     new URL('../../shared/pages/clients/codex.md', import.meta.url),
