@@ -8,6 +8,7 @@
   "local:new":"node studio/local-preview.mjs newapi 4184",
   "build:sub":"vitepress build sub2api","build:new":"vitepress build newapi",
   "build":"npm run build:sub && npm run build:new",
+  "test":"node --test tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs",
   "compare":"node tools/compare-dist.mjs",
   "test:studio":"node --test studio/tests/*.test.mjs",
   "test:downloads":"node --test downloads/*.test.mjs tools/tests/download-entry.test.mjs",
