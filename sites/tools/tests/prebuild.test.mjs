@@ -6,7 +6,7 @@ import os from 'node:os'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { render, markGenerated, https, qrSVG, build, validateDownloadConfiguration } from '../prebuild.mjs'
-import { rewriteCourseLinks, stageCourse } from '../course-bridge.mjs'
+import { rewriteCourseLinks, stagePrompts } from '../course-bridge.mjs'
 const hash=s=>crypto.createHash('sha256').update(s).digest('hex')
 function fixture(){
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'xm-docs-unit-')),sites=path.join(root,'sites')
@@ -14,8 +14,7 @@ function fixture(){
  const ids=Array.from({length:11},(_,i)=>`ch${String(i+1).padStart(2,'0')}`)
  const chapters=Object.fromEntries(ids.map((id,i)=>[id,{num:i+1,title:'Synthetic chapter '+(i+1),desc:'UNIT TEST FIXTURE',status:'draft'}]))
  put('src/chapters.json',JSON.stringify({site:{version:'fixture-only',date:'2026-09-08'},parts:[{chapters:ids}],chapters,extras:{prompts:{title:'Synthetic prompts',status:'draft'}}}))
- for(const id of [...ids,'prompts'])put(`src/content/${id}.html`,`<h1>${id} UNIT TEST FIXTURE</h1><a href="{{link:ch01#s1}}">chapter</a><section id="s1">Example</section>`)
- put('assets/example.svg','<svg xmlns="http://www.w3.org/2000/svg"/>')
+ put('src/content/prompts.html','<h1>prompts UNIT TEST FIXTURE</h1><a href="{{link:prompts#s1}}">card</a><section id="s1">Example</section>')
  put('sites/shared/pages/guide/choose-tool.md','---\ntitle: Shared\n---\n# %%SITE_NAME%%\n%%BASE_URL%% %%KEY_WORD%%')
  put('sites/shared/pages/guide/download.md','---\ntitle: Download\n---\n<script setup>\nimport { onMounted } from \'vue\'\nonMounted(()=>{location.replace(\'%%DOWNLOAD_URL%%\')})\n</script>\n')
  put('sites/shared/admin/config.yml','backend:\n  name: github\n  branch: main\n')
@@ -34,11 +33,13 @@ test('invalid frontmatter is rejected',()=>assert.throws(()=>markGenerated('---\
 test('HTTPS and credential validation',()=>{assert.equal(https('https://example.invalid/x','URL'),'https://example.invalid/x');assert.throws(()=>https('http://example.invalid','URL'));assert.throws(()=>https('https://user:pass@example.invalid','URL'))})
 test('course links and assets are rewritten',()=>assert.equal(rewriteCourseLinks('<a href="{{link:ch01#s1}}">x</a><img src="assets/a.svg">',['ch01']),'<a href="/learn/codex/ch01#s1">x</a><img src="/img/course/a.svg">'))
 test('unknown course links are rejected',()=>assert.throws(()=>rewriteCourseLinks('{{link:missing}}',['ch01'])))
-test('missing course source is a hard error',()=>{const x=fs.mkdtempSync(path.join(os.tmpdir(),'xm-empty-'));assert.throws(()=>stageCourse(x))})
-test('11 fixture chapters preserve source, status and hash',()=>{const f=fixture(),before=fs.readFileSync(path.join(f.root,'src/content/ch01.html'),'utf8'),out=stageCourse(f.root);assert.equal(out.sources.length,12);assert.equal(out.pages.length,13);assert.equal(out.sources[0].status,'draft');assert.equal(out.sources[0].sha256,hash(before));assert.equal(out.version,'fixture-only');assert.equal(fs.readFileSync(path.join(f.root,'src/content/ch01.html'),'utf8'),before)})
+test('prompt library may not link to unpublished chapters or images',()=>{const f=fixture();f.put('src/content/prompts.html','<a href="{{link:ch01}}">x</a>');assert.throws(()=>stagePrompts(f.root));f.put('src/content/prompts.html','<img src="assets/a.svg">');assert.throws(()=>stagePrompts(f.root))})
+test('missing course source is a hard error',()=>{const x=fs.mkdtempSync(path.join(os.tmpdir(),'xm-empty-'));assert.throws(()=>stagePrompts(x))})
+test('only the prompt library is imported, without changing its source',()=>{const f=fixture(),before=fs.readFileSync(path.join(f.root,'src/content/prompts.html'),'utf8'),out=stagePrompts(f.root);assert.deepEqual(out.pages.map(p=>p[0]),['learn/codex/prompts.md']);assert.deepEqual(out.sidebar,[{text:'Synthetic prompts',link:'/learn/codex/prompts'}]);assert.match(out.pages[0][1],/prompts UNIT TEST FIXTURE/);assert.match(out.pages[0][1],/href="\/learn\/codex\/prompts#s1"/);assert.equal(fs.readFileSync(path.join(f.root,'src/content/prompts.html'),'utf8'),before)})
 test('same-site template and native headers build',()=>{
  const f=fixture(),out=build('sub2api',f.sites)
- assert.ok(out.includes('learn/codex/ch11.md'))
+ assert.ok(out.includes('learn/codex/prompts.md'))
+ assert.ok(!out.some(name=>/^learn\/codex\/ch\d+\.md$/.test(name)))
  assert.match(fs.readFileSync(path.join(f.sites,'sub2api/guide/choose-tool.md'),'utf8'),/https:\/\/api.solov.cc API 密钥/)
  assert.match(fs.readFileSync(path.join(f.sites,'sub2api/guide/download.md'),'utf8'),/location\.replace\('\/guide\/manager#download-installers'\)/)
  const paths=['/cos-download-index/xingmang.json','/cos-download-index/chatgpt.json','/cos-download-index/claude.json']

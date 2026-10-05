@@ -35,8 +35,8 @@ jobs:
       - name: Stage actual original courses and check article targets
         working-directory: sites
         run: |
-          node tools/prebuild.mjs sub2api
-          node tools/prebuild.mjs newapi
+          node studio/prepare.mjs sub2api
+          node studio/prepare.mjs newapi
           node tools/check-routes.mjs
       - name: Build both documentation sites
         working-directory: sites

@@ -3,7 +3,7 @@ name: sites
 on:
   push:
     branches: [main]
-    paths: ['sites/**', 'src/content/**', 'src/chapters.json', '.github/workflows/sites.yml']
+    paths: ['sites/**', 'src/content/prompts.html', 'src/chapters.json', '.github/workflows/sites.yml']
   workflow_dispatch:
   schedule:
     - cron: '31 */6 * * *'
@@ -35,8 +35,8 @@ jobs:
       - name: Unit and route checks
         run: |
           node --test tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs
-          node tools/prebuild.mjs sub2api
-          node tools/prebuild.mjs newapi
+          node studio/prepare.mjs sub2api
+          node studio/prepare.mjs newapi
           node tools/check-routes.mjs
       - uses: actions/cache/restore@v4
         with:

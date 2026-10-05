@@ -11,32 +11,9 @@ export function searchableMarkdown(value){
  return String(value??'').replace(/<script\b[^>]*>[\s\S]*?(?:<\/script\s*>|$)/gi,'')
   .replace(/<style\b[^>]*>[\s\S]*?(?:<\/style\s*>|$)/gi,'').replace(/<\/script/gi,'&lt;/script')
 }
-const CAPTURE_POLICY={
- ch01:['none','none','none','required','optional'],
- ch02:['none','required','none','none','optional','required','none','none','required','none'],
- ch03:['none','optional','optional','required'],
- ch04:['none','required','required','required','optional'],
- ch05:['required','optional','required','optional','optional','none'],
- ch06:['none','required','required','none'],
- ch07:['none','optional','required','none'],
- ch08:['optional','required','none','required'],
- ch09:['required','required','required','optional'],
- ch10:['optional','required','required','optional'],
- ch11:['none','required','none','optional']
-}
-export function capturePolicy(section,body,chapterId,index){
- if(['required','optional','none'].includes(section.capturePolicy))return section.capturePolicy
- return CAPTURE_POLICY[chapterId]?.[index] || (section.unitId||/<ol\b/i.test(body)?'optional':section.visual?'optional':'none')
-}
 const json=file=>JSON.parse(fs.readFileSync(file,'utf8'))
 const readContent=file=>json(path.join(HERE,'content',file))
 function safeProse(html){if(/<\s*(script|iframe|object|embed)\b|\son\w+\s*=|(?:href|src)\s*=\s*['"]\s*javascript:/i.test(html))throw Error('Unexpected executable markup in course source');return html}
-export function integrate(unit){const p=s=>String(s).split(/\n\n+/).map(t=>'<p>'+esc(t)+'</p>').join('');const block=(title,text)=>'<h3>'+title+'</h3><pre>'+esc(text)+'</pre>';return '<aside class="edu-note">'+esc(unit.scope)+'</aside>'+p(unit.officialCore)+'<h3>跟着做</h3><ol>'+unit.steps.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol>'+block('练习材料 · 虚构示例',unit.material)+block('可以直接试的请求',unit.prompt)+'<details class="practice-reference"><summary>展开参考与检查标准</summary>'+p(unit.reference)+'<ul>'+unit.checks.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></details>'}
-export function addShots(html,prefix,context,manifest){let stack=[],offsets=[],item=null;const tags=/<\/?([a-zA-Z][\w:-]*)\b[^>]*>/g;let match;while((match=tags.exec(html))){const name=match[1].toLowerCase(),closing=match[0][1]==='/';if(!closing){if(name==='li'&&stack.includes('ol')&&!stack.includes('li'))item={start:tags.lastIndex,depth:stack.length};if(!/^(br|hr|img|input|meta|link|source|area|wbr|col)$/.test(name)&&!match[0].endsWith('/>'))stack.push(name)}else{const n=stack.lastIndexOf(name);if(name==='li'&&item&&n===item.depth){offsets.push({at:match.index,title:plain(html.slice(item.start,match.index)).slice(0,180)});item=null}if(n>=0)stack.length=n}}
- function slot(id,title,optional){const spec={id,route:context.route,group:context.group,section:context.section,title:title.slice(0,90),target:'请拍摄这一步的真实操作或结果：'+title.slice(0,180),highlight:'保留相关控件、文件名和结果；上传前遮盖账号、密钥、验证码与个人资料。',optional,capturePolicy:context.capturePolicy||'optional',siteOnly:!!context.siteOnly,label:context.section,product:'按实际产品填写'};manifest.push(spec);return '<div class="ss-shot-host" data-shot-id="'+id+'"><div class="shot-skeleton">▧ 此步骤待补充真实截图 · '+esc(spec.title)+'</div></div>'}
- if(!offsets.length)return html+slot(prefix+'-overview',context.section,true)
- let out=html;for(let i=offsets.length-1;i>=0;i--){const id=prefix+'-step'+String(i+1).padStart(2,'0');out=out.slice(0,offsets[i].at)+slot(id,offsets[i].title,false)+out.slice(offsets[i].at)}return out
-}
 function routeRewrites(html){return html.replace(/href="#\/skills"/g,'href="/skills"').replace(/href="#\/atlas\/[^"\s]+"/g,'href="/learn/codex/ch07#s2"').replace(/href="#\/chapter\/(ch\d+)\?s=(\d+)"/g,(_,c,s)=>'href="/learn/codex/'+c+'#s'+(Number(s)+1)+'"')}
 const markdownPlain=value=>plain(String(value??'').replace(/!\[[^\]]*\]\([^)]*\)/g,' ').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/(\*\*|__|`)/g,''))
 export function addDocumentShots(text,{rel,route,title},manifest){
@@ -125,7 +102,7 @@ function loadYichenCourse(){
  })
  return {catalog,chapters}
 }
-export function prepare(id){build(id);const dir=path.join(ROOT,id),site=json(path.join(dir,'site.json')),publicSite=json(path.join(dir,'site.generated.json'));const units=[...readContent('units-1.json'),...readContent('units-2.json'),...readContent('units-3.json')],sources=readContent('sources.json'),manifest=[];sources.yichen={title:'逸尘 Codex 图文教程（社区原文，已去引流内容）',url:'https://github.com/xianyu110/awesome-codex-tutorial/tree/master/tutorials/yichen-codex-articles',kind:'社区教程整理',checked:'2026-09-12'};const {catalog,chapters}=loadYichenCourse();
+export function prepare(id){build(id);const dir=path.join(ROOT,id),site=json(path.join(dir,'site.json')),publicSite=json(path.join(dir,'site.generated.json'));const sources=readContent('sources.json'),manifest=[];sources.yichen={title:'逸尘 Codex 图文教程（社区原文，已去引流内容）',url:'https://github.com/xianyu110/awesome-codex-tutorial/tree/master/tutorials/yichen-codex-articles',kind:'社区教程整理',checked:'2026-09-12'};const {catalog,chapters}=loadYichenCourse();
  for(const ch of chapters)attachCourseFigures(ch,manifest)
  const write=(name,content)=>{const f=path.join(dir,name);fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,content)};
  const courseDir=path.join(dir,'learn/codex')
@@ -144,18 +121,12 @@ export function prepare(id){build(id);const dir=path.join(ROOT,id),site=json(pat
  write('skills.md',markGenerated('---\ntitle: Skill 动手工坊\noutline: false\n---\n<SkillWorkshop />\n'));
  write('tools.md',markGenerated('---\ntitle: 工具接入\noutline: false\n---\n<StudioHub kind="tools" />\n'));
  write('screenshots.md',markGenerated('---\ntitle: 截图管理\noutline: false\nsearch: false\n---\n<ScreenshotCatalog />\n'));
- const industryDir=path.join(dir,'industry')
- if(fs.existsSync(industryDir)){
-  for(const name of fs.readdirSync(industryDir)){
-   if(name.endsWith('.md'))fs.unlinkSync(path.join(industryDir,name))
-  }
- }
  for(const [id,title]of [['skills-editor','保存 SKILL.md'],['skills-install','确认技能目录与发现'],['skills-test','按技能检查一次结果']])manifest.push({id,route:'/skills',group:'Skill 动手工坊',section:title,title,target:'按当前产品记录'+title+'的实际界面',optional:true,capturePolicy:'optional',siteOnly:false});
  // Supplement all legacy operation pages, without changing their Markdown or business answers.
  const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.name.startsWith('.')||['public','overrides'].includes(e.name)?[]:e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)]);
- const docs=[];for(const f of walk(dir).filter(f=>f.endsWith('.md'))){const rel=path.relative(dir,f).replaceAll('\\','/'),route='/'+rel.replace(/index\.md$/,'').replace(/\.md$/,'');if(rel.startsWith('learn/codex/')||rel.startsWith('industry/')||['skills.md','screenshots.md','tools.md'].includes(rel))continue;const text=fs.readFileSync(f,'utf8'),title=text.match(/^#\s+(.+)$/m)?.[1]||rel,markdown=searchableMarkdown(text);docs.push({route,title,text:plain(markdown).slice(0,22000),markdown});if(['errors.md','faq.md','contact.md'].includes(rel))continue;addDocumentShots(text,{rel,route,title},manifest)}
+ const docs=[];for(const f of walk(dir).filter(f=>f.endsWith('.md'))){const rel=path.relative(dir,f).replaceAll('\\','/'),route='/'+rel.replace(/index\.md$/,'').replace(/\.md$/,'');if(rel.startsWith('learn/codex/')||['skills.md','screenshots.md','tools.md'].includes(rel))continue;const text=fs.readFileSync(f,'utf8'),title=text.match(/^#\s+(.+)$/m)?.[1]||rel,markdown=searchableMarkdown(text);docs.push({route,title,text:plain(markdown).slice(0,22000),markdown});if(['errors.md','faq.md','contact.md'].includes(rel))continue;addDocumentShots(text,{rel,route,title},manifest)}
  const images=path.join(HERE,'screenshots',id+'.json');const shots=fs.existsSync(images)?json(images):{schema:'xingmang-screenshots/1',version:'5.6',siteId:id,records:{}};if(shots.siteId!==id)throw Error('Screenshot site mismatch');
- const data={version:'5.6',site:{...publicSite,console_url:site.console_url,keys_url:site.keys_url,models_url:site.models_url},catalog,chapters,industries:[],sources,manifest,docs,shots,scope:{adaptedUnits:units.length,totalChapters:chapters.length,totalSections:chapters.reduce((n,c)=>n+c.sections.length,0),totalFigures:chapters.reduce((n,c)=>n+(c.imageCount||0),0),note:'课程目录与配图按逸尘图文教程组织；购买、套餐、中转和线下引流正文未收录。'}};
+ const data={version:'5.6',site:{...publicSite,console_url:site.console_url,keys_url:site.keys_url,models_url:site.models_url},catalog,chapters,sources,manifest,docs,shots,scope:{totalChapters:chapters.length,totalSections:chapters.reduce((n,c)=>n+c.sections.length,0),totalFigures:chapters.reduce((n,c)=>n+(c.imageCount||0),0),note:'课程目录与配图按逸尘图文教程组织；购买、套餐、中转和线下引流正文未收录。'}};
  if(new Set(manifest.map(s=>s.id)).size!==manifest.length)throw Error('Duplicate screenshot ID');
  write('studio.generated.json',JSON.stringify(data));write('public/studio/screenshot-map.json',JSON.stringify(manifest));console.log('STUDIO '+id+': '+chapters.length+' chapters / '+data.scope.totalSections+' sections / '+data.scope.totalFigures+' figures / '+manifest.length+' screenshot slots');return data
 }
