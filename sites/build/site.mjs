@@ -13,7 +13,8 @@ export const SITES = ['sub2api', 'newapi']
 const FOREIGN = { sub2api: { host: 'xm.solov.cc', docs: 'docs-new.solov.cc' }, newapi: { host: 'api.solov.cc', docs: 'docs-sub.solov.cc' } }
 
 export function validateDownloadConfiguration(site) {
-  if (site.download_page_url !== '/guide/manager#download-installers') throw Error('Download page must use the same-site installer selector')
+  if (site.download_page_url !== '/guide/manager#download-installers')
+    throw Error('Download page must use the same-site installer selector')
   const indexes = site.download_indexes
   if (
     !indexes ||
@@ -52,7 +53,8 @@ export function loadSite(id, siteDirectory) {
   for (const key of ['site_url', 'base_url', 'codex_base_url', 'openclaw_base_url', 'keys_url', 'models_url', 'console_url'])
     if (site[key] && new URL(site[key]).hostname === FOREIGN[id].host) throw Error('Cross-site URL: ' + key)
   if (site.domain === FOREIGN[id].docs) throw Error('Cross-site docs hostname')
-  for (const key of ['name', 'title', 'description']) if (typeof site[key] !== 'string' || !site[key].trim()) throw Error('site.json 缺少 ' + key)
+  for (const key of ['name', 'title', 'description'])
+    if (typeof site[key] !== 'string' || !site[key].trim()) throw Error('site.json 缺少 ' + key)
   validateContact(site.contact, siteDirectory)
   validateDownloadConfiguration(site)
   for (const item of Object.values(site.downloads || {})) {

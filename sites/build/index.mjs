@@ -25,12 +25,27 @@ export const OUTPUT = '.src'
 // Files that older builds wrote next to the hand-written sources. Removed so they cannot be
 // mistaken for sources; none of them was ever committed.
 const LEGACY_OUTPUTS = [
-  'clients', 'learn', 'industry',
-  ...['download', 'choose-tool', 'connection-basics', 'manager', 'verify', 'troubleshooting', 'recovery', 'account'].map((n) => `guide/${n}.md`),
-  'contact.md', 'screenshots.md', 'skills.md', 'tools.md',
-  'nav.generated.json', 'site.generated.json', 'course-provenance.generated.json', 'studio.generated.json',
-  'public/admin', 'public/img/shared', 'public/img/course', 'public/img/contact/wecom-auto.svg',
-  'public/_headers', 'public/_routes.json', 'public/studio'
+  'clients',
+  'learn',
+  'industry',
+  ...['download', 'choose-tool', 'connection-basics', 'manager', 'verify', 'troubleshooting', 'recovery', 'account'].map(
+    (n) => `guide/${n}.md`
+  ),
+  'contact.md',
+  'screenshots.md',
+  'skills.md',
+  'tools.md',
+  'nav.generated.json',
+  'site.generated.json',
+  'course-provenance.generated.json',
+  'studio.generated.json',
+  'public/admin',
+  'public/img/shared',
+  'public/img/course',
+  'public/img/contact/wecom-auto.svg',
+  'public/_headers',
+  'public/_routes.json',
+  'public/studio'
 ]
 
 // Never copied from <site>/public: the build writes these itself.
@@ -73,14 +88,16 @@ export function generate(id, root = ROOT) {
     if (pages.has(name)) throw Error(`${source} 与已有页面重名：${name}`)
     pages.set(name, body)
   }
-  const pageRoot = path.join(shared, 'pages'), overrideRoot = path.join(siteDirectory, 'overrides')
+  const pageRoot = path.join(shared, 'pages'),
+    overrideRoot = path.join(siteDirectory, 'overrides')
   for (const name of [...new Set([...listFiles(pageRoot), ...listFiles(overrideRoot)])].filter((n) => n.endsWith('.md'))) {
     const custom = path.join(overrideRoot, name)
     const source = fs.existsSync(custom) ? custom : path.join(pageRoot, name)
     add(name, markGenerated(render(fs.readFileSync(source, 'utf8'), vars)), 'shared/pages')
   }
   const sitePages = path.join(siteDirectory, 'pages')
-  for (const name of listFiles(sitePages).filter((n) => n.endsWith('.md'))) add(name, fs.readFileSync(path.join(sitePages, name), 'utf8'), id + '/pages')
+  for (const name of listFiles(sitePages).filter((n) => n.endsWith('.md')))
+    add(name, fs.readFileSync(path.join(sitePages, name), 'utf8'), id + '/pages')
 
   const prompts = stagePrompts(path.dirname(root))
   for (const [name, body] of prompts.pages) add(name, markGenerated(body), 'src/content')
@@ -104,13 +121,30 @@ export function generate(id, root = ROOT) {
 
   // Screenshot slots: course figures, the skill workshop, then every step-by-step page.
   for (const [slot, title] of SKILL_SLOTS)
-    manifest.push({ id: slot, route: '/skills', group: 'Skill 动手工坊', section: title, title, target: '按当前产品记录' + title + '的实际界面', optional: true, capturePolicy: 'optional', siteOnly: false })
-  const ordered = listFiles(out).map((n) => n.replaceAll('\\', '/')).filter((n) => n.endsWith('.md') && !n.startsWith('public/'))
-  const docs = collectDocs(ordered.map((n) => [n, pages.get(n)]), manifest)
+    manifest.push({
+      id: slot,
+      route: '/skills',
+      group: 'Skill 动手工坊',
+      section: title,
+      title,
+      target: '按当前产品记录' + title + '的实际界面',
+      optional: true,
+      capturePolicy: 'optional',
+      siteOnly: false
+    })
+  const ordered = listFiles(out)
+    .map((n) => n.replaceAll('\\', '/'))
+    .filter((n) => n.endsWith('.md') && !n.startsWith('public/'))
+  const docs = collectDocs(
+    ordered.map((n) => [n, pages.get(n)]),
+    manifest
+  )
   if (new Set(manifest.map((s) => s.id)).size !== manifest.length) throw Error('Duplicate screenshot ID')
 
   const shotsFile = path.join(root, 'studio/screenshots', id + '.json')
-  const shots = fs.existsSync(shotsFile) ? readJson(shotsFile) : { schema: 'xingmang-screenshots/1', version: '5.6', siteId: id, records: {} }
+  const shots = fs.existsSync(shotsFile)
+    ? readJson(shotsFile)
+    : { schema: 'xingmang-screenshots/1', version: '5.6', siteId: id, records: {} }
   if (shots.siteId !== id) throw Error('Screenshot site mismatch')
 
   const studio = {
@@ -152,7 +186,9 @@ export function generate(id, root = ROOT) {
   write('public/_routes.json', pagesRoutes())
   write('public/studio/screenshot-map.json', JSON.stringify(manifest))
 
-  console.log(`${id}: ${pages.size} pages / ${chapters.length} chapters / ${studio.scope.totalFigures} figures / ${manifest.length} screenshot slots`)
+  console.log(
+    `${id}: ${pages.size} pages / ${chapters.length} chapters / ${studio.scope.totalFigures} figures / ${manifest.length} screenshot slots`
+  )
   return studio
 }
 

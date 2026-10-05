@@ -1,0 +1,16 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 140,
+  "trailingComma": "none",
+  "vueIndentScriptAndStyle": false,
+  "overrides": [
+    {
+      "files": "*.vue",
+      "options": {
+        "semi": true
+      }
+    }
+  ],
+  "htmlWhitespaceSensitivity": "strict"
+}

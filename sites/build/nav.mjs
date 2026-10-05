@@ -9,7 +9,10 @@ const PRACTICE = [
 /** Page title from frontmatter, else the first level-one heading. */
 export function pageTitle(text) {
   const fm = text.match(/^---\n([\s\S]*?)\n---/)
-  const title = fm?.[1].match(/^title:\s*(.+)$/m)?.[1].trim().replace(/^(['"])(.*)\1$/, '$2')
+  const title = fm?.[1]
+    .match(/^title:\s*(.+)$/m)?.[1]
+    .trim()
+    .replace(/^(['"])(.*)\1$/, '$2')
   return title || text.match(/^#\s+(.+)$/m)?.[1].trim()
 }
 

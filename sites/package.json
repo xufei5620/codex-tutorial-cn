@@ -1,18 +1,31 @@
 {
- "name":"xingmang-docs-sites","private":true,"type":"module",
- "scripts":{
-  "prebuild:sub":"node build/index.mjs sub2api","prebuild:new":"node build/index.mjs newapi",
-  "predev:sub":"node build/index.mjs sub2api","predev:new":"node build/index.mjs newapi",
-  "dev:sub":"vitepress dev sub2api","dev:new":"vitepress dev newapi",
-  "local:sub":"node studio/local-preview.mjs sub2api 4183",
-  "local:new":"node studio/local-preview.mjs newapi 4184",
-  "build:sub":"vitepress build sub2api","build:new":"vitepress build newapi",
-  "build":"npm run build:sub && npm run build:new",
-  "test":"node --test build/tests/*.test.mjs tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs",
-  "compare":"node tools/compare-dist.mjs",
-  "test:studio":"node --test studio/tests/*.test.mjs",
-  "test:downloads":"node --test downloads/*.test.mjs tools/tests/download-entry.test.mjs",
-  "deploy:sub":"wrangler pages deploy sub2api/.vitepress/dist --project-name docs-sub --branch main --commit-dirty=true",
-  "deploy:new":"wrangler pages deploy newapi/.vitepress/dist --project-name docs-new --branch main --commit-dirty=true"
- },"devDependencies":{"vitepress":"^1.6.4","wrangler":"^4.129.0"}
+ "name": "xingmang-docs-sites",
+ "private": true,
+ "type": "module",
+ "scripts": {
+  "prebuild:sub": "node build/index.mjs sub2api",
+  "prebuild:new": "node build/index.mjs newapi",
+  "predev:sub": "node build/index.mjs sub2api",
+  "predev:new": "node build/index.mjs newapi",
+  "dev:sub": "vitepress dev sub2api",
+  "dev:new": "vitepress dev newapi",
+  "local:sub": "node studio/local-preview.mjs sub2api 4183",
+  "local:new": "node studio/local-preview.mjs newapi 4184",
+  "build:sub": "vitepress build sub2api",
+  "build:new": "vitepress build newapi",
+  "build": "npm run build:sub && npm run build:new",
+  "test": "node --test build/tests/*.test.mjs tools/tests/*.test.mjs studio/tests/*.test.mjs downloads/*.test.mjs",
+  "compare": "node tools/compare-dist.mjs",
+  "format": "prettier --write .",
+  "format:check": "prettier --check .",
+  "test:studio": "node --test studio/tests/*.test.mjs",
+  "test:downloads": "node --test downloads/*.test.mjs tools/tests/download-entry.test.mjs",
+  "deploy:sub": "wrangler pages deploy sub2api/.vitepress/dist --project-name docs-sub --branch main --commit-dirty=true",
+  "deploy:new": "wrangler pages deploy newapi/.vitepress/dist --project-name docs-new --branch main --commit-dirty=true"
+ },
+ "devDependencies": {
+  "prettier": "3.9.9",
+  "vitepress": "^1.6.4",
+  "wrangler": "^4.129.0"
+ }
 }

@@ -1,0 +1,11 @@
+node_modules/
+*/.src/
+*/.vitepress/dist/
+*/.vitepress/cache/
+build/vendor/
+studio/content/
+studio/screenshots/
+**/*.md
+**/*.json
+**/*.yml
+**/*.html

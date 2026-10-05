@@ -32,6 +32,8 @@ jobs:
         run: npm ci
       - name: Unit tests
         run: npm test
+      - name: Check formatting
+        run: npm run format:check
       - name: Generate both sites and check article targets
         run: |
           node build/index.mjs sub2api newapi
