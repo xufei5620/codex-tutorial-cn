@@ -44,6 +44,28 @@ jobs:
       - name: Check each site keeps its own customer-service contact
         working-directory: sites
         run: node tools/check-contacts.mjs
+      # Readers should only see a change when the PR means to make one. Build the base branch
+      # the same way and list every page or public file whose content differs.
+      - name: Check out base branch for comparison
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+          persist-credentials: false
+      - name: Build base branch
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        working-directory: base/sites
+        run: npm ci && npm run build
+      - name: Compare build output with base branch
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        working-directory: sites
+        run: |
+          echo '## 与目标分支的构建产物对比' >> "$GITHUB_STEP_SUMMARY"
+          node tools/compare-dist.mjs ../base/sites/sub2api/.vitepress/dist sub2api/.vitepress/dist --label 'docs-sub.solov.cc'
+          node tools/compare-dist.mjs ../base/sites/newapi/.vitepress/dist newapi/.vitepress/dist --label 'docs-new.solov.cc'
       - name: Compile download index Functions without deploying
         working-directory: sites
         env:
