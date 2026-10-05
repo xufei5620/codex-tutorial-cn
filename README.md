@@ -57,4 +57,4 @@
 
 - 网页后台：`https://docs-sub.solov.cc/admin/`（Sveltia CMS，用 GitHub 账号登录，保存即提交、自动发布）。
 - 本地：`cd sites && npm ci && npm run dev:sub`（或 `dev:new`）。共用页面在 `sites/shared/pages/`，里面的 `%%BASE_URL%%`、`%%MODELS_URL%%`、`%%KEYS_URL%%`、`%%KEY_WORD%%` 等占位符会在构建时按各站 `site.json` 替换；某站需要不同版本时，把同路径文件放到该站 `overrides/` 下即可覆盖。
-- 截图：共用页面里每个编号步骤会自动生成截图位。`npm run build` 后运行 `npm run local:sub`（或 `local:new`），在本机打开页面加 `?edit=1` 上传真实截图，详见 `sites/studio/README-v5.6.md`。
+- 截图：共用页面里每个编号步骤会自动生成截图位。`npm run build` 后运行 `npm run local:sub`（或 `local:new`），在本机打开页面加 `?edit=1` 上传真实截图，详见 `sites/README.md`。
