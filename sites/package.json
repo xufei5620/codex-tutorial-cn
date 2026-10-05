@@ -8,6 +8,7 @@
   "local:new":"node studio/local-preview.mjs newapi 4184",
   "build:sub":"vitepress build sub2api","build:new":"vitepress build newapi",
   "build":"npm run build:sub && npm run build:new",
+  "compare":"node tools/compare-dist.mjs",
   "test:studio":"node --test studio/tests/*.test.mjs",
   "test:downloads":"node --test downloads/*.test.mjs tools/tests/download-entry.test.mjs",
   "deploy:sub":"wrangler pages deploy sub2api/.vitepress/dist --project-name docs-sub --branch main --commit-dirty=true",
