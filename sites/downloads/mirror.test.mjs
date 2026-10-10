@@ -5,6 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { prepareMirror, writeMirror, readMirrorState, saveMirrorState } from './mirror.mjs'
 import { COS_ROOT, INDEX_ROUTES, validateManagerIndex, validateChatgptIndex, validateClaudeIndex, projectPublicIndex } from './catalog.mjs'
+import { SERVICE_STATUS_URL } from './withdrawal.mjs'
 
 function fixture() {
   const version = '0.2.13',
@@ -34,6 +35,14 @@ function fixture() {
 }
 function json(value) {
   return new Response(JSON.stringify(value), { headers: { 'Content-Type': 'application/json' } })
+}
+// These cases are about the COS indexes; withdrawal.test.mjs covers the
+// withdrawal list, which every run also reads.
+function prepare(options) {
+  return prepareMirror({
+    ...options,
+    fetchImpl: async (url, init) => (url === SERVICE_STATUS_URL ? json({ badVersions: ['0.2.10'] }) : options.fetchImpl(url, init))
+  })
 }
 function chatgptFixture(version = '26.930.2377.0') {
   function artifact(fileName, bytes, verification, contentType) {
@@ -69,7 +78,7 @@ function twoWindowsFixture(version = '26.930.2377.0') {
 }
 test('mirror reads only three fixed anonymous COS indexes and strips source internals', async () => {
   const urls = []
-  const entries = await prepareMirror({
+  const entries = await prepare({
     fetchImpl: async (url, options) => {
       urls.push(url)
       assert.equal(options.method, 'GET')
@@ -93,7 +102,7 @@ test('mirror reads only three fixed anonymous COS indexes and strips source inte
   )
 })
 test('missing products become empty valid indexes without guessed URLs', async () => {
-  const entries = await prepareMirror({ fetchImpl: async () => new Response(null, { status: 404 }) })
+  const entries = await prepare({ fetchImpl: async () => new Response(null, { status: 404 }) })
   assert.equal(
     entries.every((entry) => entry.pending && !entry.json.includes('https:')),
     true
@@ -104,7 +113,7 @@ test('missing products become empty valid indexes without guessed URLs', async (
   )
 })
 test('a verified baseline restores only ChatGPT packages when its upstream index is missing', async () => {
-  const entries = await prepareMirror({ chatgptBaseline: chatgptFixture(), fetchImpl: async () => new Response(null, { status: 404 }) })
+  const entries = await prepare({ chatgptBaseline: chatgptFixture(), fetchImpl: async () => new Response(null, { status: 404 }) })
   assert.deepEqual(
     entries.map((entry) => entry.pending),
     [true, false, true]
@@ -124,7 +133,7 @@ test('a verified baseline restores only ChatGPT packages when its upstream index
 })
 test('any valid upstream ChatGPT index takes precedence over the verified baseline', async () => {
   for (const upstream of [chatgptFixture('26.930.3930.0'), { schemaVersion: 1, product: 'chatgpt', platforms: {} }]) {
-    const entries = await prepareMirror({
+    const entries = await prepare({
       chatgptBaseline: chatgptFixture(),
       fetchImpl: async (url) => (url.endsWith('/chatgpt/latest.json') ? json(upstream) : new Response(null, { status: 404 }))
     })
@@ -139,7 +148,7 @@ test('an already published baseline stays intact while the first nonempty source
     upstream = chatgptFixture('26.930.3930.0')
   const original = structuredClone(upstream)
   const fetchImpl = async (url) => (url.endsWith('/chatgpt/latest.json') ? json(upstream) : new Response(null, { status: 404 }))
-  const entries = await prepareMirror({ chatgptBaseline: baseline, previousIndexes: { chatgpt: baseline }, fetchImpl })
+  const entries = await prepare({ chatgptBaseline: baseline, previousIndexes: { chatgpt: baseline }, fetchImpl })
   assert.equal(entries[1].verifiedBaseline, true)
   assert.equal(entries[1].pending, false)
   assert.deepEqual(validateChatgptIndex(JSON.parse(entries[1].json)), validateChatgptIndex(baseline))
@@ -158,7 +167,7 @@ test('an already published baseline stays intact while the first nonempty source
       verification: 'official-https-sha256'
     }
   }
-  const sameCount = await prepareMirror({ chatgptBaseline: baseline, previousIndexes: { chatgpt: baseline }, fetchImpl })
+  const sameCount = await prepare({ chatgptBaseline: baseline, previousIndexes: { chatgpt: baseline }, fetchImpl })
   assert.equal(Object.keys(upstream.platforms).length, Object.keys(baseline.platforms).length)
   assert.equal(sameCount[1].verifiedBaseline, true)
   assert.deepEqual(validateChatgptIndex(JSON.parse(sameCount[1].json)), validateChatgptIndex(baseline))
@@ -166,7 +175,7 @@ test('an already published baseline stays intact while the first nonempty source
 test('the first source covering all baseline platforms replaces the whole baseline', async () => {
   const baseline = twoWindowsFixture(),
     upstream = twoWindowsFixture('26.930.3930.0')
-  const entries = await prepareMirror({
+  const entries = await prepare({
     chatgptBaseline: baseline,
     previousIndexes: { chatgpt: baseline },
     fetchImpl: async (url) => (url.endsWith('/chatgpt/latest.json') ? json(upstream) : new Response(null, { status: 404 }))
@@ -182,7 +191,7 @@ test('the first source covering all baseline platforms replaces the whole baseli
 test('an explicitly empty valid source clears an already published baseline', async () => {
   const baseline = twoWindowsFixture(),
     upstream = { schemaVersion: 1, product: 'chatgpt', platforms: {} }
-  const entries = await prepareMirror({
+  const entries = await prepare({
     chatgptBaseline: baseline,
     previousIndexes: { chatgpt: baseline },
     fetchImpl: async (url) => (url.endsWith('/chatgpt/latest.json') ? json(upstream) : new Response(null, { status: 404 }))
@@ -196,7 +205,7 @@ test('partial sources remain authoritative without baseline history or after swi
     upstream = chatgptFixture('26.930.3930.0')
   const switched = twoWindowsFixture('26.930.3930.0')
   for (const previousIndexes of [{}, { chatgpt: { schemaVersion: 1, product: 'chatgpt', platforms: {} } }, { chatgpt: switched }]) {
-    const entries = await prepareMirror({
+    const entries = await prepare({
       chatgptBaseline: baseline,
       previousIndexes,
       fetchImpl: async (url) => (url.endsWith('/chatgpt/latest.json') ? json(upstream) : new Response(null, { status: 404 }))
@@ -205,7 +214,7 @@ test('partial sources remain authoritative without baseline history or after swi
     assert.deepEqual(validateChatgptIndex(JSON.parse(entries[1].json)), validateChatgptIndex(upstream))
   }
   await assert.rejects(
-    prepareMirror({
+    prepare({
       chatgptBaseline: baseline,
       previousIndexes: { chatgpt: switched },
       fetchImpl: async () => new Response(null, { status: 404 })
@@ -216,14 +225,14 @@ test('partial sources remain authoritative without baseline history or after swi
 test('the baseline never masks transport, HTTP or schema failures', async () => {
   for (const response of [new Response(null, { status: 403 }), new Response(null, { status: 500 }), json({ schemaVersion: 2 })]) {
     await assert.rejects(
-      prepareMirror({
+      prepare({
         chatgptBaseline: chatgptFixture(),
         fetchImpl: async (url) => (url.endsWith('/chatgpt/latest.json') ? response.clone() : new Response(null, { status: 404 }))
       })
     )
   }
   await assert.rejects(
-    prepareMirror({
+    prepare({
       chatgptBaseline: chatgptFixture(),
       fetchImpl: async () => {
         throw Error('transport-failed')
@@ -235,21 +244,21 @@ test('the baseline can be redeployed but cannot replace a different previously p
   const baseline = chatgptFixture(),
     fetchImpl = async () => new Response(null, { status: 404 })
   for (const previous of [baseline, { schemaVersion: 1, product: 'chatgpt', platforms: {} }]) {
-    const entries = await prepareMirror({ chatgptBaseline: baseline, previousIndexes: { chatgpt: previous }, fetchImpl })
+    const entries = await prepare({ chatgptBaseline: baseline, previousIndexes: { chatgpt: previous }, fetchImpl })
     assert.equal(entries[1].verifiedBaseline, true)
   }
   const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'xm-baseline-cache-'))
-  const entries = await prepareMirror({ chatgptBaseline: baseline, fetchImpl })
+  const entries = await prepare({ chatgptBaseline: baseline, fetchImpl })
   await saveMirrorState(entries, { cacheDir })
   const previousIndexes = await readMirrorState({ cacheDir })
-  assert.equal((await prepareMirror({ chatgptBaseline: baseline, previousIndexes, fetchImpl }))[1].verifiedBaseline, true)
+  assert.equal((await prepare({ chatgptBaseline: baseline, previousIndexes, fetchImpl }))[1].verifiedBaseline, true)
   await assert.rejects(
-    prepareMirror({ chatgptBaseline: baseline, previousIndexes: { chatgpt: chatgptFixture('26.930.3930.0') }, fetchImpl }),
+    prepare({ chatgptBaseline: baseline, previousIndexes: { chatgpt: chatgptFixture('26.930.3930.0') }, fetchImpl }),
     /保留现有镜像/
   )
   const changed = structuredClone(baseline)
   changed.platforms['windows-x64'].artifact.sha256 = 'c'.repeat(64)
-  await assert.rejects(prepareMirror({ chatgptBaseline: baseline, previousIndexes: { chatgpt: changed }, fetchImpl }), /保留现有镜像/)
+  await assert.rejects(prepare({ chatgptBaseline: baseline, previousIndexes: { chatgpt: changed }, fetchImpl }), /保留现有镜像/)
 })
 test('a malformed or empty baseline fails validation before fetching', async () => {
   const missingLicense = chatgptFixture()
@@ -257,7 +266,7 @@ test('a malformed or empty baseline fails validation before fetching', async () 
   for (const baseline of [missingLicense, fixture(), { schemaVersion: 1, product: 'chatgpt', platforms: {} }]) {
     let requests = 0
     await assert.rejects(
-      prepareMirror({
+      prepare({
         chatgptBaseline: baseline,
         fetchImpl: async () => {
           requests++
@@ -270,7 +279,7 @@ test('a malformed or empty baseline fails validation before fetching', async () 
 })
 test('the historical baseline exposes only its four Windows and macOS packages with exact versions', async () => {
   const baseline = JSON.parse(await fs.readFile(new URL('./chatgpt-verified-baseline.json', import.meta.url), 'utf8'))
-  const entries = await prepareMirror({ chatgptBaseline: baseline, fetchImpl: async () => new Response(null, { status: 404 }) })
+  const entries = await prepare({ chatgptBaseline: baseline, fetchImpl: async () => new Response(null, { status: 404 }) })
   const items = validateChatgptIndex(JSON.parse(entries[1].json))
   assert.equal(Object.keys(baseline.platforms).length, 7)
   assert.deepEqual(
@@ -293,7 +302,7 @@ test('seven-platform cached baselines migrate without requiring Linux before the
   await fs.writeFile(path.join(cacheDir, 'chatgpt.json'), JSON.stringify(baseline))
   const previousIndexes = await readMirrorState({ cacheDir })
   assert.deepEqual(Object.keys(previousIndexes.chatgpt.platforms), ['windows-x64', 'windows-arm64', 'macos-arm64', 'macos-x64'])
-  const missing = await prepareMirror({
+  const missing = await prepare({
     chatgptBaseline: baseline,
     previousIndexes,
     fetchImpl: async () => new Response(null, { status: 404 })
@@ -312,22 +321,22 @@ test('seven-platform cached baselines migrate without requiring Linux before the
   const partial = structuredClone(upstream)
   delete partial.platforms['macos-x64']
   const fetchSource = (value) => async (url) => (url.endsWith('/chatgpt/latest.json') ? json(value) : new Response(null, { status: 404 }))
-  const waiting = await prepareMirror({ chatgptBaseline: baseline, previousIndexes, fetchImpl: fetchSource(partial) })
+  const waiting = await prepare({ chatgptBaseline: baseline, previousIndexes, fetchImpl: fetchSource(partial) })
   assert.equal(waiting[1].verifiedBaseline, true)
   assert.deepEqual(JSON.parse(waiting[1].json), projectPublicIndex('chatgpt', baseline))
-  const ready = await prepareMirror({ chatgptBaseline: baseline, previousIndexes, fetchImpl: fetchSource(upstream) })
+  const ready = await prepare({ chatgptBaseline: baseline, previousIndexes, fetchImpl: fetchSource(upstream) })
   assert.equal(ready[1].verifiedBaseline, false)
   assert.deepEqual(JSON.parse(ready[1].json), upstream)
   await saveMirrorState(ready, { cacheDir })
   const switched = await readMirrorState({ cacheDir })
-  const later = await prepareMirror({ chatgptBaseline: baseline, previousIndexes: switched, fetchImpl: fetchSource(partial) })
+  const later = await prepare({ chatgptBaseline: baseline, previousIndexes: switched, fetchImpl: fetchSource(partial) })
   assert.equal(later[1].verifiedBaseline, false)
   assert.deepEqual(JSON.parse(later[1].json), partial)
   await assert.rejects(
-    prepareMirror({ chatgptBaseline: baseline, previousIndexes: switched, fetchImpl: async () => new Response(null, { status: 404 }) }),
+    prepare({ chatgptBaseline: baseline, previousIndexes: switched, fetchImpl: async () => new Response(null, { status: 404 }) }),
     /保留现有镜像/
   )
-  const empty = await prepareMirror({
+  const empty = await prepare({
     chatgptBaseline: baseline,
     previousIndexes,
     fetchImpl: fetchSource({ schemaVersion: 1, product: 'chatgpt', platforms: {} })
@@ -342,10 +351,10 @@ test('transport, non-404 errors and invalid schemas prevent a new mirror', async
     json({ schemaVersion: 2 }),
     new Response('{broken', { headers: { 'Content-Type': 'application/json' } })
   ]) {
-    await assert.rejects(prepareMirror({ fetchImpl: async () => response.clone() }))
+    await assert.rejects(prepare({ fetchImpl: async () => response.clone() }))
   }
   await assert.rejects(
-    prepareMirror({
+    prepare({
       fetchImpl: async () => {
         throw Error('private-upstream-error')
       }
@@ -354,7 +363,7 @@ test('transport, non-404 errors and invalid schemas prevent a new mirror', async
 })
 test('all mirror entries are validated before writing either site', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'xm-index-mirror-'))
-  const entries = await prepareMirror({ fetchImpl: async () => new Response(null, { status: 404 }) })
+  const entries = await prepare({ fetchImpl: async () => new Response(null, { status: 404 }) })
   await writeMirror(entries, { root })
   for (const site of ['newapi', 'sub2api'])
     for (const entry of entries) {
@@ -369,22 +378,22 @@ test('all mirror entries are validated before writing either site', async () => 
 })
 test('a previously valid installer index disappearing cannot deploy an empty replacement', async () => {
   const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'xm-index-cache-'))
-  const entries = await prepareMirror({
+  const entries = await prepare({
     fetchImpl: async (url) => (url.endsWith('/xingmang/latest.json') ? json(fixture()) : new Response(null, { status: 404 }))
   })
   await saveMirrorState(entries, { cacheDir })
   const previousIndexes = await readMirrorState({ cacheDir })
-  await assert.rejects(prepareMirror({ previousIndexes, fetchImpl: async () => new Response(null, { status: 404 }) }), /保留现有镜像/)
+  await assert.rejects(prepare({ previousIndexes, fetchImpl: async () => new Response(null, { status: 404 }) }), /保留现有镜像/)
   assert.equal(validateManagerIndex((await readMirrorState({ cacheDir })).manager).length, 1)
 })
 test('previous pending products may remain empty while corrupt cache data fails closed', async () => {
   const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'xm-index-cache-empty-'))
   assert.deepEqual(await readMirrorState({ cacheDir }), {})
-  const entries = await prepareMirror({ fetchImpl: async () => new Response(null, { status: 404 }) })
+  const entries = await prepare({ fetchImpl: async () => new Response(null, { status: 404 }) })
   await saveMirrorState(entries, { cacheDir })
   const previousIndexes = await readMirrorState({ cacheDir })
   assert.equal(
-    (await prepareMirror({ previousIndexes, fetchImpl: async () => new Response(null, { status: 404 }) })).every((entry) => entry.pending),
+    (await prepare({ previousIndexes, fetchImpl: async () => new Response(null, { status: 404 }) })).every((entry) => entry.pending),
     true
   )
   await fs.writeFile(path.join(cacheDir, 'manager.json'), '{broken')

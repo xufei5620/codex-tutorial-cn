@@ -14,7 +14,7 @@
 
 ## 更新来源
 
-两站读取固定 COS 桶的 `xingmang/latest.json`、`chatgpt/latest.json` 和 `xingmang/offline/claude/latest.json`。Claude 安装包固定存放于 `xingmang/offline/claude/<platform-id>/sha256-<digest>/<fixed-fileName>`，复用已授权的 `xingmang/*` 存储范围；同源入口仍为 `/cos-download-index/claude.json`。索引由管理工具仓库的发布同步和官方包定时同步工作流生成；安装包来自不可变版本目录。用户下载文件直接访问 COS，教程站提供经过校验和公开投影的静态 JSON。
+两站读取固定 COS 桶的 `xingmang/latest.json`、`chatgpt/latest.json` 和 `xingmang/offline/claude/latest.json`。Claude 安装包固定存放于 `xingmang/offline/claude/<platform-id>/sha256-<digest>/<fixed-fileName>`，复用已授权的 `xingmang/*` 存储范围；同源入口仍为 `/cos-download-index/claude.json`。索引由管理工具仓库的发布同步和官方包定时同步工作流生成；安装包来自不可变版本目录。用户下载文件直接访问 COS，教程站提供经过校验和公开投影的静态 JSON。星芒管理工具的清单还要过一遍管理工具的撤回名单，被撤回的版本不再提供（见下面「撤回名单与退回上一版」）。
 
 浏览器读取同源 `/cos-download-index/xingmang.json`、`/cos-download-index/chatgpt.json` 与 `/cos-download-index/claude.json`。现有 Pages CI 使用 Node 有界读取这三份公开 COS 清单，执行相同的 schema 校验和公开字段投影，写入两站静态资源。`_routes.json` 的 include 与 exclude 都是这三条精确路径；exclude 优先，索引直接由静态 ASSETS 服务，不经过当前失败的 Worker 出网链路。`_headers` 对索引强制 JSON、no-store 和 nosniff。没有新源主机、上传密钥或用户请求头转发。
 
@@ -42,6 +42,14 @@ Actions 缓存仅记录曾读取到的公开规范清单，恢复时再次验证
 固定备用清单的 Windows 包为 `26.930.2377.0`：2026-10-04（北京时间）重新完整读取了 COS 的 x64、ARM64 MSIX 及各自许可，检查了 SHA-256、有效 Microsoft Marketplace 签名、`OpenAI.Codex` 身份与 `9PLM9XGG6VKS` 许可产品标识。清单只保存公开路径、大小、摘要与校验类型，不保存本机路径或凭据。更新固定清单必须重新核对相应文件，不能从目录名猜测缺失平台。
 
 同日完整匿名读取的另外五包为 macOS ARM64/x64 ZIP、Linux ARM64/x64 DEB 与 x64 RPM，正文 SHA-256 和大小均与先前从官方 `persistent.oaistatic.com` HTTPS 下载的原包记录一致。Mac appcast 对应 `26.930.21537`、build `12776`；Linux 原包元数据版本也是 `26.930.21537`。这些历史核验记录保留在固定 JSON 中，当前只投影其中的 Windows/macOS 四个下载条目。这里没有声称 Mac/Linux 原生签名验证或安装验收已完成。
+
+## 撤回名单与退回上一版
+
+管理工具撤回一个版本时，客户端几分钟内就不再升级到它；教程下载页在下一次 `sites` 运行时跟上。生成星芒管理工具清单之前，CI 先读一次撤回名单：固定地址 `https://updatesnew.shenfengwl.fun/xingmang-manager/service-status.json`，即管理工具仓库 service-status、rollback-release 两个工作流写入、0.2.10 起的客户端读取的那一份。读取同样限 10 秒、拒绝重定向、不带凭据，正文上限 16 KiB，只接受 200。名单读法与客户端 `electron/service-status.ts` 一致：去掉开头的 v，最多看前 100 条，认不出的条目丢掉；`badVersions` 字段不存在表示没有撤回（名单清空时工作流会删掉这个字段）。读不到（包括 404）、正文不是 JSON 对象、`badVersions` 存在但不是数组时，本次 CI 失败，两站保持上一次部署：既不会把撤回的版本重新挂上，也不会因为一次读取失败撤掉全部下载。维护提示与分批放量不影响下载页。
+
+每个平台单独判断：当前版本不在名单里就照常提供；在名单里时，从源清单的 `history`（管理工具发版同步保留的最近 3 个旧版本安装包，逐条按 `files` 的规则校验地址、大小和 SHA-256）里挑最新的一版，它不能在名单里，也不能低于名单里的 `minimumVersion`（否则客户装上就被要求更新）。一个都没有时不提供这个平台，按钮显示「暂未提供」；三个平台都没有时，页面显示安装包准备中。没有任何撤回时，公开清单与过去逐字节相同，`history` 本身从不公开。运行日志 `mirrored` 摘要里星芒那一项的 `withdrawal` 列出每个被撤下的平台、撤下的版本和退回到的版本（`offered` 为 `null` 表示不提供）。Codex 与 Claude 两份清单不读这份名单。
+
+撤回或取消撤回之后要立即生效，在 GitHub Actions 手动运行一次 `sites`（分支选 main），不必等定时运行。这份名单只在 CI 里读取：三条索引路由已从 Pages Functions 排除（见上文），保留的 Function 源码不做这项过滤，不要重新把路由交给它。
 
 ## 索引读取诊断
 

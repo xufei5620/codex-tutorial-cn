@@ -250,7 +250,7 @@ function managerVersion(value) {
   return typeof value === 'string' && value.length <= 64 && MANAGER_VERSION.test(value)
 }
 
-function compareManagerVersions(left, right) {
+export function compareManagerVersions(left, right) {
   const [leftCore, ...leftSuffix] = left.split('+')[0].split('-')
   const [rightCore, ...rightSuffix] = right.split('+')[0].split('-')
   const leftParts = leftCore.split('.').map(BigInt)
@@ -301,6 +301,32 @@ function managerFileName(version, platform) {
   return `xingmang-ai-manager_${version}_${platform.architecture === 'x64' ? 'amd64' : 'arm64'}.deb`
 }
 
+function managerItem(entry, indexVersion) {
+  const platform = MANAGER_PLATFORMS.find((item) => item.platform === entry.platform && item.architecture === entry.architecture)
+  if (
+    !platform ||
+    !managerVersion(entry.version) ||
+    compareManagerVersions(entry.version, indexVersion) > 0 ||
+    entry.fileName !== managerFileName(entry.version, platform)
+  )
+    throw new Error('星芒安装包系统或版本无效')
+  validateArtifact(
+    { ...entry, bytes: entry.size, contentType: entry.type },
+    `xingmang/releases/${entry.version}/${entry.fileName}`,
+    platform.contentType,
+    1024 * 1024 * 1024
+  )
+  return {
+    ...platform,
+    version: entry.version,
+    fileName: entry.fileName,
+    key: entry.key,
+    url: entry.url,
+    bytes: entry.size,
+    sha256: entry.sha256
+  }
+}
+
 export function validateManagerIndex(value) {
   if (
     !isObject(value) ||
@@ -317,32 +343,32 @@ export function validateManagerIndex(value) {
     if (!isObject(entry)) throw new Error('星芒安装包条目无效')
     // Update archives, block maps and updater manifests are not installers.
     if (entry.kind !== 'installer') continue
-    const platform = MANAGER_PLATFORMS.find((item) => item.platform === entry.platform && item.architecture === entry.architecture)
-    if (
-      !platform ||
-      !managerVersion(entry.version) ||
-      compareManagerVersions(entry.version, value.version) > 0 ||
-      items.has(platform.id) ||
-      entry.fileName !== managerFileName(entry.version, platform)
-    )
-      throw new Error('星芒安装包系统或版本无效')
-    validateArtifact(
-      { ...entry, bytes: entry.size, contentType: entry.type },
-      `xingmang/releases/${entry.version}/${entry.fileName}`,
-      platform.contentType,
-      1024 * 1024 * 1024
-    )
-    items.set(platform.id, {
-      ...platform,
-      version: entry.version,
-      fileName: entry.fileName,
-      key: entry.key,
-      url: entry.url,
-      bytes: entry.size,
-      sha256: entry.sha256
-    })
+    const item = managerItem(entry, value.version)
+    if (items.has(item.id)) throw new Error('星芒安装包系统或版本无效')
+    items.set(item.id, item)
   }
+  managerHistoryItems(value)
   return MANAGER_PLATFORMS.flatMap((platform) => (items.has(platform.id) ? [items.get(platform.id)] : []))
+}
+
+// The release sync keeps the installers of up to three older versions in
+// history. They are validated as strictly as current files, but published only
+// when the current version of a platform is withdrawn (see withdrawal.mjs).
+export function managerHistoryItems(value) {
+  if (value.history === undefined) return []
+  if (!Array.isArray(value.history) || value.history.length > 24 || (value.history.length && !managerVersion(value.version)))
+    throw new Error('星芒历史安装包清单无效')
+  const seen = new Set(value.files.map((entry) => entry.fileName))
+  const items = []
+  for (const entry of value.history) {
+    if (!isObject(entry)) throw new Error('星芒历史安装包条目无效')
+    if (entry.kind !== 'installer') continue
+    const item = managerItem(entry, value.version)
+    if (compareManagerVersions(item.version, value.version) >= 0 || seen.has(item.fileName)) throw new Error('星芒历史安装包版本无效')
+    seen.add(item.fileName)
+    items.push(item)
+  }
+  return items
 }
 
 function windowsVersion(value) {

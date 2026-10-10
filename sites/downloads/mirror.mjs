@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { INDEX_ROUTES, loadCatalogIndex, projectPublicIndex, catalogFailureDiagnostics } from './catalog.mjs'
+import { loadWithdrawalStatus, selectManagerDownloads, withdrawalFailureDiagnostics } from './withdrawal.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const CACHE = path.join(ROOT, '.cos-index-cache')
@@ -19,9 +20,16 @@ function hasInstallers(product, value) {
 export async function prepareMirror({ fetchImpl = fetch, signal, previousIndexes = {}, chatgptBaseline = null } = {}) {
   const baseline = chatgptBaseline === null ? null : projectPublicIndex('chatgpt', chatgptBaseline)
   if (baseline && !hasInstallers('chatgpt', baseline)) throw Error('已核验备用清单缺少安装包')
+  const products = Object.keys(INDEX_ROUTES)
+  // An unreadable withdrawal list fails the whole run like an unreadable index:
+  // the sites keep their last deployment rather than re-offer a withdrawn build.
+  const [status, values] = await Promise.all([
+    loadWithdrawalStatus({ fetchImpl, signal }),
+    Promise.all(products.map((product) => loadCatalogIndex(product, { fetchImpl, signal, upstream: true })))
+  ])
   const results = await Promise.all(
-    Object.keys(INDEX_ROUTES).map(async (product) => {
-      const value = await loadCatalogIndex(product, { fetchImpl, signal, upstream: true })
+    products.map(async (product, index) => {
+      const value = values[index]
       const fallback = product === 'chatgpt' ? baseline : null
       const previouslyBaseline =
         fallback !== null &&
@@ -41,7 +49,8 @@ export async function prepareMirror({ fetchImpl = fetch, signal, previousIndexes
         hasInstallers(product, value) &&
         Object.keys(fallback.platforms).some((id) => !Object.hasOwn(value.platforms, id))
       const resolved = value === null || awaitingPlatforms ? fallback : value
-      const projected = projectPublicIndex(product, resolved === null ? EMPTY_INDEXES[product] : resolved)
+      const selection = product === 'manager' && resolved !== null ? selectManagerDownloads(resolved, status) : null
+      const projected = projectPublicIndex(product, resolved === null ? EMPTY_INDEXES[product] : selection ? selection.index : resolved)
       const json = JSON.stringify(projected, null, 2) + '\n'
       if (Buffer.byteLength(json) > 256 * 1024) throw Error('公开安装包清单过大')
       return {
@@ -49,6 +58,7 @@ export async function prepareMirror({ fetchImpl = fetch, signal, previousIndexes
         route: INDEX_ROUTES[product],
         pending: resolved === null,
         verifiedBaseline: (value === null && fallback !== null) || awaitingPlatforms,
+        ...(product === 'manager' ? { withdrawal: selection ? selection.withdrawal : [] } : {}),
         json
       }
     })
@@ -116,12 +126,21 @@ async function main() {
   await writeMirror(entries)
   await saveMirrorState(entries)
   console.log(
-    JSON.stringify({ mirrored: entries.map(({ product, pending, verifiedBaseline }) => ({ product, pending, verifiedBaseline })) })
+    JSON.stringify({
+      mirrored: entries.map(({ product, pending, verifiedBaseline, withdrawal }) => ({
+        product,
+        pending,
+        verifiedBaseline,
+        ...(withdrawal ? { withdrawal } : {})
+      }))
+    })
   )
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((error) => {
-    console.error(JSON.stringify({ error: '安装包镜像准备失败', ...catalogFailureDiagnostics(error) }))
+    console.error(
+      JSON.stringify({ error: '安装包镜像准备失败', ...(withdrawalFailureDiagnostics(error) || catalogFailureDiagnostics(error)) })
+    )
     process.exitCode = 1
   })
 }
