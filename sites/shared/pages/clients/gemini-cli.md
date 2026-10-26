@@ -6,7 +6,9 @@ description: 安装 Gemini CLI，使用 Gemini API Key 模式填写本站地址�
 
 Gemini CLI 是在终端里运行的 Gemini 工具。本篇用 **Gemini API Key 模式**，填写本站地址和%%KEY_WORD%%接入；它不是 Gemini 网页，也不是 Google 官方账号登录，三者认证和额度分别管理。
 
-**从哪里开始：** 第一次使用，从 [安装前准备](#prepare)开始。已经能运行 `gemini --version`，直接去 [配置本站](#site-config)。已经配置好，去 [第一次调用](#first-request)。不想手动配置，可先看 [星芒管理工具教程](/guide/manager)。
+> **管理工具已不再管 Gemini CLI：** 从 0.2.19 起，星芒 AI 管理工具不再安装、更新 Gemini CLI，也不再替它配密钥。电脑上已经装了的照常能用，Gemini 模型也还在；想继续用 Gemini CLI，按本篇手动配置。详见 [管理工具新版说明](/guide/manager-whats-new#gemini)。
+
+**从哪里开始：** 第一次使用，从 [安装前准备](#prepare)开始。已经能运行 `gemini --version`，直接去 [配置本站](#site-config)。已经配置好，去 [第一次调用](#first-request)。
 
 ## 1. 安装前准备 {#prepare}
 

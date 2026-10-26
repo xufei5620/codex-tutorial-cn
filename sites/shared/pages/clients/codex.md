@@ -246,6 +246,7 @@ cli终端
 | 模型不存在或不允许 | 重新核对模型 ID、分组与额度，不照抄配图模型 |
 | 路径错误或协议不兼容 | 核对 `%%CODEX_BASE_URL%%` 和 Responses 支持，保留脱敏错误，不尝试随机路径 |
 | 有回复但本站无记录 | 检查官方登录、旧终端、远程环境及记录延迟，暂不执行批量任务 |
+| 桌面应用发消息报「提交消息时出错」，下面带 Work browser access requires an authenticated account | 消息发在了「聊天」或「工作」里，这两项要登录 ChatGPT 账号才能用。在窗口左侧栏最上面把模式切到「Codex」再发，见 [Codex 桌面端和 ChatGPT 账号](/guide/manager-whats-new#codex-chatgpt) |
 
 仍未解决时按 [连接排错](/guide/troubleshooting)提供版本、时间与脱敏错误；需要回退时关闭应用，按 [备份恢复](/guide/recovery)恢复本次文件和原认证存储设置。
 
