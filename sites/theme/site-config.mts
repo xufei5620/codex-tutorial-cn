@@ -35,7 +35,8 @@ export function siteConfig(directory: URL) {
       }
     },
     head: [
-      ['link', { rel: 'icon', type: 'image/png', href: '/logo.png' }],
+      // 换过图要改版本参数，不然浏览器会接着显示缓存里的旧标签页图标。
+      ['link', { rel: 'icon', type: 'image/png', href: '/logo.png?v=20261114' }],
       ['meta', { name: 'theme-color', content: '#0B1F3B' }],
       ['meta', { name: 'robots', content: 'noindex' }],
       ['meta', { name: 'referrer', content: 'no-referrer' }]

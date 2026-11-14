@@ -33,8 +33,14 @@
 - 来源提交：`93033e6331ca095f74f130a51264b356fcfcaaf4`
 - 原始路径：`assets/brand/v3/symbol-standard.svg`
 - 本地文件：`xingmang.svg`，直接复用管理工具 v3 的标准图形标；字节保持原样，未重绘。
-- 此标记属于星芒 AI 自有品牌资源，仅在本站用于管理工具的产品标识，不使用教程站旧的蓝紫色 `/logo.png`。
+- 此标记属于星芒 AI 自有品牌资源，仅在本站用于管理工具的产品标识。
 - 保留管理工具仓库的原始权利声明于 `LICENSE.xingmang.txt`；这是专有品牌资源，不套用第三方图标的 MIT 许可。
+
+## 星芒网站图标（docs-new）
+
+- 本地文件：`sites/newapi/public/logo.png`，浏览器标签页图标（`site-config.mts` 里的 `rel: 'icon'`）。
+- 来源：管理工具仓库 `assets/brand/v3/favicon.ico` 里 256px 那张，与该仓库 `dl-landing/logo.png` 逐字节相同（来源提交 `50478eed9eda21ad0bb6897b749d7d443c671bb9`），SHA-256 `ae50c7fbf16410d3065c472627aba769418ebfb5409dca7f6f70a344facf9aea`。2026-11-14 换掉原来的蓝紫色旧标。
+- 换图时同时改 `site-config.mts` 里图标地址的 `?v=` 参数。`sites/sub2api/public/logo.png`（docs-sub）还是旧标，这次没动。
 
 ## 星芒侧栏横版组合标
 
