@@ -52,6 +52,10 @@
      "link": "/guide/manager-whats-new"
     },
     {
+     "text": "用在 OpenClaw、Hermes 里",
+     "link": "/guide/manager-other-apps"
+    },
+    {
      "text": "验证第一次调用",
      "link": "/guide/verify"
     },

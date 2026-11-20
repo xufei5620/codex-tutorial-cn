@@ -130,6 +130,7 @@ Codex CLI 与 Codex 桌面端共用连接配置。修改来源或模型会影响
 | Codex CLI 或 Codex 桌面端 | 进入 [Codex 零基础](/learn/codex/)，学习文件夹、任务描述和结果检查；需要核对其他入口时看 [Codex 接入教程](/clients/codex)。 |
 | Claude Code | 进入 [Claude Code 第一次任务](/learn/claude/first-task?track=claude-code)，练习只读核对、有限修改和结果检查；需要核对启动与认证方式时看 [Claude Code 接入教程](/clients/claude-code)。 |
 | 还想安装另一个工具 | 回到 [第 4 步](#manager-tool)，为另一个工具分别确认安装、配置和调用。 |
+| 还想让 OpenClaw、Hermes 也用这个账号 | 看 [把当前账号用在 OpenClaw、Hermes 里](/guide/manager-other-apps)，从管理工具里复制地址和密钥填进去。 |
 
 **本篇完成清单：** 管理工具能打开；账号来源正确；目标工具已安装；配置已保存；已重开目标工具；本站有对应的成功调用记录。全部满足后，再开始处理自己的项目文件。
 

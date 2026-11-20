@@ -6,6 +6,8 @@ description: 安装 openclaw-cn、填写本站地址与密钥，在本机完成�
 
 OpenClaw 是在本机运行的智能体工具，带一个浏览器中打开的本地控制界面。本篇按本站使用的 `openclaw-cn` 安装包讲解，配置文件在 `~/.openclaw/openclaw.json`。它不是官方 OpenClaw 账号或订阅；本篇的调用走本站%%KEY_WORD%%与额度。`openclaw-cn` 的包名和命令与上游官方 OpenClaw 不一定相同，两套说明不要混用。
 
+已经在用星芒 AI 管理工具：地址和%%KEY_WORD%%可以直接在管理工具里复制，见 [把当前账号用在 OpenClaw、Hermes 里](/guide/manager-other-apps)。
+
 从哪里开始：第一次安装，从 [安装前准备](#prepare) 开始；已经装好，直接去 [配置本站地址与%%KEY_WORD%%](#site-config)；已经配置过，去 [第一次调用](#first-call) 验证。
 
 ## 1. 安装前准备 {#prepare}

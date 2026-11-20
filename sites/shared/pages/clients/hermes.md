@@ -6,6 +6,8 @@ description: 从官方项目安装 Hermes Agent，用模型配置向导填写本
 
 Hermes Agent 是 Nous Research 推出的开源智能体工具。本篇用它的模型配置向导把本站设为自定义提供方，调用走本站%%KEY_WORD%%与额度；安装 Hermes 本身不会自动接入本站。“支持自定义模型”也不代表本站所有功能都已测试通过，终端、桌面等入口要分别确认。
 
+已经在用星芒 AI 管理工具：地址和%%KEY_WORD%%可以直接在管理工具里复制，见 [把当前账号用在 OpenClaw、Hermes 里](/guide/manager-other-apps)。
+
 从哪里开始：第一次使用，从 [安装前准备](#prepare) 开始；已经装好，直接去 [配置本站地址与%%KEY_WORD%%](#site-config)；已经配置过，去 [第一次调用](#first-call) 验证。
 
 ## 1. 安装前准备 {#prepare}
