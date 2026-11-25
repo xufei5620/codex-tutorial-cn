@@ -1,5 +1,5 @@
 星芒AI管理工具
-Copyright © 2026 绍兴星芒文化传媒有限责任公司。保留所有权利。
+Copyright © 2026 星芒文化。保留所有权利。
 
 本仓库中的源代码、界面设计、图标、文案及其他材料（以下统称「本软件」）是专有软件，
 不是开源软件。本仓库公开可见，只是为了方便查看；公开本身不代表授予任何许可。
@@ -20,7 +20,7 @@ Copyright © 2026 绍兴星芒文化传媒有限责任公司。保留所有权�
 ---
 
 XingMang AI Manager
-Copyright © 2026 绍兴星芒文化传媒有限责任公司. All rights reserved.
+Copyright © 2026 星芒文化. All rights reserved.
 
 This repository and everything in it ("the Software") is proprietary and is not open
 source. The repository is publicly visible for convenience only; its visibility grants
